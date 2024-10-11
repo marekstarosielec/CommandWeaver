@@ -63,7 +63,7 @@ public class ContextVariables : IContextVariables
                 result.Add(new Section(match.Groups[2].Value, "index"));
 
         var variable = GetVariableValue(result[0].Name);
-        object? currentElement = variable.Value;
+        object? currentElement = variable?.Value;
         for (var index = 1; index < result.Count; index++)
         {
             var section = result[index];
@@ -83,8 +83,8 @@ public class ContextVariables : IContextVariables
                 }
             }
         }
-
-        throw new NotImplementedException();
+        return null;
+        //throw new NotImplementedException();
     }
     
     public Variable? GetVariableValue(string key) =>

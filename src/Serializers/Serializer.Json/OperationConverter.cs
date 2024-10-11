@@ -72,9 +72,9 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
             case JsonValueKind.Number:
                 return ReadNumber(element);
             case JsonValueKind.True:
-                return true;
+                return true.ToString();
             case JsonValueKind.False:
-                return false;
+                return false.ToString();
             case JsonValueKind.Object:
                 return ReadObject(element);
             case JsonValueKind.Array:
@@ -115,10 +115,14 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
     }
     private object ReadArray(JsonElement element)
     {
-        var list = new List<object?>();
+        var list = new List<Dictionary<string, object?>>();
         foreach (var arrayElement in element.EnumerateArray())
-            list.Add(ReadElement(arrayElement));
-        
+        {
+            var arrayElementContents = ReadElement(arrayElement);
+            var dictionary = arrayElementContents as Dictionary<string, object?>;
+            dictionary ??= new Dictionary<string, object?> { { "key", arrayElementContents } };    
+            list.Add(dictionary);
+        }
         return list;
     }
     
