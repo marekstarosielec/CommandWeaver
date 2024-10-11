@@ -13,4 +13,6 @@ public interface IVariableValueCrawler
     /// <param name="key">Full key in form variable.property[listIndex].subProperty</param>
     /// <returns></returns>
     object? GetSubValue(List<Variable> variables, string key);
+
+    object? GetSubValue(Variable variable, string key);
 }

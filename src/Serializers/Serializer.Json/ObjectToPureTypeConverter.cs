@@ -58,11 +58,15 @@ public class ObjectToPureTypeConverter : JsonConverter<object?>
 
     private object ReadArray(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var list = new List<object?>();
+        var list = new List<Dictionary<string,object?>>();
 
         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
-            list.Add(Read(ref reader, typeToConvert, options));
-        
+        {
+            var element = Read(ref reader, typeToConvert, options);
+            var dictionaryElement = element as Dictionary<string, object?>;
+            dictionaryElement ??= new Dictionary<string, object?> { { "key", element } };
+            list.Add(dictionaryElement);
+        }
         return list;
     }
 

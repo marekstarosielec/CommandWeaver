@@ -7,5 +7,5 @@ public interface IContextVariables
     void SetVariableList(RepositoryLocation repositoryLocation, List<Variable?> elementsWithContent);
     Variable? GetVariableValue(string key);
     void SetVariableValue(VariableScope scope, string key, object? value, string? description = null);
-    Variable? GetVariable(string key);
+    object? GetVariableValue2(string key);
 }

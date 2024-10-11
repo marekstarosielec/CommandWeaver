@@ -53,6 +53,14 @@ public class VariableValueCrawlerTests
         var result = t.Sut.GetSubValue(t.Variables, "Test3[secondValue].subElement.otherProperty");
         Assert.Equal("otherPropertyValue", result);
     }
+
+    [Fact]
+    public void VariableValueCrawler_ReturnsWholeList()
+    {
+        var t = new TestingSuite();
+        var result = t.Sut.GetSubValue(t.Variables, "Test3");
+        Assert.Equal(2, (result as List<Dictionary<string, object?>>)?.Count);
+    }
 }
 
 

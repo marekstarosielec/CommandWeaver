@@ -7,6 +7,8 @@ namespace Cli2Context;
 /// <inheritdoc />
 public class VariableValueCrawler() : IVariableValueCrawler
 {
+    public object? GetSubValue(Variable variable, string key) => GetSubValue([variable], key);
+
     /// <inheritdoc />
     public object? GetSubValue(List<Variable> variables, string key)
     {

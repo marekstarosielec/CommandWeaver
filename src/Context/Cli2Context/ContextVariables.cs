@@ -1,11 +1,13 @@
 using System.Text.RegularExpressions;
 using Models;
+using Models.Interfaces;
 using Models.Interfaces.Context;
 
 namespace Cli2Context;
 
 public class ContextVariables : IContextVariables
 {
+    internal readonly IVariableValueCrawler variableValueCrawler = new VariableValueCrawler();
     internal readonly List<Variable> _builtIn = new();
     internal readonly List<Variable> _local = new();
     internal readonly List<Variable> _session = new();
@@ -50,41 +52,36 @@ public class ContextVariables : IContextVariables
     }
 
     record Section(string Name, string Type);
-    public Variable? GetVariable(string key)
+    public object? GetVariableValue2(string key)
     {
-        var pattern = @"([a-zA-Z0-9_-]+)|\[(.*?)\]";
-        var matches = Regex.Matches(key, pattern);
+        //Need to build method to get variable value - if contains list, it needs to be build from several locations.
+        var builtIn = variableValueCrawler.GetSubValue(_builtIn, key);
+        var local = variableValueCrawler.GetSubValue(_local, key);
+        var session = variableValueCrawler.GetSubValue(_session, key);
+        var changes = variableValueCrawler.GetSubValue(_changes, key);
 
-        var result = new List<Section>();
-        foreach (Match match in matches)
-            if (match.Groups[1].Success)
-                result.Add(new Section(match.Groups[1].Value, "property"));
-            else if (match.Groups[2].Success)
-                result.Add(new Section(match.Groups[2].Value, "index"));
+        var isList = false;
+        if (builtIn as List<Dictionary<string, object?>> != null 
+            || local as List<Dictionary<string, object?>> != null
+            || session as List<Dictionary<string, object?>> != null
+            || changes as List<Dictionary<string, object?>> != null)
+            isList = true;
 
-        var variable = GetVariableValue(result[0].Name);
-        object? currentElement = variable?.Value;
-        for (var index = 1; index < result.Count; index++)
-        {
-            var section = result[index];
-            if (section.Type == "index")
-            {
-                //throw if current element is not list
-                var list = currentElement as List<object>;
-                //compare by value or by key property if it is object
-                foreach (var listElement in list)
+        if (isList)
+            if (builtIn as Dictionary<string, object?> != null
+                || local as Dictionary<string, object?> != null
+                || session as Dictionary<string, object?> != null
+                || changes as Dictionary<string, object?> != null)
                 {
-                    var element = (listElement as Dictionary<string, object?>)["key"];
-                    if ((element as string)?.ToLower() == section.Name.ToLower())
-                    {
-                        currentElement = listElement;
-                        break;
-                    }
+                    //Fail = some elements contain lists, some don't/
+                    return null;
                 }
-            }
+        
+        if (!isList)
+        {
+            return builtIn ?? local ?? session ?? changes; 
         }
-        return null;
-        //throw new NotImplementedException();
+        throw new NotImplementedException();
     }
     
     public Variable? GetVariableValue(string key) =>

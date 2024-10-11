@@ -11,8 +11,9 @@ public class SetVariable: Operation
     public override Task Run(IContext context, CancellationToken cancellationToken)
     {
         var key = Key.GetValueAsString(context);
+        var currentValue = context.Variables.GetVariableValue2(key);
         var value = Value.GetValueAsString(context);
-        var t = context.Variables.GetVariable(key);
+        //var t = context.Variables.GetVariable(key);
         return Task.CompletedTask;
     }
 }

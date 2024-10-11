@@ -13,12 +13,7 @@
   "operations": [
     {
       "operation": "setVariable",
-      "key": "nag-core-environments[{{ key }}].key",
-      "value": "{{ key }}"
-    },
-    {
-      "operation": "setVariable",
-      "key": "nag-core-environments[{{ key }}].host",
+      "key": "nag-core-environments[{{ key }}].url",
       "value": "{{ host }}"
     }
   ]

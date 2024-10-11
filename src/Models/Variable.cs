@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Models.Interfaces.Context;
 
@@ -27,6 +26,7 @@ public record Variable
         var pattern = @"\{\{\s*(.*?)\s*\}\}"; // Regex pattern to match {{ content }}
         var regex = new Regex(pattern);
 
+        //TODO: this might need matching inner variables (variables inside variables) first.
         while (regex.IsMatch(input))
         {
             input = regex.Replace(input, match =>
@@ -35,7 +35,7 @@ public record Variable
                 var key = match.Groups[1].Value;
 
                 // Get the replacement from the provided method
-                var replacement = context.Variables.GetVariableValue(key)?.GetValueAsString(context) ?? string.Empty;
+                var replacement = context.Variables.GetVariableValue2(key) as string ?? string.Empty;
 
                 return replacement;
             });
