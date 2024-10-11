@@ -1,0 +1,25 @@
+{
+  "name": "nag-core-environment-add",
+  "parameters": [
+    {
+      "key": "key",
+      "description": "Name of nag-core environment. Must be unique." 
+    },
+    {
+      "key": "host",
+      "description": "Nag-core host."
+    }
+  ],
+  "operations": [
+    {
+      "operation": "setVariable",
+      "key": "nag-core-environments[{{ key }}].key",
+      "value": "{{ key }}"
+    },
+    {
+      "operation": "setVariable",
+      "key": "nag-core-environments[{{ key }}].host",
+      "value": "{{ host }}"
+    }
+  ]
+}

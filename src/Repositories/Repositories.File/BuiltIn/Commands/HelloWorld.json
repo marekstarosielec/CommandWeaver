@@ -1,0 +1,19 @@
+{
+  "name": "HelloWorld",
+  "parameters": [
+    {
+      "key": "name",
+      "description": "Your name"
+    },
+    {
+      "key": "name2",
+      "description": "Your name 2"
+    }
+  ],
+  "operations": [
+    {
+      "operation": "output",
+      "text": "Hello {{ name }}"
+    }
+  ]
+}

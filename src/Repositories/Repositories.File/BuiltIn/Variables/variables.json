@@ -1,0 +1,28 @@
+[
+  {
+    "key": "currentSessionName",
+    "value": "session1",
+    "description": "Name of current sessions"
+  },
+  {
+    "key": "testInteger",
+    "value": 1,
+    "description": "Testing numeric values"
+  },
+  {
+    "key": "nag-core-environments",
+    "value": [
+      {
+        "key": "local",
+        "url": "https://localhost:21001",
+        "certificate": "nagtest.pfx"
+      },
+      {
+        "key": "mousedeer",
+        "url": "https://core-mousedeer.sandbox.nordicapigateway.com",
+        "proxy": "http://localhost:8080/",
+        "defaultPartner": "mousedeer_sandbox-4e499382-a441-4b76-89c5-cb20a25d0e29"
+      }
+    ]
+  }
+]

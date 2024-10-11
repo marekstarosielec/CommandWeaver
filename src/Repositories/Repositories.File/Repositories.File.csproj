@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\Models\Models.csproj" />
+      <ProjectReference Include="..\Repositories.Abstraction\Repositories.Abstraction.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+            <_Parameter1>Repositories.File.Tests</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
+    
+    <ItemGroup>
+      <None Update="BuiltIn\Settings\settings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="BuiltIn\Settings\InnerSettings\new.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="BuiltIn\Commands\HelloWorld.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="BuiltIn\Variables\variables.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="BuiltIn\Commands\nag-core\ais\prepare.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="BuiltIn\Commands\nag-core\environments\add.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="8.0.0" />
+      <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+    </ItemGroup>
+
+</Project>
