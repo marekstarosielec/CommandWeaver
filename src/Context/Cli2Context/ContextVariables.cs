@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using Models;
 using Models.Interfaces;
@@ -15,13 +16,13 @@ public class ContextVariables : IContextVariables
 
     public string CurrentSessionName
     {
-        get => GetVariableValue("currentSessionName")?.Value as string ?? "session1";
+        get => GetVariableValue2("currentSessionName") as string ?? "session1";
         set => SetVariableValue(VariableScope.Application, "currentSessionName", value);
     }
 
     public string? CurrentlyProcessedElement
     {
-        get => GetVariableValue("currentlyProcessedElement")?.Value as string;
+        get => GetVariableValue2("currentlyProcessedElement") as string;
         set => SetVariableValue(VariableScope.Command, "currentlyProcessedElement", value);
     }
     
@@ -51,10 +52,31 @@ public class ContextVariables : IContextVariables
         }
     }
 
-    record Section(string Name, string Type);
-    public object? GetVariableValue2(string key)
+    public object? GetVariableValue2(string? key)
     {
-        //Need to build method to get variable value - if contains list, it needs to be build from several locations.
+        if (string.IsNullOrWhiteSpace(key))
+            return null;
+
+        //Resolve variables inside keys first - code in Variable.EvaluateVariables
+        var pattern = @"\{\{\s*(.*?)\s*\}\}"; // Regex pattern to match {{ content }}
+        var regex = new Regex(pattern);
+
+        //TODO: this might need matching inner variables (variables inside variables) first.
+        while (regex.IsMatch(key))
+        {
+            key = regex.Replace(key, match =>
+            {
+                // Extract the content between {{ and }}
+                var key = match.Groups[1].Value;
+
+                // Get the replacement from the provided method
+                var replacement = GetVariableValue2(key) as string ?? string.Empty;
+                return replacement;
+            });
+        }
+
+
+
         var builtIn = variableValueCrawler.GetSubValue(_builtIn, key);
         var local = variableValueCrawler.GetSubValue(_local, key);
         var session = variableValueCrawler.GetSubValue(_session, key);
@@ -73,13 +95,26 @@ public class ContextVariables : IContextVariables
                 || session as Dictionary<string, object?> != null
                 || changes as Dictionary<string, object?> != null)
                 {
-                    //Fail = some elements contain lists, some don't/
+                    //Fail = some elements contain lists, some don't - should not happen
                     return null;
                 }
         
         if (!isList)
+            return changes ?? session ?? local ?? builtIn; 
+        else
         {
-            return builtIn ?? local ?? session ?? changes; 
+            //Return all rows
+            var result = new List<ImmutableDictionary<string, object?>>();
+            if (builtIn is List<Dictionary<string, object?>> builtInList)
+                foreach (var item in builtInList)
+                    result.Add(item.ToImmutableDictionary());
+
+            if (local is List<Dictionary<string, object?>> localList)
+                foreach (var item in localList)
+                    if (!result.Any(r => (r["key"] as string).Equals(item["key"])))
+                        result.Add(item.ToImmutableDictionary());
+
+            return result.ToImmutableList();
         }
         throw new NotImplementedException();
     }
