@@ -78,7 +78,12 @@ public class ContextVariables : IContextVariables
         throw new InvalidOperationException("What type is that?");
     }
 
-    private record Segment(string content, bool closed);
+    private record Segment(int nestingLevel, string content, bool closed)
+    {
+        public int NestingLevel { get; set; } = nestingLevel;
+        public string Content { get; set; } = content;
+        public bool Closed { get; set; } = closed;
+    }
 
     private object? GetValue(string key)
     {
@@ -87,7 +92,7 @@ public class ContextVariables : IContextVariables
             return null;
 
         // List to store the progressively nested representations of the string
-        var nestedStrings = new List<string>();
+        var nestedStrings = new List<Segment>();
         var nestingLevel = 0; // Track the current nesting level
         var i = 0; // Position in the string for the while loop
 
@@ -102,18 +107,44 @@ public class ContextVariables : IContextVariables
             for (var x = 0; x <= nestingLevel; x++)
             {
                 // Ensure that the list has enough entries for the current nesting level
-                while (nestedStrings.Count <= nestingLevel)
-                    nestedStrings.Add(string.Empty);
-
+                var nestedString = nestedStrings.FirstOrDefault(s => s.NestingLevel == x && !s.Closed);
+                if (nestedString == null)
+                {
+                    nestedStrings.Add(new Segment(x, string.Empty, false));
+                    nestedString = nestedStrings.FirstOrDefault(s => s.NestingLevel == x && !s.Closed);
+                }
                 // Append the current character to all strings up to the current nesting level
-                nestedStrings[x] += key[i];
+                nestedString!.Content += key[i];
             }
 
             // Detect the end of a variable }} and decrease the nesting level
             if (i > 0 && key[i] == '}' && key[i - 1] == '}')
+            {
+                for (var x = 0; x < nestedStrings.Count; x++)
+                    if (nestedStrings[x].NestingLevel == nestingLevel && !nestedStrings[x].Closed)
+                        nestedStrings[x].Closed = true;
+
                 nestingLevel--;  // Decrement nesting level when we encounter a closing brace pair
 
+            }
             i++; // Move to the next character
+        }
+
+        //Remove duplicates to avoid evaluating same value same time
+        var index = 0;
+        while (index < nestedStrings.Count - 1)
+        {
+            var nestedString = nestedStrings[index].Content;
+            var comparing = index + 1;
+            while (comparing < nestedStrings.Count)
+            {
+                var comparedString = nestedStrings[comparing].Content;
+                if (nestedString == comparedString)
+                    nestedStrings.RemoveAt(comparing);
+                else
+                    comparing++;
+            }
+            index++;
         }
 
         // Now, resolve variables starting from the innermost and move outward
@@ -121,7 +152,7 @@ public class ContextVariables : IContextVariables
         while (nestedStrings.Count > 1 && level > 0)
         {
             // Get the current nested string and trim whitespace
-            var currentNestedString = nestedStrings[level].Trim();
+            var currentNestedString = nestedStrings[level].Content.Trim();
 
             // Check if the current string is a valid variable with no further nested variables
             if (currentNestedString.StartsWith("{{") && currentNestedString.IndexOf("{{", 2) == -1)
@@ -134,7 +165,7 @@ public class ContextVariables : IContextVariables
 
                 // Replace the evaluated value in all higher nesting levels
                 for (var y = 0; y < nestedStrings.Count; y++)
-                    nestedStrings[y] = nestedStrings[y].Replace(nestedStrings[level], evaluatedValue);
+                    nestedStrings[y].Content = nestedStrings[y].Content.Replace(nestedStrings[level].Content, evaluatedValue);
 
                 // Remove the fully resolved nested string, as it's no longer needed
                 nestedStrings.RemoveAt(level);
@@ -142,7 +173,6 @@ public class ContextVariables : IContextVariables
             }
             else
                 level--; // Move to the next level up
-            
         }
 
         // After processing, there should be exactly one string left in the list (the fully resolved result)
@@ -153,7 +183,7 @@ public class ContextVariables : IContextVariables
         }
 
         // Return the final fully resolved string
-        return nestedStrings.FirstOrDefault();
+        return nestedStrings.First().Content;
     }
 
     private object? EvaluateValue(string key)

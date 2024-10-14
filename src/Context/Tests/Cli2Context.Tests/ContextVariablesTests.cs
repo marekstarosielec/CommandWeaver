@@ -37,9 +37,9 @@ public class ContextVariablesTests
     public void GetValueAsString_ReturnsStringWithEvaluation_IfKeyContainsMultipleNestedVariables()
     {
         var variables = new ContextVariables();
-        variables.SetVariableList(Models.RepositoryLocation.BuiltIn, [new() { Key = "abcnested", Value = "value" }, new() { Key = "123", Value = "nested" }]);
-        var result = variables.GetValueAsString("test{{ abc{{ 123 }} }}abc{{ 123}}");
-        Assert.Equal("testvalue", result);
+        variables.SetVariableList(Models.RepositoryLocation.BuiltIn, [new() { Key = "abcnested", Value = "value" }, new() { Key = "123", Value = "nested" }, new() { Key = "def", Value = "defValue" }]);
+        var result = variables.GetValueAsString("test{{ abc{{ 123 }} }}div{{ def}}{{ def}}");
+        Assert.Equal("testvaluedivdefValuedefValue", result);
     }
 
     //     [Fact]
