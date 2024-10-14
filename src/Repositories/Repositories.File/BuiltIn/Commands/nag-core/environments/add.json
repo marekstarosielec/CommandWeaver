@@ -13,12 +13,7 @@
   "operations": [
     {
       "operation": "output",
-      "text": "currentSessionName"
-    },
-    {
-      "operation": "setVariable",
-      "key": "nag-core-environments[{{ key }}]",
-      "value": "{{ host }}"
+      "text": 1
     }
   ]
 }

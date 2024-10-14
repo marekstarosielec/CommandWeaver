@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Text;
 using System.Text.RegularExpressions;
 using Models;
 using Models.Interfaces;
@@ -16,13 +17,13 @@ public class ContextVariables : IContextVariables
 
     public string CurrentSessionName
     {
-        get => GetVariableValue2("currentSessionName") as string ?? "session1";
+        get => GetValueAsString("currentSessionName") ?? "session1";
         set => SetVariableValue(VariableScope.Application, "currentSessionName", value);
     }
 
     public string? CurrentlyProcessedElement
     {
-        get => GetVariableValue2("currentlyProcessedElement") as string;
+        get => GetValueAsString("currentlyProcessedElement") as string;
         set => SetVariableValue(VariableScope.Command, "currentlyProcessedElement", value);
     }
     
@@ -52,31 +53,112 @@ public class ContextVariables : IContextVariables
         }
     }
 
-    public object? GetVariableValue2(string? key)
+    public string? GetValueAsString(object? key)
     {
+        if (key is not string stringKey)
+            return null;
+
+        if (string.IsNullOrEmpty(stringKey)) return null;
+        var result = GetValue(stringKey);
+        if (result == null) return null;
+        if (result as Dictionary<string, object?> != null)
+        {
+            //Cannot return object as string;
+            return null;
+        }
+        if (result as List<Dictionary<string, object?>> != null)
+        {
+            //Cannot return list as string;
+            return null;
+        }
+        if (result is string stringResult)
+        {
+            return stringResult;
+        }
+        throw new InvalidOperationException("What type is that?");
+    }
+
+    private record Segment(string content, bool closed);
+
+    private object? GetValue(string key)
+    {
+        // Check if the input is null, empty, or contains only whitespace
         if (string.IsNullOrWhiteSpace(key))
             return null;
 
-        //Resolve variables inside keys first - code in Variable.EvaluateVariables
-        var pattern = @"\{\{\s*(.*?)\s*\}\}"; // Regex pattern to match {{ content }}
-        var regex = new Regex(pattern);
+        // List to store the progressively nested representations of the string
+        var nestedStrings = new List<string>();
+        var nestingLevel = 0; // Track the current nesting level
+        var i = 0; // Position in the string for the while loop
 
-        //TODO: this might need matching inner variables (variables inside variables) first.
-        while (regex.IsMatch(key))
+        // Build a list of strings, with each entry containing progressively deeper levels of nesting
+        while (i < key.Length)
         {
-            key = regex.Replace(key, match =>
-            {
-                // Extract the content between {{ and }}
-                var key = match.Groups[1].Value;
+            // Detect the start of a variable {{ by checking two consecutive curly braces
+            if (i < key.Length - 1 && key[i] == '{' && key[i + 1] == '{')
+                nestingLevel++;  // Increment nesting level when we encounter an opening brace pair
 
-                // Get the replacement from the provided method
-                var replacement = GetVariableValue2(key) as string ?? string.Empty;
-                return replacement;
-            });
+            // Loop over all current levels of nesting and append the current character
+            for (var x = 0; x <= nestingLevel; x++)
+            {
+                // Ensure that the list has enough entries for the current nesting level
+                while (nestedStrings.Count <= nestingLevel)
+                    nestedStrings.Add(string.Empty);
+
+                // Append the current character to all strings up to the current nesting level
+                nestedStrings[x] += key[i];
+            }
+
+            // Detect the end of a variable }} and decrease the nesting level
+            if (i > 0 && key[i] == '}' && key[i - 1] == '}')
+                nestingLevel--;  // Decrement nesting level when we encounter a closing brace pair
+
+            i++; // Move to the next character
         }
 
+        // Now, resolve variables starting from the innermost and move outward
+        var level = nestedStrings.Count - 1; // Start from the deepest level of nesting
+        while (nestedStrings.Count > 1 && level > 0)
+        {
+            // Get the current nested string and trim whitespace
+            var currentNestedString = nestedStrings[level].Trim();
 
+            // Check if the current string is a valid variable with no further nested variables
+            if (currentNestedString.StartsWith("{{") && currentNestedString.IndexOf("{{", 2) == -1)
+            {
+                // Extract the inner content (removing the {{ and }}), and trim excess spaces
+                var variableContent = currentNestedString.TrimStart('{').TrimEnd('}').Trim();
 
+                // Evaluate the content of the variable
+                var evaluatedValue = EvaluateValue(variableContent) as string ?? string.Empty;
+
+                // Replace the evaluated value in all higher nesting levels
+                for (var y = 0; y < nestedStrings.Count; y++)
+                    nestedStrings[y] = nestedStrings[y].Replace(nestedStrings[level], evaluatedValue);
+
+                // Remove the fully resolved nested string, as it's no longer needed
+                nestedStrings.RemoveAt(level);
+                level = nestedStrings.Count - 1; // Adjust the index for the next iteration
+            }
+            else
+                level--; // Move to the next level up
+            
+        }
+
+        // After processing, there should be exactly one string left in the list (the fully resolved result)
+        if (nestedStrings.Count != 1)
+        {
+            // If there's more than one unresolved string left, something went wrong
+            return null;
+        }
+
+        // Return the final fully resolved string
+        return nestedStrings.FirstOrDefault();
+    }
+
+    private object? EvaluateValue(string key)
+    {
+     
         var builtIn = variableValueCrawler.GetSubValue(_builtIn, key);
         var local = variableValueCrawler.GetSubValue(_local, key);
         var session = variableValueCrawler.GetSubValue(_session, key);
@@ -119,15 +201,7 @@ public class ContextVariables : IContextVariables
         throw new NotImplementedException();
     }
     
-    public Variable? GetVariableValue(string key) =>
-        _changes.FirstOrDefault(v => v.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase) && v.Scope == VariableScope.Command)
-        ?? _changes.FirstOrDefault(v => v.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase) && v.Scope == VariableScope.Session)
-        ?? _changes.FirstOrDefault(v => v.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase) && v.Scope == VariableScope.Application)
-        ?? _session.FirstOrDefault(v => v.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase)) 
-        ?? _local.FirstOrDefault(v => v.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase)) 
-        ?? _builtIn.FirstOrDefault(v => v.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase)) 
-        ?? null;
-    
+
     public void SetVariableValue(VariableScope scope, string key, object? value, string? description = null)
     {
         //Add support for lists and complex objects.
