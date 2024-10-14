@@ -131,7 +131,7 @@ public class ContextVariables : IContextVariables
         }
 
         //Remove duplicates to avoid evaluating same value same time
-        var index = 0;
+        var index = 1; //Do not change first element = this one is result of this method
         while (index < nestedStrings.Count - 1)
         {
             var nestedString = nestedStrings[index].Content;

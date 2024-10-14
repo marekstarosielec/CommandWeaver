@@ -13,7 +13,7 @@
   "operations": [
     {
       "operation": "output",
-      "text": 1
+      "text": "{{ currentSessionName }}"
     }
   ]
 }

@@ -24,6 +24,15 @@ public class ContextVariablesTests
     }
 
     [Fact]
+    public void GetValueAsString_ReturnsStringWithEvaluation_IfKeyIsVariable()
+    {
+        var variables = new ContextVariables();
+        variables.SetVariableList(Models.RepositoryLocation.BuiltIn, [new() { Key = "abc", Value = "value" }]);
+        var result = variables.GetValueAsString("{{ abc }}");
+        Assert.Equal("value", result);
+    }
+
+    [Fact]
     public void GetValueAsString_ReturnsStringWithEvaluation_IfKeyContainsNestedVariables()
     {
         var variables = new ContextVariables();
