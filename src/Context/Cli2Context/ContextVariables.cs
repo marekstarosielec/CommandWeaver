@@ -10,6 +10,7 @@ namespace Cli2Context;
 public class ContextVariables : IContextVariables
 {
     internal readonly IVariableValueCrawler variableValueCrawler = new VariableValueCrawler();
+    internal readonly IVariableExtractionService variableExtractionService = new VariableExtractionService();
     internal readonly List<Variable> _builtIn = new();
     internal readonly List<Variable> _local = new();
     internal readonly List<Variable> _session = new();
@@ -53,6 +54,13 @@ public class ContextVariables : IContextVariables
         }
     }
 
+    /// <summary>
+    /// Returns value of variable from given key. Key can contain variables.
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+
     public string? GetValueAsString(object? key)
     {
         if (key is not string stringKey)
@@ -72,17 +80,9 @@ public class ContextVariables : IContextVariables
             return null;
         }
         if (result is string stringResult)
-        {
             return stringResult;
-        }
+        
         throw new InvalidOperationException("What type is that?");
-    }
-
-    private record Segment(int nestingLevel, string content, bool closed)
-    {
-        public int NestingLevel { get; set; } = nestingLevel;
-        public string Content { get; set; } = content;
-        public bool Closed { get; set; } = closed;
     }
 
     private object? GetValue(string key)
@@ -91,104 +91,29 @@ public class ContextVariables : IContextVariables
         if (string.IsNullOrWhiteSpace(key))
             return null;
 
-        // List to store the progressively nested representations of the string
-        var nestedStrings = new List<Segment>();
-        var nestingLevel = 0; // Track the current nesting level
-        var i = 0; // Position in the string for the while loop
-
-        // Build a list of strings, with each entry containing progressively deeper levels of nesting
-        while (i < key.Length)
+        var resolvedKey = key;
+        var variableName = variableExtractionService.ExtractVariableBetweenDelimiters(resolvedKey);
+        while (variableName != null)
         {
-            // Detect the start of a variable {{ by checking two consecutive curly braces
-            if (i < key.Length - 1 && key[i] == '{' && key[i + 1] == '{')
-                nestingLevel++;  // Increment nesting level when we encounter an opening brace pair
-
-            // Loop over all current levels of nesting and append the current character
-            for (var x = 0; x <= nestingLevel; x++)
+            var evaluatedValue = EvaluateValue(variableName);
+            string? stringEvaluatedValue = null;
+            if (evaluatedValue == null)
             {
-                // Ensure that the list has enough entries for the current nesting level
-                var nestedString = nestedStrings.FirstOrDefault(s => s.NestingLevel == x && !s.Closed);
-                if (nestedString == null)
-                {
-                    nestedStrings.Add(new Segment(x, string.Empty, false));
-                    nestedString = nestedStrings.FirstOrDefault(s => s.NestingLevel == x && !s.Closed);
-                }
-                // Append the current character to all strings up to the current nesting level
-                nestedString!.Content += key[i];
+                //Log null value
             }
-
-            // Detect the end of a variable }} and decrease the nesting level
-            if (i > 0 && key[i] == '}' && key[i - 1] == '}')
+            else if (evaluatedValue is not string)
             {
-                for (var x = 0; x < nestedStrings.Count; x++)
-                    if (nestedStrings[x].NestingLevel == nestingLevel && !nestedStrings[x].Closed)
-                        nestedStrings[x].Closed = true;
-
-                nestingLevel--;  // Decrement nesting level when we encounter a closing brace pair
-
+                //Log non string value value
             }
-            i++; // Move to the next character
+            else stringEvaluatedValue = evaluatedValue as string;
+            resolvedKey = variableExtractionService.ReplaceVariableInString(resolvedKey, variableName, stringEvaluatedValue);
+            variableName = variableExtractionService.ExtractVariableBetweenDelimiters(resolvedKey);
         }
-
-        //Remove duplicates to avoid evaluating same value same time
-        var index = 1; //Do not change first element = this one is result of this method
-        while (index < nestedStrings.Count - 1)
-        {
-            var nestedString = nestedStrings[index].Content;
-            var comparing = index + 1;
-            while (comparing < nestedStrings.Count)
-            {
-                var comparedString = nestedStrings[comparing].Content;
-                if (nestedString == comparedString)
-                    nestedStrings.RemoveAt(comparing);
-                else
-                    comparing++;
-            }
-            index++;
-        }
-
-        // Now, resolve variables starting from the innermost and move outward
-        var level = nestedStrings.Count - 1; // Start from the deepest level of nesting
-        while (nestedStrings.Count > 1 && level > 0)
-        {
-            // Get the current nested string and trim whitespace
-            var currentNestedString = nestedStrings[level].Content.Trim();
-
-            // Check if the current string is a valid variable with no further nested variables
-            if (currentNestedString.StartsWith("{{") && currentNestedString.IndexOf("{{", 2) == -1)
-            {
-                // Extract the inner content (removing the {{ and }}), and trim excess spaces
-                var variableContent = currentNestedString.TrimStart('{').TrimEnd('}').Trim();
-
-                // Evaluate the content of the variable
-                var evaluatedValue = EvaluateValue(variableContent) as string ?? string.Empty;
-
-                // Replace the evaluated value in all higher nesting levels
-                for (var y = 0; y < nestedStrings.Count; y++)
-                    nestedStrings[y].Content = nestedStrings[y].Content.Replace(nestedStrings[level].Content, evaluatedValue);
-
-                // Remove the fully resolved nested string, as it's no longer needed
-                nestedStrings.RemoveAt(level);
-                level = nestedStrings.Count - 1; // Adjust the index for the next iteration
-            }
-            else
-                level--; // Move to the next level up
-        }
-
-        // After processing, there should be exactly one string left in the list (the fully resolved result)
-        if (nestedStrings.Count != 1)
-        {
-            // If there's more than one unresolved string left, something went wrong
-            return null;
-        }
-
-        // Return the final fully resolved string
-        return nestedStrings.First().Content;
+        return resolvedKey;
     }
 
     private object? EvaluateValue(string key)
-    {
-     
+    { 
         var builtIn = variableValueCrawler.GetSubValue(_builtIn, key);
         var local = variableValueCrawler.GetSubValue(_local, key);
         var session = variableValueCrawler.GetSubValue(_session, key);

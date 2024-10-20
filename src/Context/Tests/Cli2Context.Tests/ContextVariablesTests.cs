@@ -51,6 +51,15 @@ public class ContextVariablesTests
         Assert.Equal("testvaluedivdefValuedefValue", result);
     }
 
+    [Fact]
+    public void GetValueAsString_ReturnsStringWithEvaluation_IfValueContainsAnotherVariable()
+    {
+        var variables = new ContextVariables();
+        variables.SetVariableList(Models.RepositoryLocation.BuiltIn, [new() { Key = "123", Value = "{{abc}}" }, new() { Key = "abc", Value = "result" }]);
+        var result = variables.GetValueAsString("test{{123}}");
+        Assert.Equal("testresult", result);
+    }
+
     //     [Fact]
     //     public void ContextVariables_ReturnsValueFromBuiltIn_IfOthersWereNotProvided()
     //     {
