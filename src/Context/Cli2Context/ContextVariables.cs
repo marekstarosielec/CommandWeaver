@@ -67,15 +67,15 @@ public class ContextVariables(IOutput output) : IContextVariables
         return GetValue(stringKey) as string;
     }
 
-    public Dictionary<string, object?>? GetValueAsObject(object? key, bool asVariable = false)
+    public VariableObject? GetValueAsObject(object? key, bool asVariable = false)
     {
         //If object was passed directly as key, then we need to search all basic properties inside and replace variable tags inside and return it.
-        if (key is Dictionary<string, object?> objectKey)
+        if (key is VariableObject objectKey)
         {
             foreach (var item in objectKey.Keys)
-                if (objectKey[item] is Dictionary<string, object?> innerObject)
+                if (objectKey[item] is VariableObject innerObject)
                     objectKey[item] = GetValueAsObject(innerObject, asVariable);
-                else if (objectKey[item] is List<Dictionary<string, object?>> innerList)
+                else if (objectKey[item] is VariableList innerList)
                     objectKey[item] = GetValueAsList(innerList, asVariable);
                 else if (objectKey[item] is string innerString)
                     objectKey[item] = GetValueAsString(innerString, asVariable);
@@ -92,20 +92,20 @@ public class ContextVariables(IOutput output) : IContextVariables
         if (asVariable)
             stringKey = $"{{{{ {stringKey} }}}}";
 
-        return GetValue(stringKey) as Dictionary<string, object?>;
+        return GetValue(stringKey) as VariableObject;
     }
 
-    public List<Dictionary<string, object?>>? GetValueAsList(object? key, bool asVariable = false)
+    public VariableList? GetValueAsList(object? key, bool asVariable = false)
     {
         //If list was passed directly as key, then we need to search all basic properties inside and replace variable tags inside and return it.
-        if (key is List<Dictionary<string, object?>> listKey)
+        if (key is VariableList listKey)
         {
             foreach (var element in listKey)
                 //Replace variables with values in all object.
                 foreach (var item in element.Keys)
-                    if (element[item] is Dictionary<string, object?> innerObject)
+                    if (element[item] is VariableObject innerObject)
                         element[item] = GetValueAsObject(innerObject, asVariable);
-                    else if (element[item] is List<Dictionary<string, object?>> innerList)
+                    else if (element[item] is VariableList innerList)
                         element[item] = GetValueAsList(innerList, asVariable);
                     else if (element[item] is string innerString)
                         element[item] = GetValueAsString(innerString, asVariable);
@@ -123,7 +123,7 @@ public class ContextVariables(IOutput output) : IContextVariables
         if (asVariable)
             stringKey = $"{{{{ {stringKey} }}}}";
 
-        return GetValue(stringKey) as List<Dictionary<string, object?>>;
+        return GetValue(stringKey) as VariableList;
     }
 
     /// <summary>
@@ -181,43 +181,43 @@ public class ContextVariables(IOutput output) : IContextVariables
 
         var isList = false;
         if (KeyIsTopLevel(key) &&
-            (builtIn as List<Dictionary<string, object?>> != null 
-            || local as List<Dictionary<string, object?>> != null
-            || session as List<Dictionary<string, object?>> != null
-            || changes as List<Dictionary<string, object?>> != null))
+            (builtIn as VariableList != null 
+            || local as VariableList != null
+            || session as VariableList != null
+            || changes as VariableList != null))
             isList = true; //If whole variable value is requested and it is list, values from all scopes will be combined.
 
-        if (isList)
-            if (builtIn as Dictionary<string, object?> != null
-                || local as Dictionary<string, object?> != null
-                || session as Dictionary<string, object?> != null
-                || changes as Dictionary<string, object?> != null)
-                {
-                output.Error($"Problem while evaluating key {key}: types are not consistant between scopes.");
-                return null;
-                }
+        //if (isList)
+        //    if (builtIn as Dictionary<string, object?> != null
+        //        || local as Dictionary<string, object?> != null
+        //        || session as Dictionary<string, object?> != null
+        //        || changes as Dictionary<string, object?> != null)
+        //        {
+        //        output.Error($"Problem while evaluating key {key}: types are not consistant between scopes.");
+        //        return null;
+        //        }
         
         if (!isList)
             return changes ?? session ?? local ?? builtIn; 
         else
         {
             //Return all rows
-            var result = new List<Dictionary<string, object?>>();
-            if (changes is List<Dictionary<string, object?>> changesList)
+            var result = new VariableList();
+            if (changes is VariableList changesList)
                 foreach (var item in changesList)
                     result.Add(item);
 
-            if (session is List<Dictionary<string, object?>> sessionList)
+            if (session is VariableList sessionList)
                 foreach (var item in sessionList)
                     if (!result.Any(r => (r["key"] as string)?.Equals(item["key"]) == true))
                         result.Add(item);
 
-            if (local is List<Dictionary<string, object?>> localList)
+            if (local is VariableList localList)
                 foreach (var item in localList)
                     if (!result.Any(r => (r["key"] as string)?.Equals(item["key"]) == true))
                         result.Add(item);
             
-            if (builtIn is List<Dictionary<string, object?>> builtInList)
+            if (builtIn is VariableList builtInList)
                 foreach (var item in builtInList)
                     if (!result.Any(r => (r["key"] as string)?.Equals(item["key"]) == true))
                         result.Add(item);
@@ -251,10 +251,10 @@ public class ContextVariables(IOutput output) : IContextVariables
                 return null;
             else if (i > 0 && matches[i].Groups[1].Success)
                 //Go to subproperty
-                result = (result as Dictionary<string, object>)?[matches[i].Groups[1].Value];
+                result = (result as VariableObject)?[matches[i].Groups[1].Value];
             else if (i > 0 && matches[i].Groups[2].Success)
                 //Go to element in list
-                result = (result as List<Dictionary<string, object?>>)?.FirstOrDefault(v => (v["key"] as string)?.Equals(matches[i].Groups[2].Value, StringComparison.InvariantCultureIgnoreCase) == true);
+                result = (result as VariableList)?.FirstOrDefault(v => (v["key"] as string)?.Equals(matches[i].Groups[2].Value, StringComparison.InvariantCultureIgnoreCase) == true);
             if (result == null)
                 return result;
         }
@@ -331,15 +331,16 @@ public class ContextVariables(IOutput output) : IContextVariables
 
         if (variableName != topLevel && existingVariable == null) //new element in list
         {
-            if (value is Dictionary<string, object?> objectValue)
-                _changes.Add(new Variable { Key = topLevel, Value = new List<Dictionary<string, object?>> { objectValue }, Scope = scope, Description = description });
+            if (value is VariableObject objectValue)
+                _changes.Add(new Variable { Key = topLevel, Value = new VariableList { objectValue }, Scope = scope, Description = description });
+            else if (value is VariableList listValue)
+                _changes.Add(new Variable { Key = topLevel, Value = listValue, Scope = scope, Description = description });
             else
-                output.Error("Tried to insert not object as list");
+                output.Error("Tried to insert wrong type into list");
         } 
         else if (variableName == topLevel && existingVariable == null) //new variable
-        {
             _changes.Add(new Variable { Key = variableName, Value = value, Scope = scope, Description = description });
-        } else if (existingVariable != null) //existing variable
+        else if (existingVariable != null) //existing variable
             existingVariable.Value = value;
     }
 }

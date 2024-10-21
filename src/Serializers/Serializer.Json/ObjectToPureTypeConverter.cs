@@ -1,3 +1,4 @@
+using Models;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -44,27 +45,27 @@ public class ObjectToPureTypeConverter : JsonConverter<object?>
 
     private object ReadObject(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var dictionary = new Dictionary<string, object?>();
+        var variable = new VariableObject();
 
         while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
         {
             string propertyName = reader.GetString() ?? throw new JsonException("Property name cannot be null");
             reader.Read();
-            dictionary[propertyName] = Read(ref reader, typeToConvert, options);
+            variable[propertyName] = Read(ref reader, typeToConvert, options);
         }
 
-        return dictionary;
+        return variable;
     }
 
     private object ReadArray(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var list = new List<Dictionary<string,object?>>();
+        var list = new VariableList();
 
         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
         {
             var element = Read(ref reader, typeToConvert, options);
-            var dictionaryElement = element as Dictionary<string, object?>;
-            dictionaryElement ??= new Dictionary<string, object?> { { "key", element } };
+            var dictionaryElement = element as VariableObject;
+            dictionaryElement ??= new VariableObject { { "key", element } };
             list.Add(dictionaryElement);
         }
         return list;

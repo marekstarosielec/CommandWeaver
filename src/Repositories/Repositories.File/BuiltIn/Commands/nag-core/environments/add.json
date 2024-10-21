@@ -29,6 +29,10 @@
         "defaultPartner": "{{defaultPartner}}"
       },
       "scope": "application"
+    },
+    {
+      "operation": "output",
+      "text": "nag-core-environments[{{key}}].url"
     }
   ]
 }

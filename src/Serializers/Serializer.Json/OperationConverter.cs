@@ -107,20 +107,20 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
     
     private object ReadObject(JsonElement element)
     {
-        var dictionary = new Dictionary<string, object?>();
+        var variable = new VariableObject();
         foreach (var property in element.EnumerateObject())
-            dictionary[property.Name] = ReadElement(property.Value);
+            variable[property.Name] = ReadElement(property.Value);
         
-        return dictionary;
+        return variable;
     }
     private object ReadArray(JsonElement element)
     {
-        var list = new List<Dictionary<string, object?>>();
+        var list = new VariableList();
         foreach (var arrayElement in element.EnumerateArray())
         {
             var arrayElementContents = ReadElement(arrayElement);
-            var dictionary = arrayElementContents as Dictionary<string, object?>;
-            dictionary ??= new Dictionary<string, object?> { { "key", arrayElementContents } };    
+            var dictionary = arrayElementContents as VariableObject;
+            dictionary ??= new VariableObject { { "key", arrayElementContents } };    
             list.Add(dictionary);
         }
         return list;
