@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Text;
 using System.Text.RegularExpressions;
 using Models;
 using Models.Interfaces;
@@ -9,8 +8,6 @@ namespace Cli2Context;
 
 public class ContextVariables : IContextVariables
 {
-    internal readonly IVariableValueCrawler variableValueCrawler = new VariableValueCrawler();
-    internal readonly IVariableExtractionService variableExtractionService = new VariableExtractionService();
     internal readonly List<Variable> _builtIn = new();
     internal readonly List<Variable> _local = new();
     internal readonly List<Variable> _session = new();
@@ -48,9 +45,8 @@ public class ContextVariables : IContextVariables
                 foreach (var elementWithContentKey in elementsToImport)
                     _session.Add(elementWithContentKey with { Scope = VariableScope.Session});
                 break;
-            //TODO: should fail?
-            //default:
-            //    break;
+            default:
+                throw new InvalidOperationException($"Unknown repository location: {repositoryLocation}");
         }
     }
 
@@ -85,6 +81,24 @@ public class ContextVariables : IContextVariables
         throw new InvalidOperationException("What type is that?");
     }
 
+    /// <summary>
+    /// Returns value of variable from given key. Key can contain variables.
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public int? GetValueAsInt(object? key)
+    {
+        var stringValue = GetValueAsString(key);
+        if (string.IsNullOrWhiteSpace(stringValue)) 
+            return null;
+        if (int.TryParse(stringValue, out var intValue))
+            return intValue;
+
+        //Log error problem.
+        return null;
+    }
+
     private object? GetValue(string key)
     {
         // Check if the input is null, empty, or contains only whitespace
@@ -92,7 +106,7 @@ public class ContextVariables : IContextVariables
             return null;
 
         var resolvedKey = key;
-        var variableName = variableExtractionService.ExtractVariableBetweenDelimiters(resolvedKey);
+        var variableName = ExtractVariableBetweenDelimiters(resolvedKey);
         while (variableName != null)
         {
             var evaluatedValue = EvaluateValue(variableName);
@@ -106,18 +120,24 @@ public class ContextVariables : IContextVariables
                 //Log non string value value
             }
             else stringEvaluatedValue = evaluatedValue as string;
-            resolvedKey = variableExtractionService.ReplaceVariableInString(resolvedKey, variableName, stringEvaluatedValue);
-            variableName = variableExtractionService.ExtractVariableBetweenDelimiters(resolvedKey);
+            resolvedKey = ReplaceVariableInString(resolvedKey, variableName, stringEvaluatedValue);
+            variableName = ExtractVariableBetweenDelimiters(resolvedKey);
         }
         return resolvedKey;
     }
 
+    /// <summary>
+    /// Gets tha value of variable by given key. Key cannot contain any variables inside.
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
     private object? EvaluateValue(string key)
     { 
-        var builtIn = variableValueCrawler.GetSubValue(_builtIn, key);
-        var local = variableValueCrawler.GetSubValue(_local, key);
-        var session = variableValueCrawler.GetSubValue(_session, key);
-        var changes = variableValueCrawler.GetSubValue(_changes, key);
+        var builtIn = GetSubValue(_builtIn, key);
+        var local = GetSubValue(_local, key);
+        var session = GetSubValue(_session, key);
+        var changes = GetSubValue(_changes, key);
 
         var isList = false;
         if (builtIn as List<Dictionary<string, object?>> != null 
@@ -155,7 +175,89 @@ public class ContextVariables : IContextVariables
         }
         throw new NotImplementedException();
     }
-    
+
+    /// <summary>
+    /// Find value of variable by key. It can be nested inside.
+    /// </summary>
+    /// <param name="variables">List of variables. First element from key</param>
+    /// <param name="key">Full key in form variable.property[listIndex].subProperty</param>
+    /// <returns></returns>
+    private object? GetSubValue(List<Variable> variables, string key)
+    {
+        object? result = null;
+        var pattern = @"([a-zA-Z0-9_\-\s]+)|\[(.*?)]";
+        var matches = Regex.Matches(key, pattern);
+
+
+        for (int i = 0; i < matches.Count; i++)
+        {
+            if (i == 0 && matches[i].Groups[1].Success)
+                result = variables.FirstOrDefault(v => v.Key.Equals(matches[i].Groups[1].Value, StringComparison.InvariantCultureIgnoreCase))?.Value;
+            else if (i == 0 && matches[i].Groups[2].Success)
+                //Key cannot start with index. Abort.
+                return null;
+            else if (!matches[i].Groups[1].Success && !matches[i].Groups[2].Success)
+                //Invalid element in key.
+                return null;
+            else if (i > 0 && matches[i].Groups[1].Success)
+                //Go to subproperty
+                result = (result as Dictionary<string, object>)?[matches[i].Groups[1].Value];
+            else if (i > 0 && matches[i].Groups[2].Success)
+                //Go to element in list
+                result = (result as List<Dictionary<string, object?>>)?.FirstOrDefault(v => (v["key"] as string)?.Equals(matches[i].Groups[2].Value, StringComparison.InvariantCultureIgnoreCase) == true);
+            if (result == null)
+                return result;
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Extracts the string between specified delimiters within a given input string.
+    /// </summary>
+    /// <param name="input">The input string from which to extract the variable.</param>
+    /// <returns>
+    /// The extracted string between the delimiters, or null if the delimiters are not found.
+    /// </returns>
+    /// <remarks>
+    /// This method currently looks for the delimiters "{{" and "}}", but the delimiters may be customized in future versions.
+    /// </remarks>
+    private string? ExtractVariableBetweenDelimiters(string input)
+    {
+        // Find the position of the closing braces }}
+        int closingIndex = input.IndexOf("}}");
+        if (closingIndex == -1) return null;
+
+        // Find the position of the opening braces {{ before the closing braces
+        int openingIndex = input.LastIndexOf("{{", closingIndex);
+        if (openingIndex == -1) return null;
+
+        // Extract the string between {{ and }}
+        return input.Substring(openingIndex + 2, closingIndex - openingIndex - 2).Trim();
+    }
+
+    /// <summary>
+    /// Replaces all occurrences of a variable placeholder between delimiters with the provided value.
+    /// </summary>
+    /// <param name="input">The input string that contains placeholders.</param>
+    /// <param name="variableName">The name of the variable to replace in the placeholders.</param>
+    /// <param name="variableValue">The value to replace the variable placeholder with.</param>
+    /// <returns>
+    /// The input string with all instances of the variable placeholder replaced with the variable value.
+    /// </returns>
+    /// <remarks>
+    /// This method searches for the pattern "{{ variableName }}" allowing for any amount of whitespace around the variable name.
+    /// </remarks>
+    private string ReplaceVariableInString(string input, string variableName, string? variableValue)
+    {
+        if (string.IsNullOrEmpty(input) || string.IsNullOrEmpty(variableName))
+            return input;
+
+        // Pattern to match {{ variableName }} with possible whitespaces
+        string pattern = $@"\{{\{{\s*{Regex.Escape(variableName)}\s*\}}\}}";
+
+        // Replace all occurrences with the variable value
+        return Regex.Replace(input, pattern, variableValue ?? string.Empty);
+    }
 
     public void SetVariableValue(VariableScope scope, string key, object? value, string? description = null)
     {
@@ -165,6 +267,6 @@ public class ContextVariables : IContextVariables
         if (existingVariable != null)
             existingVariable.Value = value;
         else
-            _changes.Add(new Variable { Key = key, Value = value, Scope = scope, Description = description});
+            _changes.Add(new Variable { Key = key, Value = value, Scope = scope, Description = description });
     }
 }
