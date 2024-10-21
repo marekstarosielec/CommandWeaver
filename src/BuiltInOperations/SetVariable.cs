@@ -22,6 +22,12 @@ public class SetVariable: Operation
         //Add variables validation before running.
 
         var key = context.Variables.GetValueAsString(Key.Value);
+        if (key == null)
+        {
+            context.Services.Output.Error($"{Key.Value} evaluated to null.");
+            return Task.CompletedTask;
+        }
+
         var currentValue = context.Variables.GetValueAsObject(Key.Value, true);
         var newValueString = context.Variables.GetValueAsString(Value.Value);
         var newValueObject = context.Variables.GetValueAsObject(Value.Value);
@@ -34,10 +40,6 @@ public class SetVariable: Operation
             Enum.TryParse(scope, true, out scopeEnum);
 
         context.Variables.SetVariableValue(scopeEnum, key, newValue, description);
-
-        var currentValue2 = context.Variables.GetValueAsObject(Key.Value, true);
-        var currentValue3 = context.Variables.GetValueAsList("nag-core-environments", true);
-
         return Task.CompletedTask;
     }
 }

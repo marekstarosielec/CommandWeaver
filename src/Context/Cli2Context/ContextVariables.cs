@@ -93,6 +93,8 @@ public class ContextVariables(IOutput output) : IContextVariables
             {
                 if (objectKey[item] is Dictionary<string, object?> innerObject)
                     objectKey[item] = GetValueAsObject(innerObject, asVariable);
+                else if (objectKey[item] is List<Dictionary<string, object?>> innerList)
+                    objectKey[item] = GetValueAsList(innerList, asVariable);
                 else if (objectKey[item] is string innerString)
                     objectKey[item] = GetValueAsString(innerString, asVariable);
                 else
@@ -139,6 +141,8 @@ public class ContextVariables(IOutput output) : IContextVariables
                 {
                     if (element[item] is Dictionary<string, object?> innerObject)
                         element[item] = GetValueAsObject(innerObject, asVariable);
+                    else if (element[item] is List<Dictionary<string, object?>> innerList)
+                        element[item] = GetValueAsList(innerList, asVariable);
                     else if (element[item] is string innerString)
                         element[item] = GetValueAsString(innerString, asVariable);
                     else
