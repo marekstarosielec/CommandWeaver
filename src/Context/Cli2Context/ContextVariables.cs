@@ -53,15 +53,19 @@ public class ContextVariables(IOutput output) : IContextVariables
     /// Returns value of variable from given key. Key can contain variables.
     /// </summary>
     /// <param name="key"></param>
+    /// <param name="asVariable">Wraps whole expression in double braces to evaluate value.</param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
 
-    public string? GetValueAsString(object? key)
+    public string? GetValueAsString(object? key, bool asVariable = false)
     {
         if (key is not string stringKey)
             return null;
 
         if (string.IsNullOrEmpty(stringKey)) return null;
+        if (asVariable)
+            stringKey = $"{{{{ {stringKey} }}}}";
+
         var result = GetValue(stringKey);
         if (result == null) return null;
         if (result as Dictionary<string, object?> != null)
@@ -84,11 +88,11 @@ public class ContextVariables(IOutput output) : IContextVariables
     /// Returns value of variable from given key. Key can contain variables.
     /// </summary>
     /// <param name="key"></param>
+    /// <param name="asVariable">Wraps whole expression in double braces to evaluate value.</param>
     /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    public int? GetValueAsInt(object? key)
+    public int? GetValueAsInt(object? key, bool asVariable = false)
     {
-        var stringValue = GetValueAsString(key);
+        var stringValue = GetValueAsString(key, asVariable);
         if (string.IsNullOrWhiteSpace(stringValue)) 
             return null;
         if (int.TryParse(stringValue, out var intValue))
@@ -110,11 +114,12 @@ public class ContextVariables(IOutput output) : IContextVariables
         {
             var evaluatedValue = EvaluateValue(variableName);
             string? stringEvaluatedValue = null;
-            if (evaluatedValue == null)
-                output.Error($"{variableName} evaluated to null while evaluating key {key}");
-            else if (evaluatedValue is not string)
-                output.Error($"{variableName} evaluated to unsupported type while evaluating key {key}");
-            else stringEvaluatedValue = evaluatedValue as string;
+            //if (evaluatedValue == null)
+            //    output.Error($"{variableName} evaluated to null while evaluating key {key}");
+            //else if (evaluatedValue is not string)
+            //    output.Error($"{variableName} evaluated to unsupported type while evaluating key {key}");
+            //else
+            stringEvaluatedValue = evaluatedValue as string;
             resolvedKey = ReplaceVariableInString(resolvedKey, variableName, stringEvaluatedValue);
             variableName = ExtractVariableBetweenDelimiters(resolvedKey);
         }
@@ -270,8 +275,11 @@ public class ContextVariables(IOutput output) : IContextVariables
     /// <returns></returns>
     private bool KeyIsTopLevel(string key) => !key.Contains(".") && !key.Contains("[");
 
-    public void SetVariableValue(VariableScope scope, string key, object? value, string? description = null)
+    public void SetVariableValue(VariableScope scope, string? key, object? value, string? description = null)
     {
+        if (key == null)
+            output.Error("Cannot set value for variable with no key.");
+
         //Add support for lists and complex objects.
         var existingVariable = _changes.FirstOrDefault(v =>
             v.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase) && v.Scope == scope);

@@ -1,6 +1,3 @@
-using System.Text.RegularExpressions;
-using Models.Interfaces.Context;
-
 namespace Models;
 
 public record Variable
@@ -10,6 +7,8 @@ public record Variable
     public object? Value { get; set; }
     
     public string? Description { get; init; }
-    
+
+    public List<string> AllowedValues { get; init; } = [];
+
     public VariableScope Scope { get; init; } = VariableScope.Command;
 }
