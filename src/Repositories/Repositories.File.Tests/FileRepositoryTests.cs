@@ -10,7 +10,7 @@ public class FileRepositoryTests
         var sut = new FileRepository();
         foreach (var repositoryLocation in Enum.GetValues<RepositoryLocation>())
         {
-            var exception = Record.Exception(() => sut.GetDiscPath(repositoryLocation, "sessionName"));
+            var exception = Record.Exception(() => sut.GetPath(repositoryLocation, "sessionName"));
             Assert.True(exception == null, $"{repositoryLocation} is not properly handled in GetPath");
         }
     }

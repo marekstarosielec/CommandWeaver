@@ -18,6 +18,9 @@
     </ItemGroup>
     
     <ItemGroup>
+      <None Update="BuiltIn\Commands\system\paths.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
       <None Update="BuiltIn\Settings\settings.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>

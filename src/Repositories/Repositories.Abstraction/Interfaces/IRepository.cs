@@ -4,6 +4,8 @@ namespace Repositories.Abstraction.Interfaces;
 
 public interface IRepository
 {
+    string GetPath(RepositoryLocation location, string? sessionName = null);
+
     /// <summary>
     /// Return list of elements from repository.
     /// </summary>

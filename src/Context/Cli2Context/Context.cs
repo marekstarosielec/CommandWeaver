@@ -28,9 +28,12 @@ public class Context(IRepository repository, ISerializerFactory serializerFactor
 
     public async Task Run(string commandLineArguments, CancellationToken cancellationToken = default)
     {
+        Variables.SetVariableValue(VariableScope.Command, "BuiltInPath", repository.GetPath(RepositoryLocation.BuiltIn));
+        Variables.SetVariableValue(VariableScope.Command, "LocalPath", repository.GetPath(RepositoryLocation.Local));
+        Variables.SetVariableValue(VariableScope.Command, "SessionPath", repository.GetPath(RepositoryLocation.Session, Variables.CurrentSessionName));
         var cmd = new Parser().ParseFullCommandLine(commandLineArguments);
         var parsedArguments = cmd.ParsedArguments.ToList();
-        var command = Commands.First(c => c.Name == "nag-core-environment-add");
+        var command = Commands.First(c => c.Name == "paths");
         foreach (var parameter in command.Parameters)
         {
             var t = parsedArguments.FirstOrDefault(p =>
@@ -39,7 +42,14 @@ public class Context(IRepository repository, ISerializerFactory serializerFactor
             Variables.SetVariableValue(VariableScope.Command, parameter.Key, t.Value, parameter.Description); 
             //How to validate value?
         }
-        await new CommandRunner().RunCommand(command, this, cancellationToken);
+
+        foreach (var operation in command.Operations)
+        {
+            Services.Output.Debug($"{operation.Name}: Starting");
+            await operation.Run(this, cancellationToken);
+        }
+
+        //Save changes in variables
     }
 
     private async Task ProcessElements(RepositoryLocation repositoryLocation, string? sessionName, IAsyncEnumerable<RepositoryElementInfo> elements)
@@ -131,8 +141,6 @@ public class Context(IRepository repository, ISerializerFactory serializerFactor
         if (serializer == null)
             return;
 
-        
-        
         //TODO: Deserialization should also return Exception if occurred.
         var command = serializer.Deserialize<Command>(content);
         if (command == null)

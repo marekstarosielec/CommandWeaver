@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using Models;
 using Models.Interfaces.Context;
@@ -14,13 +13,13 @@ public class ContextVariables(IOutput output) : IContextVariables
 
     public string CurrentSessionName
     {
-        get => GetValueAsString("currentSessionName") ?? "session1";
+        get => GetValueAsString("currentSessionName", true) ?? "session1";
         set => SetVariableValue(VariableScope.Application, "currentSessionName", value);
     }
 
     public string? CurrentlyProcessedElement
     {
-        get => GetValueAsString("currentlyProcessedElement") as string;
+        get => GetValueAsString("currentlyProcessedElement", true);
         set => SetVariableValue(VariableScope.Command, "currentlyProcessedElement", value);
     }
     

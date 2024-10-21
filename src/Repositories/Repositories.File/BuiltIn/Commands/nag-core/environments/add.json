@@ -32,7 +32,7 @@
     },
     {
       "operation": "output",
-      "text": "nag-core-environments[{{key}}].url"
+      "text": "{{ nag-core-environments[{{key}}].url }}"
     }
   ]
 }

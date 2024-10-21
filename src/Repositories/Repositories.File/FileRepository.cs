@@ -16,11 +16,11 @@ public class FileRepository : IRepository
     {
         try
         {
-            var path = GetDiscPath(location, sessionName);
+            var path = GetPath(location, sessionName);
             //TODO: Hide it in some interfaces
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
-            var fileProvider = new PhysicalFileProvider(GetDiscPath(location, sessionName));
+            var fileProvider = new PhysicalFileProvider(GetPath(location, sessionName));
             return GetFilesAsync(location, sessionName, fileProvider, cancellationToken);
         }
         catch
@@ -32,12 +32,12 @@ public class FileRepository : IRepository
 
     /// <inheritdoc />
     public Task<RepositoryElementContent> GetContent(RepositoryLocation location, string? sessionName, string id) =>
-        GetContent(id, new PhysicalFileProvider(GetDiscPath(location, sessionName)));
+        GetContent(id, new PhysicalFileProvider(GetPath(location, sessionName)));
     
     internal async IAsyncEnumerable<RepositoryElementInfo> GetFilesAsync(RepositoryLocation location, string? sessionName, IFileProvider fileProvider,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var rootPath = GetDiscPath(location, sessionName);
+        var rootPath = GetPath(location, sessionName);
         
         await foreach (var file in EnumerateFilesIterativelyAsync(rootPath, fileProvider, cancellationToken))
            yield return file;
@@ -130,7 +130,7 @@ public class FileRepository : IRepository
     /// <summary>
     /// Gets the path based on the specified repository location and session name.
     /// </summary>
-    internal string GetDiscPath(RepositoryLocation location, string? sessionName) =>
+    public string GetPath(RepositoryLocation location, string? sessionName = null) =>
         location switch
         {
             RepositoryLocation.BuiltIn => BuiltInFolder,
