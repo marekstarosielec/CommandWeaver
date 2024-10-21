@@ -3,31 +3,31 @@
   "parameters": [
     {
       "key": "key",
-      "description": "Name of nag-core environment. Must be unique." 
+      "description": "Name of nag-core environment. Must be unique"
     },
     {
       "key": "host",
-      "description": "Nag-core host."
+      "description": "Nag-core host"
+    },
+    {
+      "key": "proxy",
+      "description": "Optional proxy url"
+    },
+    {
+      "key": "defaultPartner",
+      "description": "Optional partner id"
     }
   ],
   "operations": [
     {
-      "operation": "output",
-      "text": "{{ currentSessionName }}"
-    },
-    {
-      "operation": "output",
-      "text": "currentSessionName"
-    },
-    {
-      "operation": "output",
-      "text": 2
-    },
-    {
       "operation": "setVariable",
-      "key": "abc",
-      "value": "{{ currentSessionName }}",
-      "description": "{{ currentSessionName }}",
+      "key": "nag-core-environments[{{key}}]",
+      "value": {
+        "key": "{{key}}",
+        "url": "{{host}}",
+        "proxy": "{{proxy}}",
+        "defaultPartner": "{{defaultPartner}}"
+      },
       "scope": "application"
     }
   ]

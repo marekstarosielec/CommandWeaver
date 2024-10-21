@@ -68,12 +68,12 @@ public class ContextVariables(IOutput output) : IContextVariables
 
         var result = GetValue(stringKey);
         if (result == null) return null;
-        if (result as Dictionary<string, object?> != null)
+        if (result is Dictionary<string, object?>)
         {
             output.Error($"{stringKey} evaluated to object, cannot be casted to string");
             return null;
         }
-        if (result as List<Dictionary<string, object?>> != null)
+        if (result is List<Dictionary<string, object?>>)
         {
             output.Error($"{stringKey} evaluated to list, cannot be casted to string");
             return null;
@@ -81,6 +81,96 @@ public class ContextVariables(IOutput output) : IContextVariables
         if (result is string stringResult)
             return stringResult;
         
+        throw new InvalidOperationException("Unknown type.");
+    }
+
+    public Dictionary<string, object?>? GetValueAsObject(object? key, bool asVariable = false)
+    {
+        if (key is Dictionary<string, object?> objectKey)
+        {
+            //Replace variables with values in all object.
+            foreach (var item in objectKey.Keys)
+            {
+                if (objectKey[item] is Dictionary<string, object?> innerObject)
+                    objectKey[item] = GetValueAsObject(innerObject, asVariable);
+                else if (objectKey[item] is string innerString)
+                    objectKey[item] = GetValueAsString(innerString, asVariable);
+                else
+                    output.Error("Unknown type");
+            }
+            return objectKey;
+        }
+
+        if (key is not string stringKey)
+            return null;
+
+        if (string.IsNullOrEmpty(stringKey)) return null;
+        if (asVariable)
+            stringKey = $"{{{{ {stringKey} }}}}";
+
+        var result = GetValue(stringKey);
+        if (result == null) return null;
+        if (result is Dictionary<string, object?> objectResult)
+        {
+            return objectResult;
+        }
+        if (result is List<Dictionary<string, object?>> listResult)
+        {
+            output.Error($"{stringKey} evaluated to list, cannot be casted to object");
+            return null;
+        }
+        if (result is string)
+        {
+            output.Error($"{stringKey} evaluated to string, cannot be casted to object");
+            return null;
+        }
+
+        throw new InvalidOperationException("Unknown type.");
+    }
+
+    public List<Dictionary<string, object?>>? GetValueAsList(object? key, bool asVariable = false)
+    {
+        if (key is List<Dictionary<string, object?>> listKey)
+        {
+            foreach (var element in listKey)
+            {
+                //Replace variables with values in all object.
+                foreach (var item in element.Keys)
+                {
+                    if (element[item] is Dictionary<string, object?> innerObject)
+                        element[item] = GetValueAsObject(innerObject, asVariable);
+                    else if (element[item] is string innerString)
+                        element[item] = GetValueAsString(innerString, asVariable);
+                    else
+                        output.Error("Unknown type");
+                }
+            }
+            
+            return listKey;
+        }
+
+        if (key is not string stringKey)
+            return null;
+
+        if (string.IsNullOrEmpty(stringKey)) return null;
+        if (asVariable)
+            stringKey = $"{{{{ {stringKey} }}}}";
+
+        var result = GetValue(stringKey);
+        if (result == null) return null;
+        if (result is Dictionary<string, object?> objectResult)
+        {
+            output.Error($"{stringKey} evaluated to object, cannot be casted to list");
+            return null;
+        }
+        if (result is List<Dictionary<string, object?>> listResult)
+            return listResult;
+        if (result is string)
+        {
+            output.Error($"{stringKey} evaluated to string, cannot be casted to object");
+            return null;
+        }
+
         throw new InvalidOperationException("Unknown type.");
     }
 
@@ -113,15 +203,14 @@ public class ContextVariables(IOutput output) : IContextVariables
         while (variableName != null)
         {
             var evaluatedValue = EvaluateValue(variableName);
-            string? stringEvaluatedValue = null;
-            //if (evaluatedValue == null)
-            //    output.Error($"{variableName} evaluated to null while evaluating key {key}");
-            //else if (evaluatedValue is not string)
-            //    output.Error($"{variableName} evaluated to unsupported type while evaluating key {key}");
-            //else
-            stringEvaluatedValue = evaluatedValue as string;
-            resolvedKey = ReplaceVariableInString(resolvedKey, variableName, stringEvaluatedValue);
-            variableName = ExtractVariableBetweenDelimiters(resolvedKey);
+            var stringEvaluatedValue = evaluatedValue as string;
+            if (stringEvaluatedValue != null)
+            {
+                resolvedKey = ReplaceVariableInString(resolvedKey, variableName, stringEvaluatedValue);
+                variableName = ExtractVariableBetweenDelimiters(resolvedKey);
+            }
+            else
+                return evaluatedValue;
         }
         return resolvedKey;
     }
@@ -161,27 +250,27 @@ public class ContextVariables(IOutput output) : IContextVariables
         else
         {
             //Return all rows
-            var result = new List<ImmutableDictionary<string, object?>>();
-            if (local is List<Dictionary<string, object?>> changesList)
+            var result = new List<Dictionary<string, object?>>();
+            if (changes is List<Dictionary<string, object?>> changesList)
                 foreach (var item in changesList)
-                    result.Add(item.ToImmutableDictionary());
+                    result.Add(item);
 
-            if (local is List<Dictionary<string, object?>> sessionList)
+            if (session is List<Dictionary<string, object?>> sessionList)
                 foreach (var item in sessionList)
                     if (!result.Any(r => (r["key"] as string)?.Equals(item["key"]) == true))
-                        result.Add(item.ToImmutableDictionary());
+                        result.Add(item);
 
             if (local is List<Dictionary<string, object?>> localList)
                 foreach (var item in localList)
                     if (!result.Any(r => (r["key"] as string)?.Equals(item["key"]) == true))
-                        result.Add(item.ToImmutableDictionary());
+                        result.Add(item);
             
             if (builtIn is List<Dictionary<string, object?>> builtInList)
                 foreach (var item in builtInList)
                     if (!result.Any(r => (r["key"] as string)?.Equals(item["key"]) == true))
-                        result.Add(item.ToImmutableDictionary());
+                        result.Add(item);
 
-            return result.ToImmutableList();
+            return result;
         }
     }
 
@@ -275,17 +364,30 @@ public class ContextVariables(IOutput output) : IContextVariables
     /// <returns></returns>
     private bool KeyIsTopLevel(string key) => !key.Contains(".") && !key.Contains("[");
 
-    public void SetVariableValue(VariableScope scope, string? key, object? value, string? description = null)
-    {
-        if (key == null)
-            output.Error("Cannot set value for variable with no key.");
+    /// <summary>
+    /// Returns variable name part of key.
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    private string GetTopLevel(string key) => key.Split(['.', '['], StringSplitOptions.RemoveEmptyEntries).First();
 
-        //Add support for lists and complex objects.
+    public void SetVariableValue(VariableScope scope, string variableName, object? value, string? description = null)
+    {
+        var topLevel = GetTopLevel(variableName);
         var existingVariable = _changes.FirstOrDefault(v =>
-            v.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase) && v.Scope == scope);
-        if (existingVariable != null)
+            v.Key.Equals(topLevel, StringComparison.InvariantCultureIgnoreCase) && v.Scope == scope);
+
+        if (variableName != topLevel && existingVariable == null) //new element in list
+        {
+            if (value is Dictionary<string, object?> objectValue)
+                _changes.Add(new Variable { Key = topLevel, Value = new List<Dictionary<string, object?>> { objectValue }, Scope = scope, Description = description });
+            else
+                output.Error("Tried to insert not object as list");
+        } 
+        else if (variableName == topLevel && existingVariable == null) //new variable
+        {
+            _changes.Add(new Variable { Key = variableName, Value = value, Scope = scope, Description = description });
+        } else if (existingVariable != null) //existing variable
             existingVariable.Value = value;
-        else
-            _changes.Add(new Variable { Key = key, Value = value, Scope = scope, Description = description });
     }
 }

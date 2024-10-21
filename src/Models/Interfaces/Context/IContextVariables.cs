@@ -5,7 +5,11 @@ public interface IContextVariables
     string CurrentSessionName { get; set; }
     string? CurrentlyProcessedElement { get; set; }
     void SetVariableList(RepositoryLocation repositoryLocation, List<Variable?> elementsWithContent);
-    void SetVariableValue(VariableScope scope, string? key, object? value, string? description = null);
+    
     string? GetValueAsString(object? key, bool asVariable = false);
     int? GetValueAsInt(object? key, bool asVariable = false);
+    Dictionary<string, object?>? GetValueAsObject(object? key, bool asVariable = false);
+    List<Dictionary<string, object?>>? GetValueAsList(object? key, bool asVariable = false);
+
+    void SetVariableValue(VariableScope scope, string variableName, object? value, string? description = null);
 }

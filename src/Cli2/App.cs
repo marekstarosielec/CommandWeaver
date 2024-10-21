@@ -1,5 +1,3 @@
-using Cli2Context;
-using Models.Interfaces;
 using Models.Interfaces.Context;
 
 namespace Cli2;
