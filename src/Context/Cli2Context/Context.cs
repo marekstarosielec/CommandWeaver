@@ -1,5 +1,4 @@
-﻿using System.Formats.Asn1;
-using CommandLine;
+﻿using CommandLine;
 using Models;
 using Models.Interfaces.Context;
 using Repositories.Abstraction;
@@ -11,8 +10,8 @@ namespace Cli2Context;
 public class Context(IRepository repository, ISerializerFactory serializerFactory, IOutput output) : IContext
 {
     public IContextServices Services { get; } = new ContextServices(output);
-    
-    public IContextVariables Variables { get; } = new ContextVariables();
+
+    public IContextVariables Variables { get; } = new ContextVariables(output);
 
     public List<Command> Commands { get; } = [];
     

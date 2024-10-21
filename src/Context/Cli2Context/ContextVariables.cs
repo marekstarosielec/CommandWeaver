@@ -1,12 +1,11 @@
 using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using Models;
-using Models.Interfaces;
 using Models.Interfaces.Context;
 
 namespace Cli2Context;
 
-public class ContextVariables : IContextVariables
+public class ContextVariables(IOutput output) : IContextVariables
 {
     internal readonly List<Variable> _builtIn = new();
     internal readonly List<Variable> _local = new();
@@ -67,18 +66,18 @@ public class ContextVariables : IContextVariables
         if (result == null) return null;
         if (result as Dictionary<string, object?> != null)
         {
-            //Cannot return object as string;
+            output.Error($"{stringKey} evaluated to object, cannot be casted to string");
             return null;
         }
         if (result as List<Dictionary<string, object?>> != null)
         {
-            //Cannot return list as string;
+            output.Error($"{stringKey} evaluated to list, cannot be casted to string");
             return null;
         }
         if (result is string stringResult)
             return stringResult;
         
-        throw new InvalidOperationException("What type is that?");
+        throw new InvalidOperationException("Unknown type.");
     }
 
     /// <summary>
@@ -95,7 +94,7 @@ public class ContextVariables : IContextVariables
         if (int.TryParse(stringValue, out var intValue))
             return intValue;
 
-        //Log error problem.
+        output.Error($"Failed to convert value {stringValue} to number.");
         return null;
     }
 
@@ -112,13 +111,9 @@ public class ContextVariables : IContextVariables
             var evaluatedValue = EvaluateValue(variableName);
             string? stringEvaluatedValue = null;
             if (evaluatedValue == null)
-            {
-                //Log null value
-            }
+                output.Error($"{variableName} evaluated to null while evaluating key {key}");
             else if (evaluatedValue is not string)
-            {
-                //Log non string value value
-            }
+                output.Error($"{variableName} evaluated to unsupported type while evaluating key {key}");
             else stringEvaluatedValue = evaluatedValue as string;
             resolvedKey = ReplaceVariableInString(resolvedKey, variableName, stringEvaluatedValue);
             variableName = ExtractVariableBetweenDelimiters(resolvedKey);
@@ -127,11 +122,10 @@ public class ContextVariables : IContextVariables
     }
 
     /// <summary>
-    /// Gets tha value of variable by given key. Key cannot contain any variables inside.
+    /// Gets the value of variable by given key. Key cannot contain any variables inside.
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
     private object? EvaluateValue(string key)
     { 
         var builtIn = GetSubValue(_builtIn, key);
@@ -140,11 +134,12 @@ public class ContextVariables : IContextVariables
         var changes = GetSubValue(_changes, key);
 
         var isList = false;
-        if (builtIn as List<Dictionary<string, object?>> != null 
+        if (KeyIsTopLevel(key) &&
+            (builtIn as List<Dictionary<string, object?>> != null 
             || local as List<Dictionary<string, object?>> != null
             || session as List<Dictionary<string, object?>> != null
-            || changes as List<Dictionary<string, object?>> != null)
-            isList = true;
+            || changes as List<Dictionary<string, object?>> != null))
+            isList = true; //If whole variable value is requested and it is list, values from all scopes will be combined.
 
         if (isList)
             if (builtIn as Dictionary<string, object?> != null
@@ -152,8 +147,8 @@ public class ContextVariables : IContextVariables
                 || session as Dictionary<string, object?> != null
                 || changes as Dictionary<string, object?> != null)
                 {
-                    //Fail = some elements contain lists, some don't - should not happen
-                    return null;
+                output.Error($"Problem while evaluating key {key}: types are not consistant between scopes.");
+                return null;
                 }
         
         if (!isList)
@@ -162,18 +157,27 @@ public class ContextVariables : IContextVariables
         {
             //Return all rows
             var result = new List<ImmutableDictionary<string, object?>>();
-            if (builtIn is List<Dictionary<string, object?>> builtInList)
-                foreach (var item in builtInList)
+            if (local is List<Dictionary<string, object?>> changesList)
+                foreach (var item in changesList)
                     result.Add(item.ToImmutableDictionary());
+
+            if (local is List<Dictionary<string, object?>> sessionList)
+                foreach (var item in sessionList)
+                    if (!result.Any(r => (r["key"] as string)?.Equals(item["key"]) == true))
+                        result.Add(item.ToImmutableDictionary());
 
             if (local is List<Dictionary<string, object?>> localList)
                 foreach (var item in localList)
-                    if (!result.Any(r => (r["key"] as string).Equals(item["key"])))
+                    if (!result.Any(r => (r["key"] as string)?.Equals(item["key"]) == true))
+                        result.Add(item.ToImmutableDictionary());
+            
+            if (builtIn is List<Dictionary<string, object?>> builtInList)
+                foreach (var item in builtInList)
+                    if (!result.Any(r => (r["key"] as string)?.Equals(item["key"]) == true))
                         result.Add(item.ToImmutableDictionary());
 
             return result.ToImmutableList();
         }
-        throw new NotImplementedException();
     }
 
     /// <summary>
@@ -258,6 +262,13 @@ public class ContextVariables : IContextVariables
         // Replace all occurrences with the variable value
         return Regex.Replace(input, pattern, variableValue ?? string.Empty);
     }
+
+    /// <summary>
+    /// Indicates if key point to top level of variable value (whole variable value).
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    private bool KeyIsTopLevel(string key) => !key.Contains(".") && !key.Contains("[");
 
     public void SetVariableValue(VariableScope scope, string key, object? value, string? description = null)
     {
