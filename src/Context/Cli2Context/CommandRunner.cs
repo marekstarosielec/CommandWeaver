@@ -10,6 +10,7 @@ public class CommandRunner
     {
         foreach (var operation in command.Operations)
         {
+            context.Services.Output.Debug($"{operation.Name}");
             await operation.Run(context, cancellationToken);
         }
     }

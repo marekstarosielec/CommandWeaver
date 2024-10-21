@@ -8,7 +8,7 @@ public class OperationFactory : IOperationFactory
     public Operation? GetOperation(string? name) =>
         name?.ToLower() switch
         {
-            "output" => new OutputOperation(),
+            "output" => new Output(),
             "setvariable" => new SetVariable(),
             _ => null
         };

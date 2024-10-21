@@ -86,11 +86,10 @@ public class ContextVariables(IOutput output) : IContextVariables
 
     public Dictionary<string, object?>? GetValueAsObject(object? key, bool asVariable = false)
     {
+        //If object was passed directly as key, then we need to search all basic properties inside and replace variable tags inside and return it.
         if (key is Dictionary<string, object?> objectKey)
         {
-            //Replace variables with values in all object.
             foreach (var item in objectKey.Keys)
-            {
                 if (objectKey[item] is Dictionary<string, object?> innerObject)
                     objectKey[item] = GetValueAsObject(innerObject, asVariable);
                 else if (objectKey[item] is List<Dictionary<string, object?>> innerList)
@@ -99,10 +98,10 @@ public class ContextVariables(IOutput output) : IContextVariables
                     objectKey[item] = GetValueAsString(innerString, asVariable);
                 else
                     output.Error("Unknown type");
-            }
             return objectKey;
         }
 
+        //If something else than object was passed, we assume it can be string than can evaluate to list.
         if (key is not string stringKey)
             return null;
 
@@ -113,10 +112,8 @@ public class ContextVariables(IOutput output) : IContextVariables
         var result = GetValue(stringKey);
         if (result == null) return null;
         if (result is Dictionary<string, object?> objectResult)
-        {
             return objectResult;
-        }
-        if (result is List<Dictionary<string, object?>> listResult)
+        if (result is List<Dictionary<string, object?>>)
         {
             output.Error($"{stringKey} evaluated to list, cannot be casted to object");
             return null;
@@ -132,13 +129,12 @@ public class ContextVariables(IOutput output) : IContextVariables
 
     public List<Dictionary<string, object?>>? GetValueAsList(object? key, bool asVariable = false)
     {
+        //If list was passed directly as key, then we need to search all basic properties inside and replace variable tags inside and return it.
         if (key is List<Dictionary<string, object?>> listKey)
         {
             foreach (var element in listKey)
-            {
                 //Replace variables with values in all object.
                 foreach (var item in element.Keys)
-                {
                     if (element[item] is Dictionary<string, object?> innerObject)
                         element[item] = GetValueAsObject(innerObject, asVariable);
                     else if (element[item] is List<Dictionary<string, object?>> innerList)
@@ -147,12 +143,11 @@ public class ContextVariables(IOutput output) : IContextVariables
                         element[item] = GetValueAsString(innerString, asVariable);
                     else
                         output.Error("Unknown type");
-                }
-            }
-            
+                
             return listKey;
         }
 
+        //If something else than list was passed, we assume it can be string than can evaluate to list.
         if (key is not string stringKey)
             return null;
 
@@ -162,7 +157,7 @@ public class ContextVariables(IOutput output) : IContextVariables
 
         var result = GetValue(stringKey);
         if (result == null) return null;
-        if (result is Dictionary<string, object?> objectResult)
+        if (result is Dictionary<string, object?>)
         {
             output.Error($"{stringKey} evaluated to object, cannot be casted to list");
             return null;

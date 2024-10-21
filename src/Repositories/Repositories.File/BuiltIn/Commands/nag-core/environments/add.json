@@ -3,7 +3,7 @@
   "parameters": [
     {
       "key": "key",
-      "description": "Name of nag-core environment. Must be unique"
+      "description": "Name of nag-core environment. Must be unique."
     },
     {
       "key": "host",
