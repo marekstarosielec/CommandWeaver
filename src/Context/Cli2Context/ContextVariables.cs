@@ -55,8 +55,6 @@ public class ContextVariables(IOutput output) : IContextVariables
     /// <param name="key"></param>
     /// <param name="asVariable">Wraps whole expression in double braces to evaluate value.</param>
     /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-
     public string? GetValueAsString(object? key, bool asVariable = false)
     {
         if (key is not string stringKey)
@@ -66,22 +64,7 @@ public class ContextVariables(IOutput output) : IContextVariables
         if (asVariable)
             stringKey = $"{{{{ {stringKey} }}}}";
 
-        var result = GetValue(stringKey);
-        if (result == null) return null;
-        if (result is Dictionary<string, object?>)
-        {
-            output.Error($"{stringKey} evaluated to object, cannot be casted to string");
-            return null;
-        }
-        if (result is List<Dictionary<string, object?>>)
-        {
-            output.Error($"{stringKey} evaluated to list, cannot be casted to string");
-            return null;
-        }
-        if (result is string stringResult)
-            return stringResult;
-        
-        throw new InvalidOperationException("Unknown type.");
+        return GetValue(stringKey) as string;
     }
 
     public Dictionary<string, object?>? GetValueAsObject(object? key, bool asVariable = false)
@@ -109,22 +92,7 @@ public class ContextVariables(IOutput output) : IContextVariables
         if (asVariable)
             stringKey = $"{{{{ {stringKey} }}}}";
 
-        var result = GetValue(stringKey);
-        if (result == null) return null;
-        if (result is Dictionary<string, object?> objectResult)
-            return objectResult;
-        if (result is List<Dictionary<string, object?>>)
-        {
-            output.Error($"{stringKey} evaluated to list, cannot be casted to object");
-            return null;
-        }
-        if (result is string)
-        {
-            output.Error($"{stringKey} evaluated to string, cannot be casted to object");
-            return null;
-        }
-
-        throw new InvalidOperationException("Unknown type.");
+        return GetValue(stringKey) as Dictionary<string, object?>;
     }
 
     public List<Dictionary<string, object?>>? GetValueAsList(object? key, bool asVariable = false)
@@ -155,22 +123,7 @@ public class ContextVariables(IOutput output) : IContextVariables
         if (asVariable)
             stringKey = $"{{{{ {stringKey} }}}}";
 
-        var result = GetValue(stringKey);
-        if (result == null) return null;
-        if (result is Dictionary<string, object?>)
-        {
-            output.Error($"{stringKey} evaluated to object, cannot be casted to list");
-            return null;
-        }
-        if (result is List<Dictionary<string, object?>> listResult)
-            return listResult;
-        if (result is string)
-        {
-            output.Error($"{stringKey} evaluated to string, cannot be casted to object");
-            return null;
-        }
-
-        throw new InvalidOperationException("Unknown type.");
+        return GetValue(stringKey) as List<Dictionary<string, object?>>;
     }
 
     /// <summary>
