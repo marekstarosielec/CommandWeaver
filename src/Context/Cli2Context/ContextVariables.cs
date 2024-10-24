@@ -48,6 +48,23 @@ public class ContextVariables(IOutput output) : IContextVariables
         }
     }
 
+    public VariableValue GetValue(VariableValue? variableValue, bool asVariable = false)
+    {
+        var result = new VariableValue();
+        object? key;
+        if (!string.IsNullOrWhiteSpace(variableValue?.StringValue))
+            key = variableValue.StringValue;
+        else if (variableValue?.ObjectValue != null)
+            key = variableValue.ObjectValue;
+        else if (variableValue?.ListValue != null)
+            key = variableValue.ListValue;
+        else return result;
+
+        result.StringValue = GetValueAsString(key);
+        result.ObjectValue = GetValueAsObject(key);
+        result.ListValue = GetValueAsList(key);
+        return result;
+    }
     /// <summary>
     /// Returns value of variable from given key. Key can contain variables.
     /// </summary>
@@ -66,18 +83,18 @@ public class ContextVariables(IOutput output) : IContextVariables
         return GetValue(stringKey) as string;
     }
 
-    public VariableObject? GetValueAsObject(object? key, bool asVariable = false)
+    public VariableValueObject? GetValueAsObject(object? key, bool asVariable = false)
     {
         //If object was passed directly as key, then we need to search all basic properties inside and replace variable tags inside and return it.
-        if (key is VariableObject objectKey)
+        if (key is VariableValueObject objectKey)
         {
             foreach (var item in objectKey.Keys)
-                if (objectKey[item] is VariableObject innerObject)
-                    objectKey[item] = GetValueAsObject(innerObject, asVariable);
-                else if (objectKey[item] is VariableList innerList)
-                    objectKey[item] = GetValueAsList(innerList, asVariable);
-                else if (objectKey[item] is string innerString)
-                    objectKey[item] = GetValueAsString(innerString, asVariable);
+                if (objectKey[item]?.ObjectValue != null)
+                    objectKey[item] = new VariableValue { ObjectValue = GetValueAsObject(objectKey[item]!.ObjectValue, asVariable) };
+                else if (objectKey[item]?.ListValue != null)
+                    objectKey[item] = new VariableValue { ListValue = GetValueAsList(objectKey[item]!.ListValue, asVariable) };
+                else if (objectKey[item]?.StringValue != null)
+                    objectKey[item] = new VariableValue { StringValue = GetValueAsString(objectKey[item]!.StringValue, asVariable) };
                 else
                     output.Error("Unknown type");
             return objectKey;
@@ -91,23 +108,23 @@ public class ContextVariables(IOutput output) : IContextVariables
         if (asVariable)
             stringKey = $"{{{{ {stringKey} }}}}";
 
-        return GetValue(stringKey) as VariableObject;
+        return GetValue(stringKey) as VariableValueObject;
     }
 
-    public VariableList? GetValueAsList(object? key, bool asVariable = false)
+    public VariableValueList? GetValueAsList(object? key, bool asVariable = false)
     {
         //If list was passed directly as key, then we need to search all basic properties inside and replace variable tags inside and return it.
-        if (key is VariableList listKey)
+        if (key is VariableValueList listKey)
         {
             foreach (var element in listKey)
                 //Replace variables with values in all object.
                 foreach (var item in element.Keys)
-                    if (element[item] is VariableObject innerObject)
-                        element[item] = GetValueAsObject(innerObject, asVariable);
-                    else if (element[item] is VariableList innerList)
-                        element[item] = GetValueAsList(innerList, asVariable);
-                    else if (element[item] is string innerString)
-                        element[item] = GetValueAsString(innerString, asVariable);
+                    if (element[item]?.ObjectValue != null)
+                        element[item] = new VariableValue { ObjectValue = GetValueAsObject(element[item]!.ObjectValue, asVariable) };
+                    else if (element[item]?.ListValue != null)
+                        element[item] = new VariableValue { ListValue = GetValueAsList(element[item]!.ListValue, asVariable) };
+                    else if (element[item]?.StringValue != null)
+                        element[item] = new VariableValue { StringValue = GetValueAsString(element[item]!.StringValue, asVariable) };
                     else
                         output.Error("Unknown type");
                 
@@ -122,7 +139,7 @@ public class ContextVariables(IOutput output) : IContextVariables
         if (asVariable)
             stringKey = $"{{{{ {stringKey} }}}}";
 
-        return GetValue(stringKey) as VariableList;
+        return GetValue(stringKey) as VariableValueList;
     }
 
     /// <summary>
@@ -154,10 +171,9 @@ public class ContextVariables(IOutput output) : IContextVariables
         while (variableName != null)
         {
             var evaluatedValue = EvaluateValue(variableName);
-            var stringEvaluatedValue = evaluatedValue as string;
-            if (stringEvaluatedValue != null)
+            if (evaluatedValue?.StringValue != null)
             {
-                resolvedKey = ReplaceVariableInString(resolvedKey, variableName, stringEvaluatedValue);
+                resolvedKey = ReplaceVariableInString(resolvedKey, variableName, evaluatedValue.StringValue);
                 variableName = ExtractVariableBetweenDelimiters(resolvedKey);
             }
             else
@@ -171,7 +187,7 @@ public class ContextVariables(IOutput output) : IContextVariables
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    private object? EvaluateValue(string key)
+    private VariableValue? EvaluateValue(string key)
     { 
         var builtIn = GetSubValue(_builtIn, key);
         var local = GetSubValue(_local, key);
@@ -180,10 +196,10 @@ public class ContextVariables(IOutput output) : IContextVariables
 
         var isList = false;
         if (KeyIsTopLevel(key) &&
-            (builtIn as VariableList != null 
-            || local as VariableList != null
-            || session as VariableList != null
-            || changes as VariableList != null))
+            (builtIn?.ListValue != null 
+            || local?.ListValue != null
+            || session?.ListValue != null
+            || changes?.ListValue != null))
             isList = true; //If whole variable value is requested and it is list, values from all scopes will be combined.
 
         //if (isList)
@@ -201,27 +217,27 @@ public class ContextVariables(IOutput output) : IContextVariables
         else
         {
             //Return all rows
-            var result = new VariableList();
-            if (changes is VariableList changesList)
-                foreach (var item in changesList)
+            var result = new VariableValueList();
+            if (changes?.ListValue != null)
+                foreach (var item in changes.ListValue)
                     result.Add(item);
 
-            if (session is VariableList sessionList)
-                foreach (var item in sessionList)
-                    if (!result.Any(r => (r["key"] as string)?.Equals(item["key"]) == true))
+            if (session?.ListValue != null)
+                foreach (var item in session.ListValue)
+                    if (!result.Any(r => r["key"]?.StringValue?.Equals(item["key"]) == true))
                         result.Add(item);
 
-            if (local is VariableList localList)
-                foreach (var item in localList)
-                    if (!result.Any(r => (r["key"] as string)?.Equals(item["key"]) == true))
+            if (local?.ListValue != null)
+                foreach (var item in local.ListValue)
+                    if (!result.Any(r => r["key"]?.StringValue?.Equals(item["key"]) == true))
                         result.Add(item);
             
-            if (builtIn is VariableList builtInList)
-                foreach (var item in builtInList)
-                    if (!result.Any(r => (r["key"] as string)?.Equals(item["key"]) == true))
+            if (builtIn?.ListValue != null)
+                foreach (var item in builtIn.ListValue)
+                    if (!result.Any(r => r["key"]?.StringValue?.Equals(item["key"]) == true))
                         result.Add(item);
 
-            return result;
+            return PackIntoVariableValue(result);
         }
     }
 
@@ -231,9 +247,9 @@ public class ContextVariables(IOutput output) : IContextVariables
     /// <param name="variables">List of variables. First element from key</param>
     /// <param name="key">Full key in form variable.property[listIndex].subProperty</param>
     /// <returns></returns>
-    private object? GetSubValue(List<Variable> variables, string key)
+    private VariableValue? GetSubValue(List<Variable> variables, string key)
     {
-        object? result = null;
+        VariableValue? result = null;
         var pattern = @"([a-zA-Z0-9_\-\s]+)|\[(.*?)]";
         var matches = Regex.Matches(key, pattern);
 
@@ -250,15 +266,23 @@ public class ContextVariables(IOutput output) : IContextVariables
                 return null;
             else if (i > 0 && matches[i].Groups[1].Success)
                 //Go to subproperty
-                result = (result as VariableObject)?[matches[i].Groups[1].Value];
-            else if (i > 0 && matches[i].Groups[2].Success)
-                //Go to element in list
-                result = (result as VariableList)?.FirstOrDefault(v => (v["key"] as string)?.Equals(matches[i].Groups[2].Value, StringComparison.InvariantCultureIgnoreCase) == true);
+                result = result?.ObjectValue?[matches[i].Groups[1].Value];
+            //else if (i > 0 && matches[i].Groups[2].Success)
+            //    //Go to element in list
+            //    result = result?.ListValue?.FirstOrDefault(v => v["key"].StringValue?.Equals(matches[i].Groups[2].Value, StringComparison.InvariantCultureIgnoreCase) == true);
             if (result == null)
                 return result;
         }
+
         return result;
     }
+
+    private VariableValue PackIntoVariableValue(object? value) => new VariableValue
+    {
+        StringValue = value as string,
+        ObjectValue = value as VariableValueObject,
+        ListValue = value as VariableValueList
+    };
 
     /// <summary>
     /// Extracts the string between specified delimiters within a given input string.
@@ -330,16 +354,16 @@ public class ContextVariables(IOutput output) : IContextVariables
 
         if (variableName != topLevel && existingVariable == null) //new element in list
         {
-            if (value is VariableObject objectValue)
-                _changes.Add(new Variable { Key = topLevel, Value = new VariableList { objectValue }, Scope = scope, Description = description });
-            else if (value is VariableList listValue)
-                _changes.Add(new Variable { Key = topLevel, Value = listValue, Scope = scope, Description = description });
+            if (value is VariableValueObject objectValue)
+                _changes.Add(new Variable { Key = topLevel, Value = new VariableValue { ListValue = new VariableValueList { objectValue } }, Scope = scope, Description = description });
+            else if (value is VariableValueList listValue)
+                _changes.Add(new Variable { Key = topLevel, Value = new VariableValue { ListValue = listValue }, Scope = scope, Description = description });
             else
                 output.Error("Tried to insert wrong type into list");
-        } 
+        }
         else if (variableName == topLevel && existingVariable == null) //new variable
-            _changes.Add(new Variable { Key = variableName, Value = value, Scope = scope, Description = description });
+            _changes.Add(new Variable { Key = variableName, Value = new VariableValue { StringValue = (string) value }, Scope = scope, Description = description });
         else if (existingVariable != null) //existing variable
-            existingVariable.Value = value;
+            existingVariable.Value = new VariableValue { StringValue = (string)value };
     }
 }

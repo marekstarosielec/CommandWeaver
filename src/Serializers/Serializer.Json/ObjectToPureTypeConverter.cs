@@ -8,13 +8,13 @@ namespace Serializer.Json;
 /// <summary>
 /// Converts object? to specific type. Without it, it is JsonElement.
 /// </summary>
-public class ObjectToPureTypeConverter : JsonConverter<object?>
+public class ObjectToPureTypeConverter : JsonConverter<VariableValue?>
 {
-    public override object? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
+    public override VariableValue? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
         reader.TokenType switch
         {
-            JsonTokenType.True => true,
-            JsonTokenType.False => false,
+            JsonTokenType.True => new VariableValue { StringValue = "true" },
+            JsonTokenType.False => new VariableValue { StringValue = "false" },
             JsonTokenType.Number => ReadNumber(ref reader),
             JsonTokenType.String => ReadString(ref reader),
             JsonTokenType.StartObject => ReadObject(ref reader, typeToConvert, options),
@@ -23,29 +23,33 @@ public class ObjectToPureTypeConverter : JsonConverter<object?>
             _ => throw new JsonException($"Unsupported JsonTokenType {reader.TokenType}")
         };
 
-    private object ReadNumber(ref Utf8JsonReader reader)
+    private VariableValue ReadNumber(ref Utf8JsonReader reader)
     {
         // Attempt to get different numeric types
         if (reader.TryGetInt32(out int intValue))
-            return intValue.ToString();
+            return new VariableValue { StringValue = intValue.ToString() };
         if (reader.TryGetInt64(out long longValue))
-            return longValue.ToString();
+            return new VariableValue { StringValue = longValue.ToString() };
         if (reader.TryGetDouble(out double doubleValue))
-            return doubleValue.ToString(CultureInfo.InvariantCulture);
-        return reader.GetDecimal().ToString(CultureInfo.InvariantCulture); // Default to decimal if no other numeric type fits
+            return new VariableValue { StringValue = doubleValue.ToString(CultureInfo.InvariantCulture) };
+        // Default to decimal if no other numeric type fits
+        return new VariableValue
+        {
+            StringValue = reader.GetDecimal().ToString(CultureInfo.InvariantCulture)
+        }; 
     }
 
-    private object? ReadString(ref Utf8JsonReader reader)
+    private VariableValue? ReadString(ref Utf8JsonReader reader)
     {
         // Attempt to parse as DateTime, otherwise return as string
         if (reader.TryGetDateTime(out DateTime dateTimeValue))
-            return dateTimeValue.ToString("o");
-        return reader.GetString();
+            return new VariableValue { StringValue = dateTimeValue.ToString("o") };
+        return new VariableValue { StringValue = reader.GetString() };
     }
 
-    private object ReadObject(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    private VariableValue ReadObject(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var variable = new VariableObject();
+        var variable = new VariableValueObject();
 
         while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
         {
@@ -54,84 +58,25 @@ public class ObjectToPureTypeConverter : JsonConverter<object?>
             variable[propertyName] = Read(ref reader, typeToConvert, options);
         }
 
-        return variable;
+        return new VariableValue { ObjectValue = variable };
     }
 
-    private object ReadArray(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    private VariableValue ReadArray(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var list = new VariableList();
+        var list = new VariableValueList();
 
         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
         {
             var element = Read(ref reader, typeToConvert, options);
-            var dictionaryElement = element as VariableObject;
-            dictionaryElement ??= new VariableObject { { "key", element } };
+            var dictionaryElement = element?.ObjectValue;
+            dictionaryElement ??= new VariableValueObject { { "key", element } };
             list.Add(dictionaryElement);
         }
-        return list;
+        return new VariableValue { ListValue = list };
     }
 
-    public override void Write(Utf8JsonWriter writer, object? value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, VariableValue? value, JsonSerializerOptions options)
     {
-        if (value == null)
-        {
-            writer.WriteNullValue();
-            return;
-        }
-
-        switch (value)
-        {
-            case bool boolValue:
-                writer.WriteBooleanValue(boolValue);
-                break;
-
-            case int intValue:
-                writer.WriteNumberValue(intValue);
-                break;
-
-            case long longValue:
-                writer.WriteNumberValue(longValue);
-                break;
-
-            case double doubleValue:
-                writer.WriteNumberValue(doubleValue);
-                break;
-
-            case decimal decimalValue:
-                writer.WriteNumberValue(decimalValue);
-                break;
-
-            case string stringValue:
-                writer.WriteStringValue(stringValue);
-                break;
-
-            case DateTime dateTimeValue:
-                writer.WriteStringValue(dateTimeValue);
-                break;
-
-            case IEnumerable<object?> list:
-                writer.WriteStartArray();
-                foreach (var item in list)
-                {
-                    Write(writer, item, options);
-                }
-                writer.WriteEndArray();
-                break;
-
-            case IDictionary<string, object?> dictionary:
-                writer.WriteStartObject();
-                foreach (var kvp in dictionary)
-                {
-                    writer.WritePropertyName(kvp.Key);
-                    Write(writer, kvp.Value, options);
-                }
-                writer.WriteEndObject();
-                break;
-
-            default:
-                // Fallback: use JsonSerializer to write complex types
-                System.Text.Json.JsonSerializer.Serialize(writer, value, value.GetType(), options);
-                break;
-        }
+        throw new NotImplementedException();
     }
 }

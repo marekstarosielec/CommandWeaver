@@ -33,13 +33,13 @@ public class Context(IRepository repository, ISerializerFactory serializerFactor
         Variables.SetVariableValue(VariableScope.Command, "SessionPath", repository.GetPath(RepositoryLocation.Session, Variables.CurrentSessionName));
         var cmd = new Parser().ParseFullCommandLine(commandLineArguments);
         var parsedArguments = cmd.ParsedArguments.ToList();
-        var command = Commands.First(c => c.Name == "paths");
+        var command = Commands.First(c => c.Name == "nag-core-environment-add");
         foreach (var parameter in command.Parameters)
         {
             var t = parsedArguments.FirstOrDefault(p =>
                 p.Name.Equals(parameter.Key, StringComparison.InvariantCultureIgnoreCase));
             //What will happen if argument was not provided?
-            Variables.SetVariableValue(VariableScope.Command, parameter.Key, t.Value, parameter.Description); 
+            Variables.SetVariableValue(VariableScope.Command, parameter.Key, t.Value, parameter.Description);
             //How to validate value?
         }
 

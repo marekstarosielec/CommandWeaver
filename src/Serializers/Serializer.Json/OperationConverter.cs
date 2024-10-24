@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Reflection;
+using System.Reflection.PortableExecutable;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Models;
@@ -63,7 +64,7 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
         }
     }
 
-    private object? ReadElement(JsonElement element)
+    private VariableValue? ReadElement(JsonElement element)
     {
         switch (element.ValueKind)
         {
@@ -72,9 +73,9 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
             case JsonValueKind.Number:
                 return ReadNumber(element);
             case JsonValueKind.True:
-                return true.ToString();
+                return new VariableValue { StringValue = "true" };
             case JsonValueKind.False:
-                return false.ToString();
+                return new VariableValue { StringValue = "false" };
             case JsonValueKind.Object:
                 return ReadObject(element);
             case JsonValueKind.Array:
@@ -85,45 +86,49 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
                 throw new JsonException("Unexpected JSON value kind");
         }
     }
-    private object? ReadString(JsonElement element)
+    private VariableValue? ReadString(JsonElement element)
     {
         // Attempt to parse as DateTime, otherwise return as string
         if (element.TryGetDateTime(out DateTime dateTimeValue))
-            return dateTimeValue.ToString("o");
-        return element.GetString();
+            return new VariableValue { StringValue = dateTimeValue.ToString("o") };
+        return new VariableValue { StringValue = element.GetString() };
     }
     
-    private object ReadNumber(JsonElement element)
+    private VariableValue ReadNumber(JsonElement element)
     {
         // Attempt to get different numeric types
         if (element.TryGetInt32(out int intValue))
-            return intValue.ToString();
+            return new VariableValue { StringValue = intValue.ToString() };
         if (element.TryGetInt64(out long longValue))
-            return longValue.ToString();
+            return new VariableValue { StringValue = longValue.ToString() };
         if (element.TryGetDouble(out double doubleValue))
-            return doubleValue.ToString(CultureInfo.InvariantCulture);
-        return element.GetDecimal().ToString(CultureInfo.InvariantCulture); // Default to decimal if no other numeric type fits
+            return new VariableValue { StringValue = doubleValue.ToString(CultureInfo.InvariantCulture) };
+        // Default to decimal if no other numeric type fits
+        return new VariableValue
+        {
+            StringValue = element.GetDecimal().ToString(CultureInfo.InvariantCulture)
+        };
     }
     
-    private object ReadObject(JsonElement element)
+    private VariableValue ReadObject(JsonElement element)
     {
-        var variable = new VariableObject();
+        var variable = new VariableValueObject();
         foreach (var property in element.EnumerateObject())
             variable[property.Name] = ReadElement(property.Value);
         
-        return variable;
+        return new VariableValue { ObjectValue = variable };
     }
-    private object ReadArray(JsonElement element)
+    private VariableValue ReadArray(JsonElement element)
     {
-        var list = new VariableList();
+        var list = new VariableValueList();
         foreach (var arrayElement in element.EnumerateArray())
         {
             var arrayElementContents = ReadElement(arrayElement);
-            var dictionary = arrayElementContents as VariableObject;
-            dictionary ??= new VariableObject { { "key", arrayElementContents } };    
+            var dictionary = arrayElementContents?.ObjectValue;
+            dictionary ??= new VariableValueObject { { "key", arrayElementContents } };    
             list.Add(dictionary);
         }
-        return list;
+        return new VariableValue { ListValue = list };
     }
     
 }

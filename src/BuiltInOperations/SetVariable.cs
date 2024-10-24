@@ -23,6 +23,7 @@ public class SetVariable: Operation
     {
         //Add variables validation before running.
         context.Services.Output.Trace($"Getting variable key from {nameof(Key)} as string");
+        var t = context.Variables.GetValue(Key.Value);
         var key = context.Variables.GetValueAsString(Key.Value);
         if (key == null)
         {
@@ -69,7 +70,7 @@ public class SetVariable: Operation
             Enum.TryParse(scope, true, out scopeEnum);
 
         context.Services.Output.Trace($"Setting variable value");
-        context.Variables.SetVariableValue(scopeEnum, key, newValue, description);
+       // context.Variables.SetVariableValue(scopeEnum, key, newValue, description);
         return Task.CompletedTask;
     }
 }

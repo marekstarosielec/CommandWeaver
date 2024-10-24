@@ -8,8 +8,9 @@ public interface IContextVariables
     
     string? GetValueAsString(object? key, bool asVariable = false);
     int? GetValueAsInt(object? key, bool asVariable = false);
-    VariableObject? GetValueAsObject(object? key, bool asVariable = false);
-    VariableList? GetValueAsList(object? key, bool asVariable = false);
+    VariableValueObject? GetValueAsObject(object? key, bool asVariable = false);
+    VariableValueList? GetValueAsList(object? key, bool asVariable = false);
+    VariableValue GetValue(VariableValue? variableValue, bool asVariable = false);
 
     void SetVariableValue(VariableScope scope, string variableName, object? value, string? description = null);
 }
