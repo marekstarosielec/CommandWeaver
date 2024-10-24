@@ -13,13 +13,13 @@ public class ContextVariables(IOutput output) : IContextVariables
 
     public string CurrentSessionName
     {
-        get => GetValueAsString("currentSessionName", true) ?? "session1";
+        get => GetValueAsText("currentSessionName", true) ?? "session1";
         set => SetVariableValue(VariableScope.Application, "currentSessionName", value);
     }
 
     public string? CurrentlyProcessedElement
     {
-        get => GetValueAsString("currentlyProcessedElement", true);
+        get => GetValueAsText("currentlyProcessedElement", true);
         set => SetVariableValue(VariableScope.Command, "currentlyProcessedElement", value);
     }
     
@@ -48,119 +48,108 @@ public class ContextVariables(IOutput output) : IContextVariables
         }
     }
 
-    public VariableValue GetValue(VariableValue? variableValue, bool asVariable = false)
+    /// <inheritdoc />
+    public VariableValue? ResolveVariableValue(VariableValue? variableValue, bool treatTextValueAsVariable = false)
     {
-        var result = new VariableValue();
-        object? key;
-        if (!string.IsNullOrWhiteSpace(variableValue?.StringValue))
-            key = variableValue.StringValue;
-        else if (variableValue?.ObjectValue != null)
-            key = variableValue.ObjectValue;
-        else if (variableValue?.ListValue != null)
-            key = variableValue.ListValue;
-        else return result;
+        if (variableValue == null)
+            return null;
+        var result = variableValue with { };
+        if (result.TextValue != null && !treatTextValueAsVariable)
+            result = ResolveTextKey(variableValue.TextValue) ?? variableValue;
+        if (result.TextValue != null && treatTextValueAsVariable)
+            result = ResolveTextKey($"{{{{ {variableValue.TextValue} }}}}");
+        if (result?.ObjectValue != null)
+            foreach (var item in result.ObjectValue.Keys)
+                result = result with { ObjectValue = result.ObjectValue.With(item, ResolveVariableValue(result.ObjectValue[item])) };
+        if (result?.ListValue != null)
+            foreach (var element in result.ListValue.Items)
+                foreach (var item in element.Keys)
+                    result = result with { ObjectValue = element.With(item, ResolveVariableValue(element[item])) };
 
-        result.StringValue = GetValueAsString(key);
-        result.ObjectValue = GetValueAsObject(key);
-        result.ListValue = GetValueAsList(key);
         return result;
     }
+
     /// <summary>
-    /// Returns value of variable from given key. Key can contain variables.
+    /// Try to resolve variable value into Text type. Only text key is accepted.
     /// </summary>
-    /// <param name="key"></param>
-    /// <param name="asVariable">Wraps whole expression in double braces to evaluate value.</param>
+    /// <param name="key">Text</param>
+    /// <param name="treatTextValueAsVariable">Whole TextValue is treated as variable.</param>
     /// <returns></returns>
-    public string? GetValueAsString(object? key, bool asVariable = false)
+    private string? GetValueAsText(object? key, bool treatTextValueAsVariable = false)
     {
         if (key is not string stringKey)
             return null;
 
         if (string.IsNullOrEmpty(stringKey)) return null;
-        if (asVariable)
+        if (treatTextValueAsVariable)
             stringKey = $"{{{{ {stringKey} }}}}";
 
-        return GetValue(stringKey) as string;
+        return ResolveTextKey(stringKey)?.TextValue;
     }
 
-    public VariableValueObject? GetValueAsObject(object? key, bool asVariable = false)
+    /// <summary>
+    /// Try to resolve variable value into Object type.
+    /// </summary>
+    /// <param name="key">Text or object.</param>
+    /// <returns></returns>
+    public VariableValueObject? GetValueAsObject(object? key)
     {
-        //If object was passed directly as key, then we need to search all basic properties inside and replace variable tags inside and return it.
-        if (key is VariableValueObject objectKey)
-        {
-            foreach (var item in objectKey.Keys)
-                if (objectKey[item]?.ObjectValue != null)
-                    objectKey[item] = new VariableValue { ObjectValue = GetValueAsObject(objectKey[item]!.ObjectValue, asVariable) };
-                else if (objectKey[item]?.ListValue != null)
-                    objectKey[item] = new VariableValue { ListValue = GetValueAsList(objectKey[item]!.ListValue, asVariable) };
-                else if (objectKey[item]?.StringValue != null)
-                    objectKey[item] = new VariableValue { StringValue = GetValueAsString(objectKey[item]!.StringValue, asVariable) };
-                else
-                    output.Error("Unknown type");
-            return objectKey;
-        }
+        //If text was passed as key, we assume it can resolve to object.
+        if (key is string stringKey && !string.IsNullOrEmpty(stringKey))
+            key = ResolveTextKey(stringKey)?.ObjectValue;
 
-        //If something else than object was passed, we assume it can be string than can evaluate to list.
-        if (key is not string stringKey)
+        //If key now contains object, then we need to search all basic properties inside and replace variable tags inside and return it.
+        if (key is not VariableValueObject objectKey)
             return null;
-
-        if (string.IsNullOrEmpty(stringKey)) return null;
-        if (asVariable)
-            stringKey = $"{{{{ {stringKey} }}}}";
-
-        return GetValue(stringKey) as VariableValueObject;
+        
+        //foreach (var item in objectKey.Keys)
+        //    if (objectKey[item]?.ObjectValue != null)
+        //        objectKey[item] = new VariableValue { ObjectValue = GetValueAsObject(objectKey[item]!.ObjectValue) };
+        //    else if (objectKey[item]?.ListValue != null)
+        //        objectKey[item] = new VariableValue { ListValue = GetValueAsList(objectKey[item]!.ListValue) };
+        //    else if (objectKey[item]?.TextValue != null)
+        //        objectKey[item] = new VariableValue { TextValue = GetValueAsText(objectKey[item]!.TextValue) };
+        //    else
+        //        output.Error("Unknown type");
+        return objectKey;
     }
 
-    public VariableValueList? GetValueAsList(object? key, bool asVariable = false)
+
+    /// <summary>
+    /// Try to resolve variable value into List type. 
+    /// </summary>
+    /// <param name="key">Text or list.</param>
+    /// <returns></returns>
+    public VariableValueList? GetValueAsList(object? key)
     {
-        //If list was passed directly as key, then we need to search all basic properties inside and replace variable tags inside and return it.
-        if (key is VariableValueList listKey)
-        {
-            foreach (var element in listKey)
-                //Replace variables with values in all object.
-                foreach (var item in element.Keys)
-                    if (element[item]?.ObjectValue != null)
-                        element[item] = new VariableValue { ObjectValue = GetValueAsObject(element[item]!.ObjectValue, asVariable) };
-                    else if (element[item]?.ListValue != null)
-                        element[item] = new VariableValue { ListValue = GetValueAsList(element[item]!.ListValue, asVariable) };
-                    else if (element[item]?.StringValue != null)
-                        element[item] = new VariableValue { StringValue = GetValueAsString(element[item]!.StringValue, asVariable) };
-                    else
-                        output.Error("Unknown type");
+        //If text was passed as key, we assume it can resolve to list.
+        //if (key is string stringKey && !string.IsNullOrEmpty(stringKey))
+        //    key = GetValueWithNoTypeFromTextKey(stringKey)?.ListValue;
+
+        //If key now contains list, then we need to search all basic properties inside and replace variable tags inside and return it.
+        if (key is not VariableValueList listKey)
+            return null;
+        
+        //foreach (var element in listKey)
+        //    foreach (var item in element.Keys)
+        //        if (element[item]?.ObjectValue != null)
+        //            element[item] = new VariableValue { ObjectValue = GetValueAsObject(element[item]!.ObjectValue) };
+        //        else if (element[item]?.ListValue != null)
+        //            element[item] = new VariableValue { ListValue = GetValueAsList(element[item]!.ListValue) };
+        //        else if (element[item]?.TextValue != null)
+        //            element[item] = new VariableValue { TextValue = GetValueAsText(element[item]!.TextValue) };
+        //        else
+        //            output.Error("Unknown type");
                 
-            return listKey;
-        }
-
-        //If something else than list was passed, we assume it can be string than can evaluate to list.
-        if (key is not string stringKey)
-            return null;
-
-        if (string.IsNullOrEmpty(stringKey)) return null;
-        if (asVariable)
-            stringKey = $"{{{{ {stringKey} }}}}";
-
-        return GetValue(stringKey) as VariableValueList;
+        return listKey;
     }
 
     /// <summary>
-    /// Returns value of variable from given key. Key can contain variables.
+    /// Resolves text key. 
     /// </summary>
-    /// <param name="key"></param>
-    /// <param name="asVariable">Wraps whole expression in double braces to evaluate value.</param>
-    /// <returns></returns>
-    public int? GetValueAsInt(object? key, bool asVariable = false)
-    {
-        var stringValue = GetValueAsString(key, asVariable);
-        if (string.IsNullOrWhiteSpace(stringValue)) 
-            return null;
-        if (int.TryParse(stringValue, out var intValue))
-            return intValue;
-
-        output.Error($"Failed to convert value {stringValue} to number.");
-        return null;
-    }
-
-    private object? GetValue(string key)
+    /// <param name="key">Text value that might contain variable tags.</param>
+    /// <returns>Resolved text, object or list.</returns>
+    private VariableValue? ResolveTextKey(string? key)
     {
         // Check if the input is null, empty, or contains only whitespace
         if (string.IsNullOrWhiteSpace(key))
@@ -168,18 +157,19 @@ public class ContextVariables(IOutput output) : IContextVariables
 
         var resolvedKey = key;
         var variableName = ExtractVariableBetweenDelimiters(resolvedKey);
+        VariableValue? resolvedValue = null;
         while (variableName != null)
         {
-            var evaluatedValue = EvaluateValue(variableName);
-            if (evaluatedValue?.StringValue != null)
-            {
-                resolvedKey = ReplaceVariableInString(resolvedKey, variableName, evaluatedValue.StringValue);
-                variableName = ExtractVariableBetweenDelimiters(resolvedKey);
-            }
-            else
-                return evaluatedValue;
+            resolvedValue = ResolveSingleValue(variableName);
+            
+            if (resolvedValue?.TextValue == null)
+                return resolvedValue;
+            
+            resolvedKey = ReplaceVariableInString(resolvedKey, variableName, resolvedValue.TextValue);
+            variableName = ExtractVariableBetweenDelimiters(resolvedKey);
+            
         }
-        return resolvedKey;
+        return resolvedValue;
     }
 
     /// <summary>
@@ -187,58 +177,48 @@ public class ContextVariables(IOutput output) : IContextVariables
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    private VariableValue? EvaluateValue(string key)
+    private VariableValue? ResolveSingleValue(string key)
     { 
         var builtIn = GetSubValue(_builtIn, key);
         var local = GetSubValue(_local, key);
         var session = GetSubValue(_session, key);
         var changes = GetSubValue(_changes, key);
 
-        var isList = false;
-        if (KeyIsTopLevel(key) &&
-            (builtIn?.ListValue != null 
-            || local?.ListValue != null
-            || session?.ListValue != null
-            || changes?.ListValue != null))
-            isList = true; //If whole variable value is requested and it is list, values from all scopes will be combined.
-
-        //if (isList)
-        //    if (builtIn as Dictionary<string, object?> != null
-        //        || local as Dictionary<string, object?> != null
-        //        || session as Dictionary<string, object?> != null
-        //        || changes as Dictionary<string, object?> != null)
-        //        {
-        //        output.Error($"Problem while evaluating key {key}: types are not consistant between scopes.");
-        //        return null;
-        //        }
-        
-        if (!isList)
+        //var isList = false;
+        //if (KeyIsTopLevel(key) &&
+        //    (builtIn?.ListValue != null 
+        //    || local?.ListValue != null
+        //    || session?.ListValue != null
+        //    || changes?.ListValue != null))
+        //    isList = true; //If whole variable value is requested and it is list, values from all scopes will be combined.
+       
+        //if (!isList)
             return changes ?? session ?? local ?? builtIn; 
-        else
-        {
-            //Return all rows
-            var result = new VariableValueList();
-            if (changes?.ListValue != null)
-                foreach (var item in changes.ListValue)
-                    result.Add(item);
+        //else
+        //{
+        //    //Return all rows
+        //    var result = new VariableValueList();
+        //    if (changes?.ListValue != null)
+        //        foreach (var item in changes.ListValue)
+        //            result.Add(item);
 
-            if (session?.ListValue != null)
-                foreach (var item in session.ListValue)
-                    if (!result.Any(r => r["key"]?.StringValue?.Equals(item["key"]) == true))
-                        result.Add(item);
+        //    if (session?.ListValue != null)
+        //        foreach (var item in session.ListValue)
+        //            if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
+        //                result.Add(item);
 
-            if (local?.ListValue != null)
-                foreach (var item in local.ListValue)
-                    if (!result.Any(r => r["key"]?.StringValue?.Equals(item["key"]) == true))
-                        result.Add(item);
+        //    if (local?.ListValue != null)
+        //        foreach (var item in local.ListValue)
+        //            if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
+        //                result.Add(item);
             
-            if (builtIn?.ListValue != null)
-                foreach (var item in builtIn.ListValue)
-                    if (!result.Any(r => r["key"]?.StringValue?.Equals(item["key"]) == true))
-                        result.Add(item);
+        //    if (builtIn?.ListValue != null)
+        //        foreach (var item in builtIn.ListValue)
+        //            if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
+        //                result.Add(item);
 
-            return PackIntoVariableValue(result);
-        }
+        //    return new VariableValue { ListValue = result };
+        //}
     }
 
     /// <summary>
@@ -277,12 +257,6 @@ public class ContextVariables(IOutput output) : IContextVariables
         return result;
     }
 
-    private VariableValue PackIntoVariableValue(object? value) => new VariableValue
-    {
-        StringValue = value as string,
-        ObjectValue = value as VariableValueObject,
-        ListValue = value as VariableValueList
-    };
 
     /// <summary>
     /// Extracts the string between specified delimiters within a given input string.
@@ -348,22 +322,23 @@ public class ContextVariables(IOutput output) : IContextVariables
 
     public void SetVariableValue(VariableScope scope, string variableName, object? value, string? description = null)
     {
-        var topLevel = GetTopLevel(variableName);
-        var existingVariable = _changes.FirstOrDefault(v =>
-            v.Key.Equals(topLevel, StringComparison.InvariantCultureIgnoreCase) && v.Scope == scope);
+        //var topLevel = GetTopLevel(variableName);
+        //var existingVariable = _changes.FirstOrDefault(v =>
+        //    v.Key.Equals(topLevel, StringComparison.InvariantCultureIgnoreCase) && v.Scope == scope);
 
-        if (variableName != topLevel && existingVariable == null) //new element in list
-        {
-            if (value is VariableValueObject objectValue)
-                _changes.Add(new Variable { Key = topLevel, Value = new VariableValue { ListValue = new VariableValueList { objectValue } }, Scope = scope, Description = description });
-            else if (value is VariableValueList listValue)
-                _changes.Add(new Variable { Key = topLevel, Value = new VariableValue { ListValue = listValue }, Scope = scope, Description = description });
-            else
-                output.Error("Tried to insert wrong type into list");
-        }
-        else if (variableName == topLevel && existingVariable == null) //new variable
-            _changes.Add(new Variable { Key = variableName, Value = new VariableValue { StringValue = (string) value }, Scope = scope, Description = description });
-        else if (existingVariable != null) //existing variable
-            existingVariable.Value = new VariableValue { StringValue = (string)value };
+        //if (variableName != topLevel && existingVariable == null) //new element in list
+        //{
+        //    if (value is VariableValueObject objectValue)
+        //        _changes.Add(new Variable { Key = topLevel, Value = new VariableValue { ListValue = new VariableValueList { objectValue } }, Scope = scope, Description = description });
+        //    else if (value is VariableValueList listValue)
+        //        _changes.Add(new Variable { Key = topLevel, Value = new VariableValue { ListValue = listValue }, Scope = scope, Description = description });
+        //    else
+        //        output.Error("Tried to insert wrong type into list");
+        //}
+        //else if (variableName == topLevel && existingVariable == null) //new variable
+        //    //Add other types of new value
+        //    _changes.Add(new Variable { Key = variableName, Value = new VariableValue { TextValue = (string) value }, Scope = scope, Description = description });
+        //else if (existingVariable != null) //existing variable
+        //    existingVariable.Value = new VariableValue { TextValue = (string)value };
     }
 }

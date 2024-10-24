@@ -13,9 +13,9 @@ public class Output : Operation
     
     public override Task Run(IContext context, CancellationToken cancellationToken)
     {
-        var text = context.Variables.GetValueAsString(Text.Value);
-        if (!string.IsNullOrWhiteSpace(text))
-            context.Services.Output.Warning(text);
+        var text = context.Variables.ResolveVariableValue(Text.Value);
+        if (!string.IsNullOrWhiteSpace(text?.TextValue))
+            context.Services.Output.Warning(text.TextValue);
         return Task.CompletedTask;
     }
 }

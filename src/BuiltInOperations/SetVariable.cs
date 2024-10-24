@@ -23,51 +23,51 @@ public class SetVariable: Operation
     {
         //Add variables validation before running.
         context.Services.Output.Trace($"Getting variable key from {nameof(Key)} as string");
-        var t = context.Variables.GetValue(Key.Value);
-        var key = context.Variables.GetValueAsString(Key.Value);
-        if (key == null)
-        {
-            context.Services.Output.Error($"{Key.Value} evaluated to null.");
-            return Task.CompletedTask;
-        }
+        var t = context.Variables.ResolveVariableValue(Key.Value);
+        //var key = context.Variables.GetValueAsString(Key.Value);
+        //if (key == null)
+        //{
+        //    context.Services.Output.Error($"{Key.Value} evaluated to null.");
+        //    return Task.CompletedTask;
+        //}
 
-        object? newValue = null;
-        context.Services.Output.Trace($"Getting variable value from {nameof(Value)} as string");
-        var newValueString = context.Variables.GetValueAsString(Value.Value);
-        if (newValueString != null)
-        {
-            context.Services.Output.Trace($"Value evaluated to not null");
-            newValue = newValueString;
-        }
-        if (newValue == null)
-        {
-            context.Services.Output.Trace($"Getting variable value from {nameof(Value)} as object");
-            var newValueObject = context.Variables.GetValueAsObject(Value.Value);
-            if (newValueObject != null)
-            {
-                context.Services.Output.Trace($"Value evaluated to not null");
-                newValue = newValueObject;
-            }
-        }
-        if (newValue == null)
-        {
-            context.Services.Output.Trace($"Getting variable value from {nameof(Value)} as list");
-            var newValueList = context.Variables.GetValueAsList(Value.Value);
-            if (newValueList != null)
-            {
-                context.Services.Output.Trace($"Value evaluated to not null");
-                newValue = newValueList;
-            }
-        }
+        //object? newValue = null;
+        //context.Services.Output.Trace($"Getting variable value from {nameof(Value)} as string");
+        //var newValueString = context.Variables.GetValueAsString(Value.Value);
+        //if (newValueString != null)
+        //{
+        //    context.Services.Output.Trace($"Value evaluated to not null");
+        //    newValue = newValueString;
+        //}
+        //if (newValue == null)
+        //{
+        //    context.Services.Output.Trace($"Getting variable value from {nameof(Value)} as object");
+        //    var newValueObject = context.Variables.GetValueAsObject(Value.Value);
+        //    if (newValueObject != null)
+        //    {
+        //        context.Services.Output.Trace($"Value evaluated to not null");
+        //        newValue = newValueObject;
+        //    }
+        //}
+        //if (newValue == null)
+        //{
+        //    context.Services.Output.Trace($"Getting variable value from {nameof(Value)} as list");
+        //    var newValueList = context.Variables.GetValueAsList(Value.Value);
+        //    if (newValueList != null)
+        //    {
+        //        context.Services.Output.Trace($"Value evaluated to not null");
+        //        newValue = newValueList;
+        //    }
+        //}
 
-        context.Services.Output.Trace($"Getting variable description from {nameof(Description)} as string");
-        var description = context.Variables.GetValueAsString(Description.Value);
+        //context.Services.Output.Trace($"Getting variable description from {nameof(Description)} as string");
+        //var description = context.Variables.GetValueAsString(Description.Value);
 
-        context.Services.Output.Trace($"Getting variable scope from {nameof(Scope)} as string string");
-        var scope = context.Variables.GetValueAsString(Scope.Value);
-        var scopeEnum = VariableScope.Command;
-        if (!string.IsNullOrWhiteSpace(scope))
-            Enum.TryParse(scope, true, out scopeEnum);
+        //context.Services.Output.Trace($"Getting variable scope from {nameof(Scope)} as string string");
+        //var scope = context.Variables.GetValueAsString(Scope.Value);
+        //var scopeEnum = VariableScope.Command;
+        //if (!string.IsNullOrWhiteSpace(scope))
+        //    Enum.TryParse(scope, true, out scopeEnum);
 
         context.Services.Output.Trace($"Setting variable value");
        // context.Variables.SetVariableValue(scopeEnum, key, newValue, description);

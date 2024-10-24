@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Reflection;
-using System.Reflection.PortableExecutable;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Models;
@@ -73,9 +72,9 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
             case JsonValueKind.Number:
                 return ReadNumber(element);
             case JsonValueKind.True:
-                return new VariableValue { StringValue = "true" };
+                return new VariableValue("true");
             case JsonValueKind.False:
-                return new VariableValue { StringValue = "false" };
+                return new VariableValue("false");
             case JsonValueKind.Object:
                 return ReadObject(element);
             case JsonValueKind.Array:
@@ -90,33 +89,30 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
     {
         // Attempt to parse as DateTime, otherwise return as string
         if (element.TryGetDateTime(out DateTime dateTimeValue))
-            return new VariableValue { StringValue = dateTimeValue.ToString("o") };
-        return new VariableValue { StringValue = element.GetString() };
+            return new VariableValue(dateTimeValue.ToString("o"));
+        return new VariableValue(element.GetString());
     }
     
     private VariableValue ReadNumber(JsonElement element)
     {
         // Attempt to get different numeric types
         if (element.TryGetInt32(out int intValue))
-            return new VariableValue { StringValue = intValue.ToString() };
+            return new VariableValue(intValue.ToString());
         if (element.TryGetInt64(out long longValue))
-            return new VariableValue { StringValue = longValue.ToString() };
+            return new VariableValue(longValue.ToString());
         if (element.TryGetDouble(out double doubleValue))
-            return new VariableValue { StringValue = doubleValue.ToString(CultureInfo.InvariantCulture) };
+            return new VariableValue(doubleValue.ToString(CultureInfo.InvariantCulture));
         // Default to decimal if no other numeric type fits
-        return new VariableValue
-        {
-            StringValue = element.GetDecimal().ToString(CultureInfo.InvariantCulture)
-        };
+        return new VariableValue(element.GetDecimal().ToString(CultureInfo.InvariantCulture));
     }
     
     private VariableValue ReadObject(JsonElement element)
     {
         var variable = new VariableValueObject();
         foreach (var property in element.EnumerateObject())
-            variable[property.Name] = ReadElement(property.Value);
+            variable = variable.With(property.Name, ReadElement(property.Value));
         
-        return new VariableValue { ObjectValue = variable };
+        return new VariableValue(variable);
     }
     private VariableValue ReadArray(JsonElement element)
     {
@@ -125,10 +121,10 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
         {
             var arrayElementContents = ReadElement(arrayElement);
             var dictionary = arrayElementContents?.ObjectValue;
-            dictionary ??= new VariableValueObject { { "key", arrayElementContents } };    
+            dictionary ??= new VariableValueObject("key", arrayElementContents);
             list.Add(dictionary);
         }
-        return new VariableValue { ListValue = list };
+        return new VariableValue(list);
     }
     
 }

@@ -1,19 +1,25 @@
 ﻿namespace Models;
 
-public class VariableValue
+public record VariableValue
 {
-    public string? StringValue { get; set; }
+    public VariableValue(string? textValue) => TextValue = textValue;
 
-    public int? NumericValue { get; set; } 
+    public VariableValue(VariableValueObject? objectValue) => ObjectValue = objectValue;
 
-    public bool? BoolValue { get; set; }
+    public VariableValue(VariableValueList? listValue) => ListValue = listValue;
 
-    public decimal? DecimalValue { get; set; }
-
-    public DateTime? DateTimeValue { get; set; }
+    public string? TextValue { get; set; }
 
     public VariableValueObject? ObjectValue { get; set; }
 
     public VariableValueList? ListValue { get; set; }
+
+    //public int? NumericValue { get; set; }
+
+    //public bool? BoolValue { get; set; }
+
+    //public decimal? DecimalValue { get; set; }
+
+    //public DateTime? DateTimeValue { get; set; }
 
 }

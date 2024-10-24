@@ -5,12 +5,17 @@ public interface IContextVariables
     string CurrentSessionName { get; set; }
     string? CurrentlyProcessedElement { get; set; }
     void SetVariableList(RepositoryLocation repositoryLocation, List<Variable?> elementsWithContent);
-    
-    string? GetValueAsString(object? key, bool asVariable = false);
-    int? GetValueAsInt(object? key, bool asVariable = false);
-    VariableValueObject? GetValueAsObject(object? key, bool asVariable = false);
-    VariableValueList? GetValueAsList(object? key, bool asVariable = false);
-    VariableValue GetValue(VariableValue? variableValue, bool asVariable = false);
+
+    /// <summary>
+    /// Resolves all the variable tags inside given value.
+    /// </summary>
+    /// <param name="variableValue">Value to resolve. It can be string, object or list.</param>
+    /// <param name="treatTextValueAsVariable">Whole TextValue is treated as variable.</param>
+    /// <returns></returns>
+    VariableValue? ResolveVariableValue(VariableValue? variableValue, bool treatTextValueAsVariable = false);
+
+
+   
 
     void SetVariableValue(VariableScope scope, string variableName, object? value, string? description = null);
 }
