@@ -142,14 +142,14 @@ public class ContextVariables(IOutput output) : IContextVariables
     /// <summary>
     /// Gets the value of variable by given key. Key cannot contain any variables inside.
     /// </summary>
-    /// <param name="key"></param>
+    /// <param name="variableName"></param>
     /// <returns></returns>
-    private VariableValue? ResolveSingleValue(string key)
+    private VariableValue? ResolveSingleValue(string variableName)
     { 
-        var builtIn = GetSubValue(_builtIn, key);
-        var local = GetSubValue(_local, key);
-        var session = GetSubValue(_session, key);
-        var changes = GetSubValue(_changes, key);
+        var builtIn = GetSubValue(_builtIn, variableName);
+        var local = GetSubValue(_local, variableName);
+        var session = GetSubValue(_session, variableName);
+        var changes = GetSubValue(_changes, variableName);
 
         //var isList = false;
         //if (KeyIsTopLevel(key) &&
@@ -206,17 +206,23 @@ public class ContextVariables(IOutput output) : IContextVariables
             if (i == 0 && matches[i].Groups[1].Success)
                 result = variables.FirstOrDefault(v => v.Key.Equals(matches[i].Groups[1].Value, StringComparison.InvariantCultureIgnoreCase))?.Value;
             else if (i == 0 && matches[i].Groups[2].Success)
+            {
                 //Key cannot start with index. Abort.
+                output.Error($"Invalid key {key}");
                 return null;
+            }
             else if (!matches[i].Groups[1].Success && !matches[i].Groups[2].Success)
+            {
                 //Invalid element in key.
+                output.Error($"Invalid key {key}");
                 return null;
+            }
             else if (i > 0 && matches[i].Groups[1].Success)
                 //Go to subproperty
                 result = result?.ObjectValue?[matches[i].Groups[1].Value];
-            //else if (i > 0 && matches[i].Groups[2].Success)
-            //    //Go to element in list
-            //    result = result?.ListValue?.FirstOrDefault(v => v["key"].StringValue?.Equals(matches[i].Groups[2].Value, StringComparison.InvariantCultureIgnoreCase) == true);
+            else if (i > 0 && matches[i].Groups[2].Success)
+                //Go to element in list
+                result = new VariableValue(result?.ListValue?.FirstOrDefault(v => v["key"].TextValue?.Equals(matches[i].Groups[2].Value, StringComparison.InvariantCultureIgnoreCase) == true));
             if (result == null)
                 return result;
         }
@@ -249,29 +255,7 @@ public class ContextVariables(IOutput output) : IContextVariables
         return input.Substring(openingIndex + 2, closingIndex - openingIndex - 2).Trim();
     }
 
-    /// <summary>
-    /// Replaces all occurrences of a variable placeholder between delimiters with the provided value.
-    /// </summary>
-    /// <param name="input">The input string that contains placeholders.</param>
-    /// <param name="variableName">The name of the variable to replace in the placeholders.</param>
-    /// <param name="variableValue">The value to replace the variable placeholder with.</param>
-    /// <returns>
-    /// The input string with all instances of the variable placeholder replaced with the variable value.
-    /// </returns>
-    /// <remarks>
-    /// This method searches for the pattern "{{ variableName }}" allowing for any amount of whitespace around the variable name.
-    /// </remarks>
-    private string ReplaceVariableInString(string input, string variableName, string? variableValue)
-    {
-        if (string.IsNullOrEmpty(input) || string.IsNullOrEmpty(variableName))
-            return input;
-
-        // Pattern to match {{ variableName }} with possible whitespaces
-        string pattern = $@"\{{\{{\s*{Regex.Escape(variableName)}\s*\}}\}}";
-
-        // Replace all occurrences with the variable value
-        return Regex.Replace(input, pattern, variableValue ?? string.Empty);
-    }
+    
 
     /// <summary>
     /// Indicates if key point to top level of variable value (whole variable value).

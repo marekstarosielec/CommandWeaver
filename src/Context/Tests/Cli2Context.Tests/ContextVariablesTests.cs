@@ -151,6 +151,22 @@ public class ContextVariablesTests
         Assert.Equal("testValue", result?.ListValue?.FirstOrDefault()?["key"].TextValue);
     }
 
+    [Fact]
+    public void ResolveVariableValue_ResolvesDeepProperty_FromObject()
+    {
+        var variables = new ContextVariables(Substitute.For<IOutput>());
+        variables.SetVariableList(RepositoryLocation.BuiltIn, new List<Variable?> {
+            new Variable {
+                Key = "test",
+                Value = new VariableValue(new VariableValueObject("key", "innerObject").With("value", new VariableValue("innerText")))
+            }
+        });
+        var result = variables.ResolveVariableValue(new VariableValue("{{ test.value }}"));
+        Assert.Equal("innerText", result?.TextValue);
+        Assert.Null(result?.ObjectValue);
+        Assert.Null(result?.ListValue);
+    }
+
     //    [Fact]
     //    public void GetValueAsString_ReturnsStringWithoutAnyEvaluation_IfKeyDoesNotContainVariables()
     //    {
