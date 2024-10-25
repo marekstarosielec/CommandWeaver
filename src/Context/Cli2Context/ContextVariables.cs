@@ -13,13 +13,13 @@ public class ContextVariables(IOutput output) : IContextVariables
 
     public string CurrentSessionName
     {
-        get => GetValueAsText("currentSessionName", true) ?? "session1";
+        get => ResolveTextKey("currentSessionName", true)?.TextValue ?? "session1";
         set => SetVariableValue(VariableScope.Application, "currentSessionName", value);
     }
 
     public string? CurrentlyProcessedElement
     {
-        get => GetValueAsText("currentlyProcessedElement", true);
+        get => ResolveTextKey("currentlyProcessedElement", true)?.TextValue;
         set => SetVariableValue(VariableScope.Command, "currentlyProcessedElement", value);
     }
     
@@ -54,123 +54,90 @@ public class ContextVariables(IOutput output) : IContextVariables
         if (variableValue == null)
             return null;
         var result = variableValue with { };
-        if (result.TextValue != null && !treatTextValueAsVariable)
-            result = ResolveTextKey(variableValue.TextValue) ?? variableValue;
-        if (result.TextValue != null && treatTextValueAsVariable)
-            result = ResolveTextKey($"{{{{ {variableValue.TextValue} }}}}");
+        if (result.TextValue != null)
+            result = ResolveTextKey(variableValue.TextValue, treatTextValueAsVariable) ?? variableValue;
         if (result?.ObjectValue != null)
-            foreach (var item in result.ObjectValue.Keys)
-                result = result with { ObjectValue = result.ObjectValue.With(item, ResolveVariableValue(result.ObjectValue[item])) };
+            result = ResolveObjectKey(result.ObjectValue);
         if (result?.ListValue != null)
-            foreach (var element in result.ListValue.Items)
-                foreach (var item in element.Keys)
-                    result = result with { ObjectValue = element.With(item, ResolveVariableValue(element[item])) };
+            result = ResolveListKey(result.ListValue);
 
         return result;
     }
 
-    /// <summary>
-    /// Try to resolve variable value into Text type. Only text key is accepted.
-    /// </summary>
-    /// <param name="key">Text</param>
-    /// <param name="treatTextValueAsVariable">Whole TextValue is treated as variable.</param>
-    /// <returns></returns>
-    private string? GetValueAsText(object? key, bool treatTextValueAsVariable = false)
-    {
-        if (key is not string stringKey)
-            return null;
-
-        if (string.IsNullOrEmpty(stringKey)) return null;
-        if (treatTextValueAsVariable)
-            stringKey = $"{{{{ {stringKey} }}}}";
-
-        return ResolveTextKey(stringKey)?.TextValue;
-    }
-
-    /// <summary>
-    /// Try to resolve variable value into Object type.
-    /// </summary>
-    /// <param name="key">Text or object.</param>
-    /// <returns></returns>
-    public VariableValueObject? GetValueAsObject(object? key)
-    {
-        //If text was passed as key, we assume it can resolve to object.
-        if (key is string stringKey && !string.IsNullOrEmpty(stringKey))
-            key = ResolveTextKey(stringKey)?.ObjectValue;
-
-        //If key now contains object, then we need to search all basic properties inside and replace variable tags inside and return it.
-        if (key is not VariableValueObject objectKey)
-            return null;
-        
-        //foreach (var item in objectKey.Keys)
-        //    if (objectKey[item]?.ObjectValue != null)
-        //        objectKey[item] = new VariableValue { ObjectValue = GetValueAsObject(objectKey[item]!.ObjectValue) };
-        //    else if (objectKey[item]?.ListValue != null)
-        //        objectKey[item] = new VariableValue { ListValue = GetValueAsList(objectKey[item]!.ListValue) };
-        //    else if (objectKey[item]?.TextValue != null)
-        //        objectKey[item] = new VariableValue { TextValue = GetValueAsText(objectKey[item]!.TextValue) };
-        //    else
-        //        output.Error("Unknown type");
-        return objectKey;
-    }
-
-
-    /// <summary>
-    /// Try to resolve variable value into List type. 
-    /// </summary>
-    /// <param name="key">Text or list.</param>
-    /// <returns></returns>
-    public VariableValueList? GetValueAsList(object? key)
-    {
-        //If text was passed as key, we assume it can resolve to list.
-        //if (key is string stringKey && !string.IsNullOrEmpty(stringKey))
-        //    key = GetValueWithNoTypeFromTextKey(stringKey)?.ListValue;
-
-        //If key now contains list, then we need to search all basic properties inside and replace variable tags inside and return it.
-        if (key is not VariableValueList listKey)
-            return null;
-        
-        //foreach (var element in listKey)
-        //    foreach (var item in element.Keys)
-        //        if (element[item]?.ObjectValue != null)
-        //            element[item] = new VariableValue { ObjectValue = GetValueAsObject(element[item]!.ObjectValue) };
-        //        else if (element[item]?.ListValue != null)
-        //            element[item] = new VariableValue { ListValue = GetValueAsList(element[item]!.ListValue) };
-        //        else if (element[item]?.TextValue != null)
-        //            element[item] = new VariableValue { TextValue = GetValueAsText(element[item]!.TextValue) };
-        //        else
-        //            output.Error("Unknown type");
-                
-        return listKey;
-    }
-
+   
     /// <summary>
     /// Resolves text key. 
     /// </summary>
     /// <param name="key">Text value that might contain variable tags.</param>
     /// <returns>Resolved text, object or list.</returns>
-    private VariableValue? ResolveTextKey(string? key)
+    private VariableValue? ResolveTextKey(string? key, bool treatTextValueAsVariable)
     {
         // Check if the input is null, empty, or contains only whitespace
         if (string.IsNullOrWhiteSpace(key))
             return null;
 
-        var resolvedKey = key;
+        var resolvedKey = treatTextValueAsVariable ? $"{{{{ { key } }}}}" : key;
         var variableName = ExtractVariableBetweenDelimiters(resolvedKey);
-        VariableValue? resolvedValue = null;
-        while (variableName != null)
+        if (variableName == null)
+            return new VariableValue(key);
+
+        var resolvedVariable = ResolveSingleValue(variableName);
+        if (resolvedVariable == null)
+            return null;
+        
+        var wholeKeyIsSingleVariable = Regex.Match(resolvedKey, @$"^\{{{{\s*{Regex.Escape(variableName)}\s*\}}}}$") != Match.Empty;
+        if (wholeKeyIsSingleVariable)
+            //If whole key contains just single variable, it can be replaced with text, object or list.
+            return ResolveVariableValue(resolvedVariable);
+        if (resolvedVariable?.TextValue != null)
         {
-            resolvedValue = ResolveSingleValue(variableName);
-            
-            if (resolvedValue?.TextValue == null)
-                return resolvedValue;
-            
-            resolvedKey = ReplaceVariableInString(resolvedKey, variableName, resolvedValue.TextValue);
-            variableName = ExtractVariableBetweenDelimiters(resolvedKey);
-            
+            // Pattern to match {{ variableName }} with possible whitespaces
+            string pattern = $@"\{{\{{\s*{Regex.Escape(variableName)}\s*\}}\}}";
+
+            // Replace all occurrences with the variable value
+            resolvedKey = Regex.Replace(resolvedKey, pattern, resolvedVariable.TextValue);
+            return ResolveVariableValue(new VariableValue(resolvedKey));
         }
-        return resolvedValue;
+        output.Error($"{{{{ {variableName} }}}} resolved to non text value, it cannot be part of text");
+        return null;
     }
+
+    /// <summary>
+    /// Resolves object key. 
+    /// </summary>
+    /// <param name="key">VariableValueObject value that has properties that might contain variable tags.</param>
+    /// <returns>Resolved object</returns>
+    private VariableValue? ResolveObjectKey(VariableValueObject? key)
+    {
+        if (key == null) 
+            return null;
+        Dictionary<string, VariableValue?> result = new ();
+        foreach (var keyProperty in key.Keys)
+            result[keyProperty] = ResolveVariableValue(key[keyProperty]);
+
+        return new VariableValue(new VariableValueObject(result));
+    }
+
+    /// <summary>
+    /// Resolves list key. 
+    /// </summary>
+    /// <param name="key">VariableValueList value that has elements that has properties that might contain variable tags.</param>
+    /// <returns>Resolved list</returns>
+    private VariableValue? ResolveListKey(VariableValueList? key)
+    {
+        if (key == null)
+            return null;
+        List<Dictionary<string, VariableValue?>> result = new ();
+        foreach (var listElement in key)
+        {
+            Dictionary<string, VariableValue?> resultListElement = new ();
+            foreach (var keyProperty in listElement.Keys)
+                resultListElement[keyProperty] = ResolveVariableValue(listElement[keyProperty]);
+            result.Add(resultListElement);
+        }
+        return new VariableValue(new VariableValueList(result));
+    }
+
 
     /// <summary>
     /// Gets the value of variable by given key. Key cannot contain any variables inside.

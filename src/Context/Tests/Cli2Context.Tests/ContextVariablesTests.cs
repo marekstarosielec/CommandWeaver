@@ -31,6 +31,38 @@ public class ContextVariablesTests
     }
 
     [Fact]
+    public void ResolveVariableValue_ResolvesTextValue_WhenTextValueContainsVariableTagInsideText()
+    {
+        var variables = new ContextVariables(Substitute.For<IOutput>());
+        variables.SetVariableList(RepositoryLocation.BuiltIn, new List<Variable?> {
+            new Variable {
+                Key = "test",
+                Value = new VariableValue("testValue")
+            }
+        });
+        var result = variables.ResolveVariableValue(new VariableValue("this is my {{ test }}"));
+        Assert.Equal("this is my testValue", result?.TextValue);
+        Assert.Null(result?.ObjectValue);
+        Assert.Null(result?.ListValue);
+    }
+
+    [Fact]
+    public void ResolveVariableValue_FailsToResolve_WhenTextValueContainsNonTextVariableTagInsideText()
+    {
+        var variables = new ContextVariables(Substitute.For<IOutput>());
+        variables.SetVariableList(RepositoryLocation.BuiltIn, new List<Variable?> {
+            new Variable {
+                Key = "test",
+                Value = new VariableValue(new VariableValueObject("key", "testValue"))
+            }
+        });
+        var result = variables.ResolveVariableValue(new VariableValue("this is my {{ test }}"));
+        Assert.Equal("this is my {{ test }}", result?.TextValue);
+        Assert.Null(result?.ObjectValue);
+        Assert.Null(result?.ListValue);
+    }
+
+    [Fact]
     public void ResolveVariableValue_ResolvesTextValue_WhenTextValueContainsNoVariableTags_AndWholeTextIsTreatedAsVariable()
     {
         var variables = new ContextVariables(Substitute.For<IOutput>());

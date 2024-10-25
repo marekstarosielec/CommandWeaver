@@ -1,8 +1,9 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections;
+using System.Collections.Immutable;
 
 namespace Models;
 
-public record VariableValueList
+public record VariableValueList : IEnumerable<VariableValueObject>
 {
     private ImmutableList<VariableValueObject> _items = ImmutableList<VariableValueObject>.Empty;
 
@@ -12,7 +13,10 @@ public record VariableValueList
     // Constructor that accepts a single text value
     public VariableValueList(string property, string? textValue) => _items = ImmutableList<VariableValueObject>.Empty.Add(new VariableValueObject(property, new VariableValue(textValue)));
 
-    
+    // Constructor that accepts a regular list
+    public VariableValueList(IList<Dictionary<string, VariableValue?>> items) => _items = ImmutableList<VariableValueObject>.Empty.AddRange(items.Select(i => new VariableValueObject(i)));
+
+
     // Indexer to access list elements
     public VariableValueObject this[int index] => _items[index];
 
@@ -30,4 +34,10 @@ public record VariableValueList
 
     // Method to find the first element or default value
     public VariableValueObject? FirstOrDefault() => _items.FirstOrDefault();
+
+    // Implementing GetEnumerator to support foreach
+    public IEnumerator<VariableValueObject> GetEnumerator() => _items.GetEnumerator();
+
+    // Explicit implementation for IEnumerable
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
