@@ -1,30 +1,32 @@
 using Models;
 using Models.Interfaces.Context;
 using NSubstitute;
+using System.Collections.Immutable;
 
 namespace Cli2Context.Tests;
 
-public class ContextVariablesTests
+public class ContextVariableResolverTests
 {
     [Fact]
     public void ResolveVariableValue_ResolvesTextValue_WhenTextValueContainsNoVariableTags()
     {
-        var variables = new ContextVariables(Substitute.For<IOutput>());
-        var result = variables.ResolveVariableValue(new VariableValue("test"));
+        var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), new ContextVariableStorage());
+        var result = variableResolver.ResolveVariableValue(new VariableValue("test"));
         Assert.Equal("test", result?.TextValue);
     }
 
     [Fact]
     public void ResolveVariableValue_ResolvesTextValue_WhenTextValueContainsVariableTag()
     {
-        var variables = new ContextVariables(Substitute.For<IOutput>());
-        variables.SetVariableList(RepositoryLocation.BuiltIn, new List<Variable?> { 
-            new Variable { 
-                Key = "test", 
+        var contextVariableStorage = new ContextVariableStorage {
+            BuiltIn = new List<Variable> {
+            new Variable {
+                Key = "test",
                 Value = new VariableValue("testValue")
-            } 
-        });
-        var result = variables.ResolveVariableValue(new VariableValue("{{ test }}"));
+            } }.ToImmutableList()
+        };
+        var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);
+        var result = variableResolver.ResolveVariableValue(new VariableValue("{{ test }}"));
         Assert.Equal("testValue", result?.TextValue);
         Assert.Null(result?.ObjectValue);
         Assert.Null(result?.ListValue);
@@ -33,14 +35,16 @@ public class ContextVariablesTests
     [Fact]
     public void ResolveVariableValue_ResolvesTextValue_WhenTextValueContainsVariableTagInsideText()
     {
-        var variables = new ContextVariables(Substitute.For<IOutput>());
-        variables.SetVariableList(RepositoryLocation.BuiltIn, new List<Variable?> {
+        var contextVariableStorage = new ContextVariableStorage
+        {
+            BuiltIn = new List<Variable> {
             new Variable {
                 Key = "test",
                 Value = new VariableValue("testValue")
-            }
-        });
-        var result = variables.ResolveVariableValue(new VariableValue("this is my {{ test }}"));
+            } }.ToImmutableList()
+        };
+        var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);
+        var result = variableResolver.ResolveVariableValue(new VariableValue("this is my {{ test }}"));
         Assert.Equal("this is my testValue", result?.TextValue);
         Assert.Null(result?.ObjectValue);
         Assert.Null(result?.ListValue);
@@ -49,14 +53,16 @@ public class ContextVariablesTests
     [Fact]
     public void ResolveVariableValue_FailsToResolve_WhenTextValueContainsNonTextVariableTagInsideText()
     {
-        var variables = new ContextVariables(Substitute.For<IOutput>());
-        variables.SetVariableList(RepositoryLocation.BuiltIn, new List<Variable?> {
+        var contextVariableStorage = new ContextVariableStorage
+        {
+            BuiltIn = new List<Variable> {
             new Variable {
                 Key = "test",
                 Value = new VariableValue(new VariableValueObject("key", "testValue"))
-            }
-        });
-        var result = variables.ResolveVariableValue(new VariableValue("this is my {{ test }}"));
+            } }.ToImmutableList()
+        };
+        var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);
+        var result = variableResolver.ResolveVariableValue(new VariableValue("this is my {{ test }}"));
         Assert.Equal("this is my {{ test }}", result?.TextValue);
         Assert.Null(result?.ObjectValue);
         Assert.Null(result?.ListValue);
@@ -65,16 +71,17 @@ public class ContextVariablesTests
     [Fact]
     public void ResolveVariableValue_ResolvesTextValue_WhenTextValueContainsNoVariableTags_AndWholeTextIsTreatedAsVariable()
     {
-        var variables = new ContextVariables(Substitute.For<IOutput>());
-        variables.SetVariableList(RepositoryLocation.BuiltIn, new List<Variable?> 
-        { 
-            new Variable 
-            { 
-                Key = "test", 
+        var contextVariableStorage = new ContextVariableStorage
+        {
+            BuiltIn = new List<Variable> {
+            new Variable
+            {
+                Key = "test",
                 Value = new VariableValue("testValue")
-            } 
-        });
-        var result = variables.ResolveVariableValue(new VariableValue("test"), true);
+            } }.ToImmutableList()
+        };
+        var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);
+        var result = variableResolver.ResolveVariableValue(new VariableValue("test"), true);
         Assert.Equal("testValue", result?.TextValue);
         Assert.Null(result?.ObjectValue);
         Assert.Null(result?.ListValue);
@@ -83,10 +90,9 @@ public class ContextVariablesTests
     [Fact]
     public void ResolveVariableValue_ResolvesObjectValueFromObjectValue_WhenItDoesNotContainVariableTags()
     {
-        var variables = new ContextVariables(Substitute.For<IOutput>());
-        var result = variables.ResolveVariableValue(
-            new VariableValue(new VariableValueObject("test", "testValue"))
-        );
+        var contextVariableStorage = new ContextVariableStorage();
+        var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);
+        var result = variableResolver.ResolveVariableValue(new VariableValue(new VariableValueObject("test", "testValue")));
         Assert.Null(result?.TextValue);
         Assert.Equal("testValue", result?.ObjectValue?["test"]?.TextValue);
         Assert.Null(result?.ListValue);
@@ -95,16 +101,17 @@ public class ContextVariablesTests
     [Fact]
     public void ResolveVariableValue_ResolvesObjectValueFromObjectValue_WhenItContainsVariableTags()
     {
-        var variables = new ContextVariables(Substitute.For<IOutput>());
-        variables.SetVariableList(RepositoryLocation.BuiltIn, new List<Variable?> 
-        { 
-            new Variable 
-            { 
-                Key = "test", 
+        var contextVariableStorage = new ContextVariableStorage
+        {
+            BuiltIn = new List<Variable> {
+            new Variable
+            {
+                Key = "test",
                 Value = new VariableValue(new VariableValueObject("test", "testValue"))
-            } 
-        });
-        var result = variables.ResolveVariableValue(new VariableValue("{{ test }}"));
+            } }.ToImmutableList()
+        };
+        var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);
+        var result = variableResolver.ResolveVariableValue(new VariableValue("{{ test }}"));
         Assert.Null(result?.TextValue);
         Assert.Equal("testValue", result?.ObjectValue?["test"]?.TextValue);
         Assert.Null(result?.ListValue);
@@ -113,9 +120,9 @@ public class ContextVariablesTests
     [Fact]
     public void ResolveVariableValue_ResolvesObjectValueFromObjectValue_WhenItContainsNestedVariableTags()
     {
-        var variables = new ContextVariables(Substitute.For<IOutput>());
-        variables.SetVariableList(RepositoryLocation.BuiltIn, new List<Variable?>
+        var contextVariableStorage = new ContextVariableStorage
         {
+            BuiltIn = new List<Variable> {
             new Variable
             {
                 Key = "test",
@@ -125,9 +132,10 @@ public class ContextVariablesTests
             {
                 Key = "test2",
                 Value = new VariableValue("test2value")
-            }
-        });
-        var result = variables.ResolveVariableValue(new VariableValue("{{ test }}"));
+            } }.ToImmutableList()
+        };
+        var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);
+        var result = variableResolver.ResolveVariableValue(new VariableValue("{{ test }}"));
         Assert.Null(result?.TextValue);
         Assert.Equal("test2value", result?.ObjectValue?["test"]?.TextValue);
         Assert.Null(result?.ListValue);
@@ -136,16 +144,17 @@ public class ContextVariablesTests
     [Fact]
     public void ResolveVariableValue_ResolvesListValueFromTextValue_WhenItContainsVariableTags()
     {
-        var variables = new ContextVariables(Substitute.For<IOutput>());
-        variables.SetVariableList(RepositoryLocation.BuiltIn, new List<Variable?>
+        var contextVariableStorage = new ContextVariableStorage
         {
+            BuiltIn = new List<Variable> {
             new Variable
             {
                 Key = "test",
                 Value = new VariableValue(new VariableValueList("key", "testValue"))
-            }
-        });
-        var result = variables.ResolveVariableValue(new VariableValue("{{ test }}"));
+            } }.ToImmutableList()
+        };
+        var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);
+        var result = variableResolver.ResolveVariableValue(new VariableValue("{{ test }}"));
         Assert.Null(result?.TextValue);
         Assert.Null(result?.ObjectValue);
         Assert.Equal("testValue", result?.ListValue?.FirstOrDefault()?["key"].TextValue);
@@ -154,14 +163,16 @@ public class ContextVariablesTests
     [Fact]
     public void ResolveVariableValue_ResolvesDeepProperty_FromObject()
     {
-        var variables = new ContextVariables(Substitute.For<IOutput>());
-        variables.SetVariableList(RepositoryLocation.BuiltIn, new List<Variable?> {
+        var contextVariableStorage = new ContextVariableStorage
+        {
+            BuiltIn = new List<Variable> {
             new Variable {
                 Key = "test",
                 Value = new VariableValue(new VariableValueObject("key", "innerObject").With("value", new VariableValue("innerText")))
-            }
-        });
-        var result = variables.ResolveVariableValue(new VariableValue("{{ test.value }}"));
+            } }.ToImmutableList()
+        };
+        var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);
+        var result = variableResolver.ResolveVariableValue(new VariableValue("{{ test.value }}"));
         Assert.Equal("innerText", result?.TextValue);
         Assert.Null(result?.ObjectValue);
         Assert.Null(result?.ListValue);

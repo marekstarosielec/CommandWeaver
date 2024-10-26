@@ -6,10 +6,6 @@ namespace Cli2Context;
 
 public class ContextVariables : IContextVariables
 {
-    //private readonly List<Variable> _builtIn = new();
-    //private readonly List<Variable> _local = new();
-    //private readonly List<Variable> _session = new();
-    //private readonly List<Variable> _changes = new();
     private readonly ContextVariableStorage _variableStorage = new();
     private readonly ContextVariableResolver _variableResolver;
 

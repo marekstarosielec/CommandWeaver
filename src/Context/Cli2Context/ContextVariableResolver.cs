@@ -11,56 +11,6 @@ namespace Cli2Context;
 internal class ContextVariableResolver(IOutput output, ContextVariableStorage variableStorage)
 {
     /// <summary>
-    /// Resolves a single variable value by searching across repository locations in the order: 
-    /// Changes, Session, Local, then BuiltIn.
-    /// </summary>
-    /// <param name="variableName">The name of the variable to resolve.</param>
-    /// <returns>The resolved variable value, or null if the variable is not found.</returns>
-    private VariableValue? ResolveSingleValue(string variableName)
-    {
-        var builtIn = GetSubValue(variableStorage.BuiltIn, variableName);
-        var local = GetSubValue(variableStorage.Local, variableName);
-        var session = GetSubValue(variableStorage.Session, variableName);
-        var changes = GetSubValue(variableStorage.Changes, variableName);
-
-        // var isList = false;
-        // if (KeyIsTopLevel(key) &&
-        //     (builtIn?.ListValue != null 
-        //     || local?.ListValue != null
-        //     || session?.ListValue != null
-        //     || changes?.ListValue != null))
-        //     isList = true; // If the whole variable value is requested and it is a list, values from all locations will be combined.
-
-        // if (!isList)
-        return changes ?? session ?? local ?? builtIn;
-        // else
-        // {
-        //     // Return all rows
-        //     var result = new VariableValueList();
-        //     if (changes?.ListValue != null)
-        //         foreach (var item in changes.ListValue)
-        //             result.Add(item);
-
-        //     if (session?.ListValue != null)
-        //         foreach (var item in session.ListValue)
-        //             if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
-        //                 result.Add(item);
-
-        //     if (local?.ListValue != null)
-        //         foreach (var item in local.ListValue)
-        //             if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
-        //                 result.Add(item);
-
-        //     if (builtIn?.ListValue != null)
-        //         foreach (var item in builtIn.ListValue)
-        //             if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
-        //                 result.Add(item);
-
-        //     return new VariableValue { ListValue = result };
-        // }
-    }
-
-    /// <summary>
     /// Resolves the given variable value, attempting to interpret any text or embedded objects that might reference other variables.
     /// </summary>
     /// <param name="variableValue">The variable value to resolve.</param>
@@ -105,7 +55,7 @@ internal class ContextVariableResolver(IOutput output, ContextVariableStorage va
         if (resolvedVariable == null)
             return null;
 
-        var wholeKeyIsSingleVariable = Regex.IsMatch(resolvedKey, @$"^\{{{{\s*{Regex.Escape(variableName)}\s*\}}}}$");
+        var wholeKeyIsSingleVariable = resolvedKey.StartsWith("{{") && resolvedKey.EndsWith("}}") && resolvedKey.Trim('{', '}', ' ').Equals(variableName, StringComparison.OrdinalIgnoreCase);
 
         if (wholeKeyIsSingleVariable)
             return ResolveVariableValue(resolvedVariable);
@@ -165,13 +115,63 @@ internal class ContextVariableResolver(IOutput output, ContextVariableStorage va
     }
 
     /// <summary>
+    /// Resolves a single variable value by searching across repository locations in the order: 
+    /// Changes, Session, Local, then BuiltIn.
+    /// </summary>
+    /// <param name="variableName">The name of the variable to resolve.</param>
+    /// <returns>The resolved variable value, or null if the variable is not found.</returns>
+    private VariableValue? ResolveSingleValue(string variableName)
+    {
+        var builtIn = ResolveSingleValueFromSingleList(variableStorage.BuiltIn, variableName);
+        var local = ResolveSingleValueFromSingleList(variableStorage.Local, variableName);
+        var session = ResolveSingleValueFromSingleList(variableStorage.Session, variableName);
+        var changes = ResolveSingleValueFromSingleList(variableStorage.Changes, variableName);
+
+        // var isList = false;
+        // if (KeyIsTopLevel(key) &&
+        //     (builtIn?.ListValue != null 
+        //     || local?.ListValue != null
+        //     || session?.ListValue != null
+        //     || changes?.ListValue != null))
+        //     isList = true; // If the whole variable value is requested and it is a list, values from all locations will be combined.
+
+        // if (!isList)
+        return changes ?? session ?? local ?? builtIn;
+        // else
+        // {
+        //     // Return all rows
+        //     var result = new VariableValueList();
+        //     if (changes?.ListValue != null)
+        //         foreach (var item in changes.ListValue)
+        //             result.Add(item);
+
+        //     if (session?.ListValue != null)
+        //         foreach (var item in session.ListValue)
+        //             if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
+        //                 result.Add(item);
+
+        //     if (local?.ListValue != null)
+        //         foreach (var item in local.ListValue)
+        //             if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
+        //                 result.Add(item);
+
+        //     if (builtIn?.ListValue != null)
+        //         foreach (var item in builtIn.ListValue)
+        //             if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
+        //                 result.Add(item);
+
+        //     return new VariableValue { ListValue = result };
+        // }
+    }
+
+    /// <summary>
     /// Finds the value of a variable by key within a list of variables. 
     /// Supports nested access using keys with properties or list indices.
     /// </summary>
     /// <param name="variables">The list of variables to search within.</param>
     /// <param name="key">The full key for the variable, in the form variable.property[listIndex].subProperty.</param>
     /// <returns>The resolved <see cref="VariableValue"/> or null if the key is not found.</returns>
-    private VariableValue? GetSubValue(IEnumerable<Variable> variables, string key)
+    private VariableValue? ResolveSingleValueFromSingleList(IEnumerable<Variable> variables, string key)
     {
         VariableValue? result = null;
         var pattern = @"([a-zA-Z0-9_\-\s]+)|\[(.*?)\]";
