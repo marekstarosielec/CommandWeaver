@@ -2,6 +2,8 @@
 
 public record VariableValue
 {
+    public VariableValue() { }
+
     public VariableValue(string? textValue) => TextValue = textValue;
 
     public VariableValue(VariableValueObject? objectValue) => ObjectValue = objectValue;

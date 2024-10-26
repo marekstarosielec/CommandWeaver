@@ -6,10 +6,16 @@ namespace Cli2Context;
 
 public class ContextVariables : IContextVariables
 {
-    private readonly ContextVariableStorage _variableStorage = new();
+    private readonly ContextVariableStorage _variableStorage;
     private readonly ContextVariableResolver _variableResolver;
 
-    public ContextVariables(IOutput output) => _variableResolver = new ContextVariableResolver(output, _variableStorage);
+    public ContextVariables(IOutput output) : this(output, new ContextVariableStorage()) { }
+
+    internal ContextVariables(IOutput output, ContextVariableStorage variableStorage)
+    {
+        _variableStorage = variableStorage ?? new ContextVariableStorage();
+        _variableResolver = new ContextVariableResolver(output, _variableStorage);
+    }
 
     public string CurrentSessionName
     {

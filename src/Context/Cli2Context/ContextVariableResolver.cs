@@ -70,7 +70,7 @@ internal class ContextVariableResolver(IOutput output, ContextVariableStorage va
         var resolvedVariable = ResolveSingleValue(variableName);
 
         if (resolvedVariable == null)
-            return null;
+            return new VariableValue();
 
         var wholeKeyIsSingleVariable = resolvedKey.StartsWith("{{") && resolvedKey.EndsWith("}}") && resolvedKey.Trim('{', '}', ' ').Equals(variableName, StringComparison.OrdinalIgnoreCase);
 
@@ -141,7 +141,7 @@ internal class ContextVariableResolver(IOutput output, ContextVariableStorage va
     /// </summary>
     /// <param name="variableName">The name of the variable to resolve.</param>
     /// <returns>The resolved variable value, or null if the variable is not found.</returns>
-    private VariableValue? ResolveSingleValue(string variableName)
+    internal VariableValue? ResolveSingleValue(string variableName)
     {
         var builtIn = ResolveSingleValueFromSingleList(variableStorage.BuiltIn, variableName);
         var local = ResolveSingleValueFromSingleList(variableStorage.Local, variableName);
