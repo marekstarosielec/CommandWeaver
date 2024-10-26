@@ -178,59 +178,60 @@ public class ContextVariableResolverTests
         Assert.Null(result?.ListValue);
     }
 
-    //    [Fact]
-    //    public void GetValueAsString_ReturnsStringWithoutAnyEvaluation_IfKeyDoesNotContainVariables()
-    //    {
-    //        var variables = new ContextVariables();
-    //        var result = variables.GetValueAsString("test");
-    //        Assert.Equal("test", result);
-    //    }
+    [Fact]
+    public void ResolveVariableValue_DoesNotThrow_WhenSelfReferencinVariableExists()
+    {
+        var contextVariableStorage = new ContextVariableStorage
+        {
+            BuiltIn = new List<Variable> {
+            new Variable {
+                Key = "test",
+                Value = new VariableValue("{{ test }}")
+            } }.ToImmutableList()
+        };
+        var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);
+        var result = variableResolver.ResolveVariableValue(new VariableValue("{{ test }}"));
+        Assert.Equal("{{ test }}", result?.TextValue);
+        Assert.Null(result?.ObjectValue);
+        Assert.Null(result?.ListValue);
+    }
 
-    //    [Fact]
-    //    public void GetValueAsString_ReturnsStringWithEvaluation_IfKeyContainsVariables()
-    //    {
-    //        var variables = new ContextVariables();
-    //        variables.SetVariableList(Models.RepositoryLocation.BuiltIn, [new() { Key = "abc", Value = "value" }]);
-    //        var result = variables.GetValueAsString("test{{ abc }}");
-    //        Assert.Equal("testvalue", result);
-    //    }
+    [Fact]
+    public void ResolveVariableValue_ResolvesElementOfList()
+    {
+        var contextVariableStorage = new ContextVariableStorage
+        {
+            BuiltIn = new List<Variable> {
+            new Variable {
+                Key = "test",
+                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject("key","value1")).Add(new VariableValueObject("key","value2")))
+            } }.ToImmutableList()
+        };
+        var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);
+        var result = variableResolver.ResolveVariableValue(new VariableValue("{{ test[value1] }}"));
+        Assert.Null(result?.TextValue);
+        Assert.Equal("value1", result?.ObjectValue?["key"]?.TextValue);
+        Assert.Null(result?.ListValue);
+    }
 
-    //    [Fact]
-    //    public void GetValueAsString_ReturnsStringWithEvaluation_IfKeyIsVariable()
-    //    {
-    //        var variables = new ContextVariables();
-    //        variables.SetVariableList(Models.RepositoryLocation.BuiltIn, [new() { Key = "abc", Value = "value" }]);
-    //        var result = variables.GetValueAsString("{{ abc }}");
-    //        Assert.Equal("value", result);
-    //    }
+    [Fact]
+    public void ResolveVariableValue_ResolvesPropertyOfElementOfList()
+    {
+        var contextVariableStorage = new ContextVariableStorage
+        {
+            BuiltIn = new List<Variable> {
+            new Variable {
+                Key = "test",
+                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value1")).With("prop",new VariableValue("valueProp1"))).Add(new VariableValueObject().With("key",new VariableValue("value2")).With("prop",new VariableValue("valueProp2"))))
+            } }.ToImmutableList()
+        };
+        var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);
+        var result = variableResolver.ResolveVariableValue(new VariableValue("{{ test[value2].prop }}"));
+        Assert.Equal("valueProp2", result?.TextValue);
+        Assert.Null(result?.ObjectValue);
+        Assert.Null(result?.ListValue);
+    }
 
-    //    [Fact]
-    //    public void GetValueAsString_ReturnsStringWithEvaluation_IfKeyContainsNestedVariables()
-    //    {
-    //        var variables = new ContextVariables();
-    //        variables.SetVariableList(Models.RepositoryLocation.BuiltIn, [new() { Key = "abcnested", Value = "value" }, new() { Key = "123", Value = "nested" }]);
-    //        var result = variables.GetValueAsString("test{{ abc{{ 123 }} }}");
-    //        Assert.Equal("testvalue", result);
-    //    }
-
-
-    //    [Fact]
-    //    public void GetValueAsString_ReturnsStringWithEvaluation_IfKeyContainsMultipleNestedVariables()
-    //    {
-    //        var variables = new ContextVariables();
-    //        variables.SetVariableList(Models.RepositoryLocation.BuiltIn, [new() { Key = "abcnested", Value = "value" }, new() { Key = "123", Value = "nested" }, new() { Key = "def", Value = "defValue" }]);
-    //        var result = variables.GetValueAsString("test{{ abc{{ 123 }} }}div{{ def}}{{ def}}");
-    //        Assert.Equal("testvaluedivdefValuedefValue", result);
-    //    }
-
-    //    [Fact]
-    //    public void GetValueAsString_ReturnsStringWithEvaluation_IfValueContainsAnotherVariable()
-    //    {
-    //        var variables = new ContextVariables();
-    //        variables.SetVariableList(Models.RepositoryLocation.BuiltIn, [new() { Key = "123", Value = "{{abc}}" }, new() { Key = "abc", Value = "result" }]);
-    //        var result = variables.GetValueAsString("test{{123}}");
-    //        Assert.Equal("testresult", result);
-    //    }
 
     //    //     [Fact]
     //    //     public void ContextVariables_ReturnsValueFromBuiltIn_IfOthersWereNotProvided()

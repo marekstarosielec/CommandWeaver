@@ -14,21 +14,37 @@ internal class ContextVariableResolver(IOutput output, ContextVariableStorage va
     /// Resolves the given variable value, attempting to interpret any text or embedded objects that might reference other variables.
     /// </summary>
     /// <param name="variableValue">The variable value to resolve.</param>
-    /// <param name="treatTextValueAsVariable">If true, treats text values as potential variable names for resolution.</param>
+    /// <param name="treatTextValueAsVariable">If true, treats text value as variable name for resolution.</param>
     /// <returns>The resolved <see cref="VariableValue"/> or null if unresolved.</returns>
     public VariableValue? ResolveVariableValue(VariableValue? variableValue, bool treatTextValueAsVariable = false)
+        => ResolveVariableValue(variableValue, treatTextValueAsVariable, 0);
+
+    /// <summary>
+    /// Contains additional parameter for counting variables resolving depth. It allows to avoid StackOverflowException in case of self-referencing variable.
+    /// </summary>
+    /// <param name="variableValue">The variable value to resolve.</param>
+    /// <param name="treatTextValueAsVariable">If true, treats text values as potential variable name for resolution.</param>
+    /// <param name="depth">Current resolving depth.</param>
+    /// <returns></returns>
+    private VariableValue? ResolveVariableValue(VariableValue? variableValue, bool treatTextValueAsVariable, int depth)
     {
         if (variableValue == null)
             return null;
 
+        depth++;
+        if (depth > 50)
+        {
+            output.Error("Too deep variable resolving. Make sure that you have no circular reference.");
+            return variableValue;
+        }
         var result = variableValue with { };
 
         if (result.TextValue != null)
-            result = ResolveTextKey(result.TextValue, treatTextValueAsVariable) ?? variableValue;
+            result = ResolveTextKey(result.TextValue, treatTextValueAsVariable, depth) ?? variableValue;
         if (result?.ObjectValue != null)
-            result = ResolveObjectKey(result.ObjectValue);
+            result = ResolveObjectKey(result.ObjectValue, depth);
         if (result?.ListValue != null)
-            result = ResolveListKey(result.ListValue);
+            result = ResolveListKey(result.ListValue, depth);
 
         return result;
     }
@@ -38,8 +54,9 @@ internal class ContextVariableResolver(IOutput output, ContextVariableStorage va
     /// </summary>
     /// <param name="key">The text key containing potential variable tags.</param>
     /// <param name="treatTextValueAsVariable">Indicates if the text should be treated as a variable name.</param>
+    /// <param name="depth">Current resolving depth.</param>
     /// <returns>The resolved variable value, or null if the resolution fails.</returns>
-    private VariableValue? ResolveTextKey(string key, bool treatTextValueAsVariable)
+    private VariableValue? ResolveTextKey(string key, bool treatTextValueAsVariable, int depth)
     {
         if (string.IsNullOrWhiteSpace(key))
             return null;
@@ -58,13 +75,15 @@ internal class ContextVariableResolver(IOutput output, ContextVariableStorage va
         var wholeKeyIsSingleVariable = resolvedKey.StartsWith("{{") && resolvedKey.EndsWith("}}") && resolvedKey.Trim('{', '}', ' ').Equals(variableName, StringComparison.OrdinalIgnoreCase);
 
         if (wholeKeyIsSingleVariable)
-            return ResolveVariableValue(resolvedVariable);
+            //If whole key is variable name, it can be replaced by any type.
+            return ResolveVariableValue(resolvedVariable, false, depth);
 
         if (resolvedVariable.TextValue != null)
         {
+            //If variable name is just part of text, it can be replaced only by text.
             string pattern = $@"\{{\{{\s*{Regex.Escape(variableName)}\s*\}}\}}";
             resolvedKey = Regex.Replace(resolvedKey, pattern, resolvedVariable.TextValue);
-            return ResolveVariableValue(new VariableValue(resolvedKey));
+            return ResolveVariableValue(new VariableValue(resolvedKey), false, depth);
         }
 
         output.Error($"{{{{ {variableName} }}}} resolved to a non-text value, it cannot be part of text.");
@@ -75,8 +94,9 @@ internal class ContextVariableResolver(IOutput output, ContextVariableStorage va
     /// Resolves a variable object by recursively resolving its properties.
     /// </summary>
     /// <param name="key">The variable object with properties containing variable tags.</param>
+    /// <param name="depth">Current resolving depth.</param>
     /// <returns>The resolved object with resolved properties.</returns>
-    private VariableValue? ResolveObjectKey(VariableValueObject key)
+    private VariableValue? ResolveObjectKey(VariableValueObject key, int depth)
     {
         if (key == null)
             return null;
@@ -84,7 +104,7 @@ internal class ContextVariableResolver(IOutput output, ContextVariableStorage va
         var result = new Dictionary<string, VariableValue?>();
 
         foreach (var keyProperty in key.Keys)
-            result[keyProperty] = ResolveVariableValue(key[keyProperty]);
+            result[keyProperty] = ResolveVariableValue(key[keyProperty], false, depth);
 
         return new VariableValue(new VariableValueObject(result));
     }
@@ -93,8 +113,9 @@ internal class ContextVariableResolver(IOutput output, ContextVariableStorage va
     /// Resolves a variable list by recursively resolving each element's properties.
     /// </summary>
     /// <param name="key">The list containing elements with properties that might have variable tags.</param>
+    /// <param name="depth">Current resolving depth.</param>
     /// <returns>The resolved list.</returns>
-    private VariableValue? ResolveListKey(VariableValueList key)
+    private VariableValue? ResolveListKey(VariableValueList key, int depth)
     {
         if (key == null)
             return null;
@@ -106,7 +127,7 @@ internal class ContextVariableResolver(IOutput output, ContextVariableStorage va
             var resolvedElement = new Dictionary<string, VariableValue?>();
 
             foreach (var keyProperty in listElement.Keys)
-                resolvedElement[keyProperty] = ResolveVariableValue(listElement[keyProperty]);
+                resolvedElement[keyProperty] = ResolveVariableValue(listElement[keyProperty], false, depth);
 
             result.Add(resolvedElement);
         }

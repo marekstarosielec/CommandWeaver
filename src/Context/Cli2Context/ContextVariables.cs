@@ -67,21 +67,6 @@ public class ContextVariables : IContextVariables
         //     existingVariable.Value = new VariableValue { TextValue = (string?)value };
     }
 
-    /// <inheritdoc />
-    // public VariableValue? ResolveVariableValue(VariableValue? variableValue, bool treatTextValueAsVariable = false)
-    // {
-    //     if (variableValue == null)
-    //         return null;
-    //     var result = variableValue with { };
-    //     if (result.TextValue != null)
-    //         result = ResolveTextKey(variableValue.TextValue, treatTextValueAsVariable) ?? variableValue;
-    //     if (result?.ObjectValue != null)
-    //         result = ResolveObjectKey(result.ObjectValue);
-    //     if (result?.ListValue != null)
-    //         result = ResolveListKey(result.ListValue);
-
-    //     return result;
-    // }
 
     /// <summary>
     /// Indicates if key points to top level of variable value (whole variable value).
