@@ -232,9 +232,101 @@ public class ContextVariableResolverTests
         Assert.Null(result?.ListValue);
     }
 
+    [Fact]
+    public void ResolveSingleValue_ResolvesListFromAllLists()
+    {
+        var contextVariableStorage = new ContextVariableStorage
+        {
+            BuiltIn = new List<Variable> {
+            new Variable {
+                Key = "test",
+                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value1")).With("prop",new VariableValue("valueProp1"))))
+            } }.ToImmutableList(),
+            Local = new List<Variable> {
+            new Variable {
+                Key = "test",
+                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value2")).With("prop",new VariableValue("valueProp2"))))
+            } }.ToImmutableList(),
+            Session = new List<Variable> {
+            new Variable {
+                Key = "test",
+                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value3")).With("prop",new VariableValue("valueProp3"))))
+            } }.ToImmutableList()
+        };
+        contextVariableStorage.Changes.Add(new Variable
+        {
+            Key = "test",
+            Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key", new VariableValue("value4")).With("prop", new VariableValue("valueProp4"))))
+        });
+        var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);
+        var result = variableResolver.ResolveSingleValue("test");
+        Assert.Null(result?.TextValue);
+        Assert.Null(result?.ObjectValue);
+        Assert.Equal("valueProp1", result?.ListValue?.FirstOrDefault(k => k["key"].TextValue=="value1")?["prop"].TextValue);
+        Assert.Equal("valueProp2", result?.ListValue?.FirstOrDefault(k => k["key"].TextValue == "value2")?["prop"].TextValue);
+        Assert.Equal("valueProp3", result?.ListValue?.FirstOrDefault(k => k["key"].TextValue == "value3")?["prop"].TextValue);
+        Assert.Equal("valueProp4", result?.ListValue?.FirstOrDefault(k => k["key"].TextValue == "value4")?["prop"].TextValue);
+    }
 
     [Fact]
-    public void ContextVariables_ReturnsValueFromLocal_IfSessionWasNotProvided()
+    public void ResolveSingleValue_OverridesListValues()
+    {
+        var contextVariableStorage = new ContextVariableStorage
+        {
+            BuiltIn = new List<Variable> {
+            new Variable {
+                Key = "test",
+                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value1")).With("prop",new VariableValue("valueProp1"))))
+            } }.ToImmutableList(),
+            Local = new List<Variable> {
+            new Variable {
+                Key = "test",
+                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value2")).With("prop",new VariableValue("valueProp2"))))
+            } }.ToImmutableList(),
+            Session = new List<Variable> {
+            new Variable {
+                Key = "test",
+                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value2")).With("prop",new VariableValue("newValue"))))
+            } }.ToImmutableList()
+        };
+        var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);
+        var result = variableResolver.ResolveSingleValue("test");
+        Assert.Null(result?.TextValue);
+        Assert.Null(result?.ObjectValue);
+        Assert.Equal("valueProp1", result?.ListValue?.FirstOrDefault(k => k["key"].TextValue == "value1")?["prop"].TextValue);
+        Assert.Equal("newValue", result?.ListValue?.FirstOrDefault(k => k["key"].TextValue == "value2")?["prop"].TextValue);
+    }
+
+    [Fact]
+    public void ResolveSingleValue_TakesPropertyFromOverriddenListValue()
+    {
+        var contextVariableStorage = new ContextVariableStorage
+        {
+            BuiltIn = new List<Variable> {
+            new Variable {
+                Key = "test",
+                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value1")).With("prop",new VariableValue("valueProp1"))))
+            } }.ToImmutableList(),
+            Local = new List<Variable> {
+            new Variable {
+                Key = "test",
+                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value2")).With("prop",new VariableValue("valueProp2"))))
+            } }.ToImmutableList(),
+            Session = new List<Variable> {
+            new Variable {
+                Key = "test",
+                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value2")).With("prop",new VariableValue("newValue"))))
+            } }.ToImmutableList()
+        };
+        var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);
+        var result = variableResolver.ResolveSingleValue("test[value2].prop");
+        Assert.Equal("newValue", result?.TextValue);
+        Assert.Null(result?.ObjectValue);
+        Assert.Null(result?.ListValue);
+    }
+
+    [Fact]
+    public void ResolveSingleValue_ReturnsValueFromLocal_IfSessionWasNotProvided()
     {
         var contextVariableStorage = new ContextVariableStorage
         {
@@ -257,7 +349,7 @@ public class ContextVariableResolverTests
     }
 
     [Fact]
-    public void ContextVariables_ReturnsValueFromSession_IfSessionWasProvided()
+    public void ResolveSingleValue_ReturnsValueFromSession_IfSessionWasProvided()
     {
         var contextVariableStorage = new ContextVariableStorage
         {
@@ -285,7 +377,7 @@ public class ContextVariableResolverTests
     }
 
     [Fact]
-    public void ContextVariables_ReturnsValueFromChanges_IfSessionWasProvided()
+    public void ResolveSingleValue_ReturnsValueFromChanges_IfSessionWasProvided()
     {
         var contextVariableStorage = new ContextVariableStorage
         {

@@ -7,6 +7,8 @@ public record VariableValueList : IEnumerable<VariableValueObject>
 {
     private ImmutableList<VariableValueObject> _items = ImmutableList<VariableValueObject>.Empty;
 
+    //TODO: Clean constructors here and other models.
+
     // Constructor that creates empty object
     public VariableValueList() { }
 

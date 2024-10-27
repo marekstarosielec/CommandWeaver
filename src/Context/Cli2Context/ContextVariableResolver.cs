@@ -148,41 +148,44 @@ internal class ContextVariableResolver(IOutput output, ContextVariableStorage va
         var session = ResolveSingleValueFromSingleList(variableStorage.Session, variableName);
         var changes = ResolveSingleValueFromSingleList(variableStorage.Changes, variableName);
 
-        // var isList = false;
-        // if (KeyIsTopLevel(key) &&
-        //     (builtIn?.ListValue != null 
-        //     || local?.ListValue != null
-        //     || session?.ListValue != null
-        //     || changes?.ListValue != null))
-        //     isList = true; // If the whole variable value is requested and it is a list, values from all locations will be combined.
+        var isList = false;
+        var variableNameIsTopLevel = variableName.IndexOfAny(['.', '[']) == -1;
+        if (variableNameIsTopLevel &&
+            (builtIn?.ListValue != null
+            || local?.ListValue != null
+            || session?.ListValue != null
+            || changes?.ListValue != null))
+            isList = true; // If the whole variable value is requested and it is a list, values from all locations will be combined.
 
-        // if (!isList)
-        return changes ?? session ?? local ?? builtIn;
-        // else
-        // {
-        //     // Return all rows
-        //     var result = new VariableValueList();
-        //     if (changes?.ListValue != null)
-        //         foreach (var item in changes.ListValue)
-        //             result.Add(item);
+        if (!isList)
+            return changes ?? session ?? local ?? builtIn;
+        else
+        {
+            // Return all rows
+            var result = new VariableValueList();
 
-        //     if (session?.ListValue != null)
-        //         foreach (var item in session.ListValue)
-        //             if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
-        //                 result.Add(item);
+            //TODO: here are new instances created all the time. Make this more effective.
+            if (changes?.ListValue != null)
+                foreach (var item in changes.ListValue)
+                    result = result.Add(item);
 
-        //     if (local?.ListValue != null)
-        //         foreach (var item in local.ListValue)
-        //             if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
-        //                 result.Add(item);
+            if (session?.ListValue != null)
+                foreach (var item in session.ListValue)
+                    if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
+                        result = result.Add(item);
 
-        //     if (builtIn?.ListValue != null)
-        //         foreach (var item in builtIn.ListValue)
-        //             if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
-        //                 result.Add(item);
+            if (local?.ListValue != null)
+                foreach (var item in local.ListValue)
+                    if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
+                        result = result.Add(item);
 
-        //     return new VariableValue { ListValue = result };
-        // }
+            if (builtIn?.ListValue != null)
+                foreach (var item in builtIn.ListValue)
+                    if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
+                        result = result.Add(item);
+
+            return new VariableValue { ListValue = result };
+        }
     }
 
     /// <summary>
