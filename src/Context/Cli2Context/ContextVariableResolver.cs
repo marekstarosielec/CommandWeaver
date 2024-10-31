@@ -120,7 +120,7 @@ internal class ContextVariableResolver(IOutput output, ContextVariableStorage va
         if (key == null)
             return null;
 
-        var result = new List<Dictionary<string, VariableValue?>>();
+        var result = new List<VariableValueObject>();
 
         foreach (var listElement in key)
         {
@@ -129,7 +129,7 @@ internal class ContextVariableResolver(IOutput output, ContextVariableStorage va
             foreach (var keyProperty in listElement.Keys)
                 resolvedElement[keyProperty] = ResolveVariableValue(listElement[keyProperty], false, depth);
 
-            result.Add(resolvedElement);
+            result.Add(new VariableValueObject(resolvedElement));
         }
 
         return new VariableValue(new VariableValueList(result));

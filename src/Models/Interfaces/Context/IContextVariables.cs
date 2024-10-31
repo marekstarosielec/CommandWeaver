@@ -4,7 +4,7 @@ public interface IContextVariables
 {
     string CurrentSessionName { get; set; }
     string? CurrentlyProcessedElement { get; set; }
-    void SetVariableList(RepositoryLocation repositoryLocation, List<Variable?> elementsWithContent);
+    void SetVariableList(RepositoryLocation repositoryLocation, List<Variable?> elementsWithContent, string locationId);
 
     /// <summary>
     /// Resolves all the variable tags inside given value.
@@ -17,5 +17,5 @@ public interface IContextVariables
 
    
 
-    void SetVariableValue(VariableScope scope, string variableName, object? value, string? description = null);
+    void SetVariableValue(VariableScope scope, string variableName, VariableValue value, string? description = null);
 }

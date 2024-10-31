@@ -12,12 +12,7 @@ public record VariableValueList : IEnumerable<VariableValueObject>
     // Constructor that creates empty object
     public VariableValueList() { }
 
-    // Constructor that accepts a single text value
-    public VariableValueList(string property, string? textValue) => _items = ImmutableList<VariableValueObject>.Empty.Add(new VariableValueObject(property, new VariableValue(textValue)));
-
-    // Constructor that accepts a regular list
-    public VariableValueList(IList<Dictionary<string, VariableValue?>> items) => _items = ImmutableList<VariableValueObject>.Empty.AddRange(items.Select(i => new VariableValueObject(i)));
-
+    public VariableValueList(IList<VariableValueObject> items) => _items = items.ToImmutableList();
 
     // Indexer to access list elements
     public VariableValueObject this[int index] => _items[index];

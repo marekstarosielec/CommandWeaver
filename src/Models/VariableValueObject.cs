@@ -10,14 +10,7 @@ public record VariableValueObject
     public VariableValueObject() { }
 
     // Constructor that accepts a regular Dictionary
-    public VariableValueObject(IDictionary<string, VariableValue?> dictionary) => _data = ImmutableDictionary<string, VariableValue?>.Empty.AddRange(dictionary);
-
-    // Constructor that accepts a single text value
-    public VariableValueObject(string property, string? textValue) => _data = ImmutableDictionary<string, VariableValue?>.Empty.Add(property, new VariableValue(textValue));
-
-    // Constructor that accepts a whole VariableValue
-    public VariableValueObject(string property, VariableValue? value) => _data = ImmutableDictionary<string, VariableValue?>.Empty.Add(property, value);
-
+    public VariableValueObject(IDictionary<string, VariableValue?> dictionary) => _data = dictionary.ToImmutableDictionary();
 
     // Indexer for dictionary-like access
     public VariableValue this[string key] => _data[key] ?? throw new ArgumentOutOfRangeException(nameof(key));

@@ -121,7 +121,7 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
         {
             var arrayElementContents = ReadElement(arrayElement);
             var dictionary = arrayElementContents?.ObjectValue;
-            dictionary ??= new VariableValueObject("key", arrayElementContents);
+            dictionary ??= new VariableValueObject(new Dictionary<string, VariableValue?> { { "key", arrayElementContents } });// new VariableValueObject("key", arrayElementContents);
             list.Add(dictionary);
         }
         return new VariableValue(list);

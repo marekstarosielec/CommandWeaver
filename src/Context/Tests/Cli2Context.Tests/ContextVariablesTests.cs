@@ -30,4 +30,59 @@ public class ContextVariablesTests
         Assert.Equal("session1", contextVariables.CurrentSessionName);
     }
 
+    [Fact]
+    public void ContextVariables_UpdatesTextVariable_WhenItWasNotDefined()
+    {
+        var contextVariableStorage = new ContextVariableStorage
+        {
+            BuiltIn = ImmutableList<Variable>.Empty
+        };
+        var contextVariables = new ContextVariables(Substitute.For<IOutput>(), contextVariableStorage);
+        contextVariables.SetVariableValue(VariableScope.Command, "testVariable", new VariableValue("variableText"), "testDescription");
+        Assert.Single(contextVariableStorage.Changes);
+        Assert.Equal(VariableScope.Command, contextVariableStorage.Changes.First().Scope);
+        Assert.Equal("testVariable", contextVariableStorage.Changes.First().Key);
+        Assert.Equal("variableText", contextVariableStorage.Changes.First().Value?.TextValue);
+        Assert.Equal("testDescription", contextVariableStorage.Changes.First().Description);
+    }
+
+    [Fact]
+    public void ContextVariables_UpdatesObjectVariable_WhenItWasNotDefined()
+    {
+        var newVariableValueObject = new VariableValueObject(new Dictionary<string, VariableValue?>
+        {
+            { "objectProperty", new VariableValue("objectPropertyValue") }
+        });
+        var newVariableValue = new VariableValue { ObjectValue = newVariableValueObject };
+        var contextVariableStorage = new ContextVariableStorage
+        {
+            BuiltIn = ImmutableList<Variable>.Empty
+        };
+        var contextVariables = new ContextVariables(Substitute.For<IOutput>(), contextVariableStorage);
+        contextVariables.SetVariableValue(VariableScope.Command, "testVariable", newVariableValue, "testDescription");
+        Assert.Single(contextVariableStorage.Changes);
+        Assert.Equal(VariableScope.Command, contextVariableStorage.Changes.First().Scope);
+        Assert.Equal("testVariable", contextVariableStorage.Changes.First().Key);
+        Assert.Equal("objectPropertyValue", contextVariableStorage.Changes.First().Value?.ObjectValue?["objectProperty"]?.TextValue);
+        Assert.Equal("testDescription", contextVariableStorage.Changes.First().Description);
+    }
+
+    [Fact]
+    public void ContextVariables_UpdatesListVariable_WhenItWasNotDefined()
+    {
+        var newVariableValue = new VariableValueFactory().List().AddElementWithTextProperty("firstElement", "property", "propertyValue1").AddElementWithTextProperty("secondElement", "property", "propertyValue2").Build();
+        var contextVariableStorage = new ContextVariableStorage
+        {
+            BuiltIn = ImmutableList<Variable>.Empty
+        };
+        var contextVariables = new ContextVariables(Substitute.For<IOutput>(), contextVariableStorage);
+        contextVariables.SetVariableValue(VariableScope.Command, "testVariable", newVariableValue, "testDescription");
+        Assert.Single(contextVariableStorage.Changes);
+        Assert.Equal(VariableScope.Command, contextVariableStorage.Changes.First().Scope);
+        Assert.Equal("testVariable", contextVariableStorage.Changes.First().Key);
+        Assert.Equal("propertyValue1", contextVariableStorage.Changes.First().Value?.ListValue?.FirstOrDefault()?["property"]?.TextValue);
+        Assert.Equal("propertyValue2", contextVariableStorage.Changes.First().Value?.ListValue?.LastOrDefault()?["property"]?.TextValue);
+        Assert.Equal("testDescription", contextVariableStorage.Changes.First().Description);
+    }
+
 }

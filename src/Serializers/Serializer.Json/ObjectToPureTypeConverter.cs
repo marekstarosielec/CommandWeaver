@@ -66,7 +66,7 @@ public class ObjectToPureTypeConverter : JsonConverter<VariableValue?>
         {
             var element = Read(ref reader, typeToConvert, options);
             var dictionaryElement = element?.ObjectValue;
-            dictionaryElement ??= new VariableValueObject("key", element);
+            dictionaryElement ??= new VariableValueObject(new Dictionary<string, VariableValue?> { { "key", element } });
             list.Add(dictionaryElement);
         }
         return new VariableValue(list);

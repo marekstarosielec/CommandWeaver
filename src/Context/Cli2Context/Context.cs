@@ -28,9 +28,9 @@ public class Context(IRepository repository, ISerializerFactory serializerFactor
 
     public async Task Run(string commandLineArguments, CancellationToken cancellationToken = default)
     {
-        Variables.SetVariableValue(VariableScope.Command, "BuiltInPath", repository.GetPath(RepositoryLocation.BuiltIn));
-        Variables.SetVariableValue(VariableScope.Command, "LocalPath", repository.GetPath(RepositoryLocation.Local));
-        Variables.SetVariableValue(VariableScope.Command, "SessionPath", repository.GetPath(RepositoryLocation.Session, Variables.CurrentSessionName));
+        Variables.SetVariableValue(VariableScope.Command, "BuiltInPath", new VariableValue(repository.GetPath(RepositoryLocation.BuiltIn)));
+        Variables.SetVariableValue(VariableScope.Command, "LocalPath", new VariableValue(repository.GetPath(RepositoryLocation.Local)));
+        Variables.SetVariableValue(VariableScope.Command, "SessionPath", new VariableValue(repository.GetPath(RepositoryLocation.Session, Variables.CurrentSessionName)));
         var cmd = new Parser().ParseFullCommandLine(commandLineArguments);
         var parsedArguments = cmd.ParsedArguments.ToList();
         var command = Commands.First(c => c.Name == "nag-core-environment-add");
@@ -39,7 +39,7 @@ public class Context(IRepository repository, ISerializerFactory serializerFactor
             var t = parsedArguments.FirstOrDefault(p =>
                 p.Name.Equals(parameter.Key, StringComparison.InvariantCultureIgnoreCase));
             //What will happen if argument was not provided?
-            Variables.SetVariableValue(VariableScope.Command, parameter.Key, t.Value, parameter.Description);
+            Variables.SetVariableValue(VariableScope.Command, parameter.Key, new VariableValue(t.Value), parameter.Description);
             //How to validate value?
         }
 
@@ -127,8 +127,9 @@ public class Context(IRepository repository, ISerializerFactory serializerFactor
             Services.Output.Warning($"Failed to deserialize {element.Id}.");
             return;
         }
+        //TODO: Pass id to variable, so the changes can be written in the same file name (but in location/session folder)
         
-        Variables.SetVariableList(repositoryLocation, contentObject);
+        Variables.SetVariableList(repositoryLocation, contentObject, element.Id);
     }
     
     private async Task ReadCommands(RepositoryLocation repositoryLocation, string? sessionName, RepositoryElementInfo element)

@@ -22,23 +22,35 @@ public class SetVariable: Operation
     public override Task Run(IContext context, CancellationToken cancellationToken)
     {
         //Add variables validation before running.
-        context.Services.Output.Trace($"Getting variable key from {nameof(Key)} as string");
-        var t = context.Variables.ResolveVariableValue(Key.Value);
-        //var key = context.Variables.GetValueAsString(Key.Value);
-        //if (key == null)
-        //{
-        //    context.Services.Output.Error($"{Key.Value} evaluated to null.");
-        //    return Task.CompletedTask;
-        //}
+        context.Services.Output.Trace($"Getting variable key from {nameof(Key)}.");
+        var key = context.Variables.ResolveVariableValue(Key.Value);
+        if (key?.TextValue == null)
+        {
+            //Name of variable to update must be resolved to string.
+            context.Services.Output.Error($"{Key.Value} does not contain valid variable name.");
+            return Task.CompletedTask;
+        }
 
-        //object? newValue = null;
-        //context.Services.Output.Trace($"Getting variable value from {nameof(Value)} as string");
-        //var newValueString = context.Variables.GetValueAsString(Value.Value);
-        //if (newValueString != null)
-        //{
-        //    context.Services.Output.Trace($"Value evaluated to not null");
-        //    newValue = newValueString;
-        //}
+        context.Services.Output.Trace($"Getting variable value from {nameof(Value)}.");
+        var newValue = context.Variables.ResolveVariableValue(Value.Value);
+        if (newValue == null)
+        {
+            //New value is required.
+            //TODO: No value means remove variable.
+            context.Services.Output.Error($"Value is required.");
+            Environment.Exit(1);
+            return Task.CompletedTask;
+        }
+
+        context.Services.Output.Trace($"Getting description value from {nameof(Description)}.");
+        var description = context.Variables.ResolveVariableValue(Description.Value);
+
+        context.Services.Output.Trace($"Getting scope value from {nameof(Scope)}.");
+        var scope = context.Variables.ResolveVariableValue(Scope.Value);
+
+        context.Services.Output.Trace($"Value evaluated to not null");
+            context.Variables.SetVariableValue(VariableScope.Command, key.TextValue, newValue);
+        
         //if (newValue == null)
         //{
         //    context.Services.Output.Trace($"Getting variable value from {nameof(Value)} as object");

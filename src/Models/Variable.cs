@@ -11,4 +11,6 @@ public record Variable
     public List<string> AllowedValues { get; init; } = [];
 
     public VariableScope Scope { get; init; } = VariableScope.Command;
+
+    public string? LocationId { get; set; }
 }

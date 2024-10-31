@@ -58,7 +58,7 @@ public class ContextVariableResolverTests
             BuiltIn = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue(new VariableValueObject("key", "testValue"))
+                Value = new VariableValueFactory().Object().AddTextProperty("key", "testValue").Build()
             } }.ToImmutableList()
         };
         var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);
@@ -92,7 +92,7 @@ public class ContextVariableResolverTests
     {
         var contextVariableStorage = new ContextVariableStorage();
         var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);
-        var result = variableResolver.ResolveVariableValue(new VariableValue(new VariableValueObject("test", "testValue")));
+        var result = variableResolver.ResolveVariableValue(new VariableValueFactory().Object().AddTextProperty("test", "testValue").Build());
         Assert.Null(result?.TextValue);
         Assert.Equal("testValue", result?.ObjectValue?["test"]?.TextValue);
         Assert.Null(result?.ListValue);
@@ -107,7 +107,7 @@ public class ContextVariableResolverTests
             new Variable
             {
                 Key = "test",
-                Value = new VariableValue(new VariableValueObject("test", "testValue"))
+                Value = new VariableValueFactory().Object().AddTextProperty("test", "testValue").Build()
             } }.ToImmutableList()
         };
         var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);
@@ -126,7 +126,7 @@ public class ContextVariableResolverTests
             new Variable
             {
                 Key = "test",
-                Value = new VariableValue(new VariableValueObject("test", "{{ test2 }}"))
+                Value = new VariableValueFactory().Object().AddTextProperty("test", "{{ test2 }}").Build(),
             },
             new Variable
             {
@@ -150,7 +150,7 @@ public class ContextVariableResolverTests
             new Variable
             {
                 Key = "test",
-                Value = new VariableValue(new VariableValueList("key", "testValue"))
+                Value = new VariableValueFactory().List().AddElementWithTextProperty("testValue", "someProperty", "somePropertyValue").Build() //new VariableValue(new VariableValueList("key", "testValue"))
             } }.ToImmutableList()
         };
         var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);
@@ -168,7 +168,7 @@ public class ContextVariableResolverTests
             BuiltIn = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue(new VariableValueObject("key", "innerObject").With("value", new VariableValue("innerText")))
+                Value = new VariableValueFactory().Object().AddTextProperty("value", "innerText").Build(),
             } }.ToImmutableList()
         };
         var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);
@@ -204,7 +204,7 @@ public class ContextVariableResolverTests
             BuiltIn = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject("key","value1")).Add(new VariableValueObject("key","value2")))
+                Value = new VariableValueFactory().List().AddElementWithTextProperty("value1", "prop", "propValue1").AddElementWithTextProperty("value2", "prop", "propValue2").Build(),
             } }.ToImmutableList()
         };
         var variableResolver = new ContextVariableResolver(Substitute.For<IOutput>(), contextVariableStorage);

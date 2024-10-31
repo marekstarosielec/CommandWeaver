@@ -11,6 +11,7 @@
   },
   {
     "key": "nag-core-environments",
+    "description":  "Contains list of nag-core environments.",
     "value": [
       {
         "key": "local",

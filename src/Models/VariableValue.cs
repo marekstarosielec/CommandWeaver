@@ -1,5 +1,8 @@
-﻿namespace Models;
+﻿using System.Diagnostics;
 
+namespace Models;
+
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public record VariableValue
 {
     public VariableValue() { }
@@ -24,4 +27,9 @@ public record VariableValue
 
     //public DateTime? DateTimeValue { get; set; }
 
+    private string DebuggerDisplay =>
+        TextValue != null ? $"Text: {TextValue}" :
+        ListValue != null ? $"List (Count: {ListValue.ToList().Count})" :
+        ObjectValue != null ? $"Object: {ObjectValue["key"]?.TextValue}" :
+        "Null";
 }
