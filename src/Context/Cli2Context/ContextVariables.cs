@@ -57,9 +57,10 @@ public class ContextVariables : IContextVariables
     public void SetVariableValue(VariableScope scope, string variableName, VariableValue value, string? description = null)
     {
         var topLevel = GetTopLevel(variableName);
+
         var existingVariable = _variableStorage.Changes.FirstOrDefault(v =>
             v.Key.Equals(topLevel, StringComparison.InvariantCultureIgnoreCase) && v.Scope == scope);
-
+        
         if (variableName != topLevel && existingVariable == null) // new element in list
         {
             if (value.ObjectValue != null || value.ListValue != null)

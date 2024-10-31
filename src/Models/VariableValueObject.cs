@@ -12,6 +12,7 @@ public record VariableValueObject
     // Constructor that accepts a regular Dictionary
     public VariableValueObject(IDictionary<string, VariableValue?> dictionary) => _data = dictionary.ToImmutableDictionary();
 
+
     // Indexer for dictionary-like access
     public VariableValue this[string key] => _data[key] ?? throw new ArgumentOutOfRangeException(nameof(key));
 
