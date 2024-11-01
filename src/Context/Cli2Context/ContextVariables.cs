@@ -9,6 +9,7 @@ public class ContextVariables : IContextVariables
     private readonly IOutput _output;
     private readonly ContextVariableStorage _variableStorage;
     private readonly ContextVariableReader _variableReader;
+    private readonly ContextVariableWriter _variableWriter;
 
     public ContextVariables(IOutput output) : this(output, new ContextVariableStorage()) { }
 
@@ -17,6 +18,7 @@ public class ContextVariables : IContextVariables
         _output = output;
         _variableStorage = variableStorage ?? new ContextVariableStorage();
         _variableReader = new ContextVariableReader(output, _variableStorage);
+        _variableWriter = new ContextVariableWriter(output, _variableStorage);
     }
 
     public string CurrentSessionName
@@ -54,23 +56,24 @@ public class ContextVariables : IContextVariables
         }
     }
 
-    public void SetVariableValue(VariableScope scope, string variableName, VariableValue value, string? description = null)
+    public void SetVariableValue(VariableScope scope, string path, VariableValue value, string? description = null)
     {
-        var topLevel = VariableValuePath.GetVariableName(variableName);
+        
+        var variableName = VariableValuePath.GetVariableName(path);
 
         var existingVariable = _variableStorage.Changes.FirstOrDefault(v =>
-            v.Key.Equals(topLevel, StringComparison.InvariantCultureIgnoreCase) && v.Scope == scope);
+            v.Key.Equals(variableName, StringComparison.InvariantCultureIgnoreCase) && v.Scope == scope);
         
-        if (variableName != topLevel && existingVariable == null) // new element in list
+        if (path != variableName && existingVariable == null) // new element in list
         {
             if (value.ObjectValue != null || value.ListValue != null)
                 //Add single element or whole list
-                _variableStorage.Changes.Add(new Variable { Key = topLevel, Value = value, Scope = scope, Description = description });
+                _variableStorage.Changes.Add(new Variable { Key = variableName, Value = value, Scope = scope, Description = description });
             else
                 _output.Error("Tried to insert wrong type into list");
         }
-        else if (variableName == topLevel && existingVariable == null) // new variable
-            _variableStorage.Changes.Add(new Variable { Key = variableName, Value = value, Scope = scope, Description = description });
+        else if (path == variableName && existingVariable == null) // new variable
+            _variableStorage.Changes.Add(new Variable { Key = path, Value = value, Scope = scope, Description = description });
         else if (existingVariable != null) // existing variable
             existingVariable.Value = value;
     }

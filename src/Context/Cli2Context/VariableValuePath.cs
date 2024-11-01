@@ -52,6 +52,22 @@ internal static class VariableValuePath
     public static bool PathIsTopLevel(string path) => path.IndexOfAny(['.', '[']) == -1;
 
     /// <summary>
+    /// Checks if path points to top level list.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
+    public static bool PathIsTopLevelList(string path) => path.IndexOf('.') == -1 && path.IndexOf('[') > -1;
+
+    /// <summary>
+    /// Returns key in top level list path.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
+    public static string? TopLevelListKey(string path) => PathIsTopLevelList(path)
+        ? path.Substring(path.IndexOf('[') + 1, path.IndexOf(']') - path.IndexOf('[') - 1)
+        : null;
+
+    /// <summary>
     /// Returns collection of path sections.
     /// </summary>
     /// <param name="path"></param>

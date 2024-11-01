@@ -17,5 +17,5 @@ public interface IContextVariables
 
    
 
-    void SetVariableValue(VariableScope scope, string variableName, VariableValue value, string? description = null);
+    void SetVariableValue(VariableScope scope, string path, VariableValue value, string? description = null);
 }

@@ -100,4 +100,24 @@ public class VariableValuePathTests
     [Fact]
     public void GetVariableName_ReturnsCorrectResult_ForSubPropertyInListVariable() => Assert.Equal("test", VariableValuePath.GetVariableName("test[test2].test3"));
 
+    [Fact]
+    public void PathIsTopLevelList_ReturnsCorrectResult_IfPathIsTopList() => Assert.True(VariableValuePath.PathIsTopLevelList("test[index]"));
+
+    [Fact]
+    public void PathIsTopLevelList_ReturnsCorrectResult_IfPathIsTopLevelVariable() => Assert.False(VariableValuePath.PathIsTopLevelList("test"));
+    
+    [Fact]
+    public void PathIsTopLevelList_ReturnsCorrectResult_IfPathIsSubProperty() => Assert.False(VariableValuePath.PathIsTopLevelList("test.test2"));
+
+    [Fact]
+    public void PathIsTopLevelList_ReturnsCorrectResult_IfPathIsListButNotTopLevel() => Assert.False(VariableValuePath.PathIsTopLevelList("test.test2[index]"));
+
+    [Fact]
+    public void TopLevelListKey_ReturnsCorrectResult_IfPathContainsIndex() => Assert.Equal("index", VariableValuePath.TopLevelListKey("test[index]"));
+
+    [Fact]
+    public void TopLevelListKey_ReturnsCorrectResult_IfPathDoesNotContainIndex() => Assert.Null(VariableValuePath.TopLevelListKey("test.property"));
+
+    [Fact]
+    public void TopLevelListKey_ReturnsCorrectResult_IfPathContainsNotTopLevelIndex() => Assert.Null(VariableValuePath.TopLevelListKey("test.property[index]"));
 }

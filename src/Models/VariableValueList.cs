@@ -26,7 +26,10 @@ public record VariableValueList : IEnumerable<VariableValueObject>
     // Method to find the first element or default value
     public VariableValueObject? FirstOrDefault() => _items.FirstOrDefault();
 
-    
+    // Method to remove all matching elements
+    public VariableValueList RemoveAll(Predicate<VariableValueObject> match) => this with { _items = _items.RemoveAll(match) };
+
+
     // Implementing GetEnumerator to support foreach
     public IEnumerator<VariableValueObject> GetEnumerator() => _items.GetEnumerator();
 

@@ -4,7 +4,7 @@ public record Variable
 {
     public required string Key { get; init; }
 
-    public VariableValue? Value { get; set; }
+    public VariableValue Value { get; set; } = new VariableValue();
     
     public string? Description { get; init; }
 
