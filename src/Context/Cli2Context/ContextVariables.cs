@@ -8,7 +8,7 @@ public class ContextVariables : IContextVariables
 {
     private readonly IOutput _output;
     private readonly ContextVariableStorage _variableStorage;
-    private readonly ContextVariableResolver _variableResolver;
+    private readonly ContextVariableReader _variableReader;
 
     public ContextVariables(IOutput output) : this(output, new ContextVariableStorage()) { }
 
@@ -16,23 +16,23 @@ public class ContextVariables : IContextVariables
     {
         _output = output;
         _variableStorage = variableStorage ?? new ContextVariableStorage();
-        _variableResolver = new ContextVariableResolver(output, _variableStorage);
+        _variableReader = new ContextVariableReader(output, _variableStorage);
     }
 
     public string CurrentSessionName
     {
-        get => _variableResolver.ResolveVariableValue(new VariableValue("currentSessionName"), true)?.TextValue ?? "session1";
+        get => _variableReader.ReadVariableValue(new VariableValue("currentSessionName"), true)?.TextValue ?? "session1";
         set => SetVariableValue(VariableScope.Application, "currentSessionName", new VariableValue(value));
     }
 
     public string? CurrentlyProcessedElement
     {
-        get => _variableResolver.ResolveVariableValue(new VariableValue("currentlyProcessedElement"), true)?.TextValue;
+        get => _variableReader.ReadVariableValue(new VariableValue("currentlyProcessedElement"), true)?.TextValue;
         set => SetVariableValue(VariableScope.Command, "currentlyProcessedElement", new VariableValue(value));
     }
 
     public VariableValue? ResolveVariableValue(VariableValue? variableValue, bool treatTextValueAsVariable = false)
-    => _variableResolver.ResolveVariableValue(variableValue, treatTextValueAsVariable);
+    => _variableReader.ReadVariableValue(variableValue, treatTextValueAsVariable);
 
     public void SetVariableList(RepositoryLocation repositoryLocation, List<Variable?> elementsWithContent, string locationId)
     {

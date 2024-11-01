@@ -5,19 +5,19 @@ using System.Text.RegularExpressions;
 namespace Cli2Context;
 
 /// <summary>
-/// Resolves context variables from different repository locations, using the provided
+/// Reads context variables value from different repository locations, using the provided
 /// <see cref="ContextVariableStorage"/> to access built-in, local, session, and changes lists.
 /// </summary>
-internal class ContextVariableResolver(IOutput output, ContextVariableStorage variableStorage)
+internal class ContextVariableReader(IOutput output, ContextVariableStorage variableStorage)
 {
     /// <summary>
-    /// Resolves the given variable value, attempting to interpret any text or embedded objects that might reference other variables.
+    /// Reads the given variable value, attempting to interpret any text or embedded objects that might reference other variables.
     /// </summary>
     /// <param name="variableValue">The variable value to resolve.</param>
     /// <param name="treatTextValueAsVariable">If true, treats text value as variable name for resolution.</param>
     /// <returns>The resolved <see cref="VariableValue"/> or null if unresolved.</returns>
-    public VariableValue? ResolveVariableValue(VariableValue? variableValue, bool treatTextValueAsVariable = false)
-        => ResolveVariableValue(variableValue, treatTextValueAsVariable, 0);
+    public VariableValue? ReadVariableValue(VariableValue? variableValue, bool treatTextValueAsVariable = false)
+        => ReadVariableValue(variableValue, treatTextValueAsVariable, 0);
 
     /// <summary>
     /// Contains additional parameter for counting variables resolving depth. It allows to avoid StackOverflowException in case of self-referencing variable.
@@ -26,7 +26,7 @@ internal class ContextVariableResolver(IOutput output, ContextVariableStorage va
     /// <param name="treatTextValueAsVariable">If true, treats text values as potential variable name for resolution.</param>
     /// <param name="depth">Current resolving depth.</param>
     /// <returns></returns>
-    private VariableValue? ResolveVariableValue(VariableValue? variableValue, bool treatTextValueAsVariable, int depth)
+    private VariableValue? ReadVariableValue(VariableValue? variableValue, bool treatTextValueAsVariable, int depth)
     {
         if (variableValue == null)
             return null;
@@ -40,23 +40,23 @@ internal class ContextVariableResolver(IOutput output, ContextVariableStorage va
         var result = variableValue with { };
 
         if (result.TextValue != null)
-            result = ResolveTextKey(result.TextValue, treatTextValueAsVariable, depth) ?? variableValue;
+            result = ReadTextKey(result.TextValue, treatTextValueAsVariable, depth) ?? variableValue;
         if (result?.ObjectValue != null)
-            result = ResolveObjectKey(result.ObjectValue, depth);
+            result = ReadObjectKey(result.ObjectValue, depth);
         if (result?.ListValue != null)
-            result = ResolveListKey(result.ListValue, depth);
+            result = ReadListKey(result.ListValue, depth);
 
         return result;
     }
 
     /// <summary>
-    /// Resolves a text key by replacing embedded variable references with actual values.
+    /// Reads a text key by replacing embedded variable references with actual values.
     /// </summary>
     /// <param name="key">The text key containing potential variable tags.</param>
     /// <param name="treatTextValueAsVariable">Indicates if the text should be treated as a variable name.</param>
     /// <param name="depth">Current resolving depth.</param>
     /// <returns>The resolved variable value, or null if the resolution fails.</returns>
-    private VariableValue? ResolveTextKey(string key, bool treatTextValueAsVariable, int depth)
+    private VariableValue? ReadTextKey(string key, bool treatTextValueAsVariable, int depth)
     {
         if (string.IsNullOrWhiteSpace(key))
             return null;
@@ -76,14 +76,14 @@ internal class ContextVariableResolver(IOutput output, ContextVariableStorage va
 
         if (wholeKeyIsSingleVariable)
             //If whole key is variable name, it can be replaced by any type.
-            return ResolveVariableValue(resolvedVariable, false, depth);
+            return ReadVariableValue(resolvedVariable, false, depth);
 
         if (resolvedVariable.TextValue != null)
         {
             //If variable name is just part of text, it can be replaced only by text.
             string pattern = $@"\{{\{{\s*{Regex.Escape(variableName)}\s*\}}\}}";
             resolvedKey = Regex.Replace(resolvedKey, pattern, resolvedVariable.TextValue);
-            return ResolveVariableValue(new VariableValue(resolvedKey), false, depth);
+            return ReadVariableValue(new VariableValue(resolvedKey), false, depth);
         }
 
         output.Error($"{{{{ {variableName} }}}} resolved to a non-text value, it cannot be part of text.");
@@ -91,12 +91,12 @@ internal class ContextVariableResolver(IOutput output, ContextVariableStorage va
     }
 
     /// <summary>
-    /// Resolves a variable object by recursively resolving its properties.
+    /// Reads a variable object by recursively resolving its properties.
     /// </summary>
     /// <param name="key">The variable object with properties containing variable tags.</param>
     /// <param name="depth">Current resolving depth.</param>
     /// <returns>The resolved object with resolved properties.</returns>
-    private VariableValue? ResolveObjectKey(VariableValueObject key, int depth)
+    private VariableValue? ReadObjectKey(VariableValueObject key, int depth)
     {
         if (key == null)
             return null;
@@ -104,18 +104,18 @@ internal class ContextVariableResolver(IOutput output, ContextVariableStorage va
         var result = new Dictionary<string, VariableValue?>();
 
         foreach (var keyProperty in key.Keys)
-            result[keyProperty] = ResolveVariableValue(key[keyProperty], false, depth);
+            result[keyProperty] = ReadVariableValue(key[keyProperty], false, depth);
 
         return new VariableValue(new VariableValueObject(result));
     }
 
     /// <summary>
-    /// Resolves a variable list by recursively resolving each element's properties.
+    /// Read a variable list by recursively resolving each element's properties.
     /// </summary>
     /// <param name="key">The list containing elements with properties that might have variable tags.</param>
     /// <param name="depth">Current resolving depth.</param>
     /// <returns>The resolved list.</returns>
-    private VariableValue? ResolveListKey(VariableValueList key, int depth)
+    private VariableValue? ReadListKey(VariableValueList key, int depth)
     {
         if (key == null)
             return null;
@@ -127,7 +127,7 @@ internal class ContextVariableResolver(IOutput output, ContextVariableStorage va
             var resolvedElement = new Dictionary<string, VariableValue?>();
 
             foreach (var keyProperty in listElement.Keys)
-                resolvedElement[keyProperty] = ResolveVariableValue(listElement[keyProperty], false, depth);
+                resolvedElement[keyProperty] = ReadVariableValue(listElement[keyProperty], false, depth);
 
             result.Add(new VariableValueObject(resolvedElement));
         }
