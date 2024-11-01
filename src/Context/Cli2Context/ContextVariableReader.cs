@@ -1,6 +1,5 @@
 ﻿using Models;
 using Models.Interfaces.Context;
-using System.Text.RegularExpressions;
 
 namespace Cli2Context;
 
@@ -61,8 +60,8 @@ internal class ContextVariableReader(IOutput output, ContextVariableStorage vari
         if (string.IsNullOrWhiteSpace(key))
             return null;
 
-        var resolvedKey = treatTextValueAsVariable ? $"{{{{ {key} }}}}" : key;
-        var variableName = ExtractVariableBetweenDelimiters(resolvedKey);
+        var resolvedKey = treatTextValueAsVariable ? VariableValuePath.GetWholePathAsVariable(key) : key;
+        var variableName = VariableValuePath.ExtractVariableBetweenDelimiters(resolvedKey);
 
         if (variableName == null)
             return new VariableValue(key);
@@ -72,17 +71,14 @@ internal class ContextVariableReader(IOutput output, ContextVariableStorage vari
         if (resolvedVariable == null)
             return new VariableValue();
 
-        var wholeKeyIsSingleVariable = resolvedKey.StartsWith("{{") && resolvedKey.EndsWith("}}") && resolvedKey.Trim('{', '}', ' ').Equals(variableName, StringComparison.OrdinalIgnoreCase);
-
-        if (wholeKeyIsSingleVariable)
+        if (VariableValuePath.WholePathIsSingleVariable(resolvedKey, variableName))
             //If whole key is variable name, it can be replaced by any type.
             return ReadVariableValue(resolvedVariable, false, depth);
 
         if (resolvedVariable.TextValue != null)
         {
             //If variable name is just part of text, it can be replaced only by text.
-            string pattern = $@"\{{\{{\s*{Regex.Escape(variableName)}\s*\}}\}}";
-            resolvedKey = Regex.Replace(resolvedKey, pattern, resolvedVariable.TextValue);
+            resolvedKey = VariableValuePath.ReplaceVariableWithValue(resolvedKey, variableName, resolvedVariable.TextValue);
             return ReadVariableValue(new VariableValue(resolvedKey), false, depth);
         }
 
@@ -125,7 +121,6 @@ internal class ContextVariableReader(IOutput output, ContextVariableStorage vari
         foreach (var listElement in key)
         {
             var resolvedElement = new Dictionary<string, VariableValue?>();
-
             foreach (var keyProperty in listElement.Keys)
                 resolvedElement[keyProperty] = ReadVariableValue(listElement[keyProperty], false, depth);
 
@@ -148,44 +143,38 @@ internal class ContextVariableReader(IOutput output, ContextVariableStorage vari
         var session = ResolveSingleValueFromSingleList(variableStorage.Session, variableName);
         var changes = ResolveSingleValueFromSingleList(variableStorage.Changes, variableName);
 
-        var isList = false;
-        var variableNameIsTopLevel = variableName.IndexOfAny(['.', '[']) == -1;
-        if (variableNameIsTopLevel &&
+        if (VariableValuePath.PathIsTopLevel(variableName) &&
             (builtIn?.ListValue != null
             || local?.ListValue != null
             || session?.ListValue != null
             || changes?.ListValue != null))
-            isList = true; // If the whole variable value is requested and it is a list, values from all locations will be combined.
-
-        if (!isList)
-            return changes ?? session ?? local ?? builtIn;
-        else
         {
-            // Return all rows
-            var result = new VariableValueList();
+            // If the whole variable value is requested and it is a list, values from all locations will be combined.
+            var result = new List<VariableValueObject>();
 
-            //TODO: here are new instances created all the time. Make this more effective.
             if (changes?.ListValue != null)
                 foreach (var item in changes.ListValue)
-                    result = result.Add(item);
+                    result.Add(item);
 
             if (session?.ListValue != null)
                 foreach (var item in session.ListValue)
                     if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
-                        result = result.Add(item);
+                        result.Add(item);
 
             if (local?.ListValue != null)
                 foreach (var item in local.ListValue)
                     if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
-                        result = result.Add(item);
+                        result.Add(item);
 
             if (builtIn?.ListValue != null)
                 foreach (var item in builtIn.ListValue)
                     if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
-                        result = result.Add(item);
+                        result.Add(item);
 
-            return new VariableValue { ListValue = result };
+            return new VariableValue { ListValue = new VariableValueList(result) };
         }
+
+        return changes ?? session ?? local ?? builtIn;
     }
 
     /// <summary>
@@ -198,50 +187,33 @@ internal class ContextVariableReader(IOutput output, ContextVariableStorage vari
     private VariableValue? ResolveSingleValueFromSingleList(IEnumerable<Variable> variables, string key)
     {
         VariableValue? result = null;
-        var pattern = @"([a-zA-Z0-9_\-\s]+)|\[(.*?)\]";
-        var matches = Regex.Matches(key, pattern);
+        var pathSections = VariableValuePath.GetPathSections(key);
 
-        for (int i = 0; i < matches.Count; i++)
+        for (int i = 0; i < pathSections.Count; i++)
         {
-            if (i == 0 && matches[i].Groups[1].Success)
-                result = variables.FirstOrDefault(v => v.Key.Equals(matches[i].Groups[1].Value, StringComparison.InvariantCultureIgnoreCase))?.Value;
-            else if (i == 0 && matches[i].Groups[2].Success)
+            if (i == 0 && pathSections[i].Groups[1].Success)
+                result = variables.FirstOrDefault(v => v.Key.Equals(pathSections[i].Groups[1].Value, StringComparison.InvariantCultureIgnoreCase))?.Value;
+            else if (i == 0 && pathSections[i].Groups[2].Success)
             {
                 // Key cannot start with an index
                 output.Error($"Invalid key {key}");
                 return null;
             }
-            else if (!matches[i].Groups[1].Success && !matches[i].Groups[2].Success)
+            else if (!pathSections[i].Groups[1].Success && !pathSections[i].Groups[2].Success)
             {
                 // Invalid element in key
                 output.Error($"Invalid key {key}");
                 return null;
             }
-            else if (i > 0 && matches[i].Groups[1].Success)
-                result = result?.ObjectValue?[matches[i].Groups[1].Value];
-            else if (i > 0 && matches[i].Groups[2].Success)
-                result = new VariableValue(result?.ListValue?.FirstOrDefault(v => v["key"].TextValue?.Equals(matches[i].Groups[2].Value, StringComparison.InvariantCultureIgnoreCase) == true));
+            else if (i > 0 && pathSections[i].Groups[1].Success)
+                result = result?.ObjectValue?[pathSections[i].Groups[1].Value];
+            else if (i > 0 && pathSections[i].Groups[2].Success)
+                result = new VariableValue(result?.ListValue?.FirstOrDefault(v => v["key"].TextValue?.Equals(pathSections[i].Groups[2].Value, StringComparison.InvariantCultureIgnoreCase) == true));
 
             if (result == null)
                 return null;
         }
 
         return result;
-    }
-
-    /// <summary>
-    /// Extracts the string between specified delimiters within a given input string.
-    /// </summary>
-    /// <param name="input">The input string from which to extract the variable.</param>
-    /// <returns>The extracted string between the delimiters, or null if the delimiters are not found.</returns>
-    private string? ExtractVariableBetweenDelimiters(string input)
-    {
-        int closingIndex = input.IndexOf("}}");
-        if (closingIndex == -1) return null;
-
-        int openingIndex = input.LastIndexOf("{{", closingIndex);
-        if (openingIndex == -1) return null;
-
-        return input.Substring(openingIndex + 2, closingIndex - openingIndex - 2).Trim();
     }
 }
