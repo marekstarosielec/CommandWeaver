@@ -57,4 +57,11 @@ internal static class VariableValuePath
     /// <param name="path"></param>
     /// <returns></returns>
     public static MatchCollection GetPathSections(string path) => Regex.Matches(path, @"([a-zA-Z0-9_\-\s]+)|\[(.*?)\]");
+
+    /// <summary>
+    /// Returns first section of part.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
+    public static string GetVariableName(string path) => path.Split(new[] { '.', '[' }, StringSplitOptions.RemoveEmptyEntries).First();
 }

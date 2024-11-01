@@ -56,7 +56,7 @@ public class ContextVariables : IContextVariables
 
     public void SetVariableValue(VariableScope scope, string variableName, VariableValue value, string? description = null)
     {
-        var topLevel = GetTopLevel(variableName);
+        var topLevel = VariableValuePath.GetVariableName(variableName);
 
         var existingVariable = _variableStorage.Changes.FirstOrDefault(v =>
             v.Key.Equals(topLevel, StringComparison.InvariantCultureIgnoreCase) && v.Scope == scope);
@@ -74,19 +74,4 @@ public class ContextVariables : IContextVariables
         else if (existingVariable != null) // existing variable
             existingVariable.Value = value;
     }
-
-
-    /// <summary>
-    /// Indicates if key points to top level of variable value (whole variable value).
-    /// </summary>
-    /// <param name="key"></param>
-    /// <returns></returns>
-    // private bool KeyIsTopLevel(string key) => !key.Contains(".") && !key.Contains("[");
-
-    /// <summary>
-    /// Returns variable name part of key.
-    /// </summary>
-    /// <param name="key"></param>
-    /// <returns></returns>
-    private string GetTopLevel(string key) => key.Split(new[] { '.', '[' }, StringSplitOptions.RemoveEmptyEntries).First();
 }

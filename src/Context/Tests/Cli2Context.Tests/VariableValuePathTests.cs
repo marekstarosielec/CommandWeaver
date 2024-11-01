@@ -87,4 +87,17 @@ public class VariableValuePathTests
         Assert.Equal("test3", result[2].Groups[1].Value);
         Assert.True(result[2].Groups[1].Success);
     }
+
+    [Fact]
+    public void GetVariableName_ReturnsCorrectResult_ForSingleVariable() => Assert.Equal("test", VariableValuePath.GetVariableName("test"));
+    
+    [Fact]
+    public void GetVariableName_ReturnsCorrectResult_ForSubPropertyVariable() => Assert.Equal("test", VariableValuePath.GetVariableName("test.test2"));
+
+    [Fact]
+    public void GetVariableName_ReturnsCorrectResult_ForListVariable() => Assert.Equal("test", VariableValuePath.GetVariableName("test[test2]"));
+
+    [Fact]
+    public void GetVariableName_ReturnsCorrectResult_ForSubPropertyInListVariable() => Assert.Equal("test", VariableValuePath.GetVariableName("test[test2].test3"));
+
 }
