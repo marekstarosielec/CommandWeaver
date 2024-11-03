@@ -33,7 +33,7 @@ internal static class VariableValuePath
     /// <param name="path"></param>
     /// <param name="variableName"></param>
     /// <returns></returns>
-    public static bool WholePathIsSingleVariable(string path, string variableName) => path.StartsWith("{{") && path.EndsWith("}}") && path.Trim('{', '}', ' ').Equals(variableName, StringComparison.OrdinalIgnoreCase);
+    public static bool WholePathIsSingleVariable(string path, string variableName) => path.StartsWith("{{") && path.EndsWith("}}") && path.Trim('{', '}', ' ').Equals(variableName);
 
     /// <summary>
     /// Replaces variable tag in path with value.

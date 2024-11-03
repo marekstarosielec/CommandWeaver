@@ -18,7 +18,6 @@ public class SpectreConsoleOutput : IOutput
     public void Error(string message, int exitCode = 1)
     {
         AnsiConsole.MarkupLineInterpolated($"[red]{message}[/]");
-        Environment.Exit(exitCode);
     }
 
     public void Warning(string message)

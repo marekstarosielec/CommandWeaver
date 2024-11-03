@@ -10,7 +10,7 @@ public class ContextVariableReaderTests
     [Fact]
     public void ReadVariableValue_ReadTextValue_WhenTextValueContainsNoVariableTags()
     {
-        var variableReader = new ContextVariableReader(Substitute.For<IOutput>(), new ContextVariableStorage());
+        var variableReader = new ContextVariableReader(Substitute.For<IContext>(), new ContextVariableStorage());
         var result = variableReader.ReadVariableValue(new VariableValue("test"));
         Assert.Equal("test", result?.TextValue);
     }
@@ -25,7 +25,7 @@ public class ContextVariableReaderTests
                 Value = new VariableValue("testValue")
             } }.ToImmutableList()
         };
-        var variableReader = new ContextVariableReader(Substitute.For<IOutput>(), contextVariableStorage);
+        var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
         var result = variableReader.ReadVariableValue(new VariableValue("{{ test }}"));
         Assert.Equal("testValue", result?.TextValue);
         Assert.Null(result?.ObjectValue);
@@ -43,7 +43,7 @@ public class ContextVariableReaderTests
                 Value = new VariableValue("testValue")
             } }.ToImmutableList()
         };
-        var variableReader = new ContextVariableReader(Substitute.For<IOutput>(), contextVariableStorage);
+        var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
         var result = variableReader.ReadVariableValue(new VariableValue("this is my {{ test }}"));
         Assert.Equal("this is my testValue", result?.TextValue);
         Assert.Null(result?.ObjectValue);
@@ -61,7 +61,7 @@ public class ContextVariableReaderTests
                 Value = new VariableValueFactory().Object().AddTextProperty("key", "testValue").Build()
             } }.ToImmutableList()
         };
-        var variableReader = new ContextVariableReader(Substitute.For<IOutput>(), contextVariableStorage);
+        var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
         var result = variableReader.ReadVariableValue(new VariableValue("this is my {{ test }}"));
         Assert.Equal("this is my {{ test }}", result?.TextValue);
         Assert.Null(result?.ObjectValue);
@@ -80,7 +80,7 @@ public class ContextVariableReaderTests
                 Value = new VariableValue("testValue")
             } }.ToImmutableList()
         };
-        var variableReader = new ContextVariableReader(Substitute.For<IOutput>(), contextVariableStorage);
+        var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
         var result = variableReader.ReadVariableValue(new VariableValue("test"), true);
         Assert.Equal("testValue", result?.TextValue);
         Assert.Null(result?.ObjectValue);
@@ -91,7 +91,7 @@ public class ContextVariableReaderTests
     public void ReadVariableValue_ReadsObjectValueFromObjectValue_WhenItDoesNotContainVariableTags()
     {
         var contextVariableStorage = new ContextVariableStorage();
-        var variableReader = new ContextVariableReader(Substitute.For<IOutput>(), contextVariableStorage);
+        var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
         var result = variableReader.ReadVariableValue(new VariableValueFactory().Object().AddTextProperty("test", "testValue").Build());
         Assert.Null(result?.TextValue);
         Assert.Equal("testValue", result?.ObjectValue?["test"]?.TextValue);
@@ -110,7 +110,7 @@ public class ContextVariableReaderTests
                 Value = new VariableValueFactory().Object().AddTextProperty("test", "testValue").Build()
             } }.ToImmutableList()
         };
-        var variableReader = new ContextVariableReader(Substitute.For<IOutput>(), contextVariableStorage);
+        var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
         var result = variableReader.ReadVariableValue(new VariableValue("{{ test }}"));
         Assert.Null(result?.TextValue);
         Assert.Equal("testValue", result?.ObjectValue?["test"]?.TextValue);
@@ -134,7 +134,7 @@ public class ContextVariableReaderTests
                 Value = new VariableValue("test2value")
             } }.ToImmutableList()
         };
-        var variableReader = new ContextVariableReader(Substitute.For<IOutput>(), contextVariableStorage);
+        var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
         var result = variableReader.ReadVariableValue(new VariableValue("{{ test }}"));
         Assert.Null(result?.TextValue);
         Assert.Equal("test2value", result?.ObjectValue?["test"]?.TextValue);
@@ -153,7 +153,7 @@ public class ContextVariableReaderTests
                 Value = new VariableValueFactory().List().AddElementWithTextProperty("testValue", "someProperty", "somePropertyValue").Build() //new VariableValue(new VariableValueList("key", "testValue"))
             } }.ToImmutableList()
         };
-        var variableReader = new ContextVariableReader(Substitute.For<IOutput>(), contextVariableStorage);
+        var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
         var result = variableReader.ReadVariableValue(new VariableValue("{{ test }}"));
         Assert.Null(result?.TextValue);
         Assert.Null(result?.ObjectValue);
@@ -171,7 +171,7 @@ public class ContextVariableReaderTests
                 Value = new VariableValueFactory().Object().AddTextProperty("value", "innerText").Build(),
             } }.ToImmutableList()
         };
-        var variableReader = new ContextVariableReader(Substitute.For<IOutput>(), contextVariableStorage);
+        var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
         var result = variableReader.ReadVariableValue(new VariableValue("{{ test.value }}"));
         Assert.Equal("innerText", result?.TextValue);
         Assert.Null(result?.ObjectValue);
@@ -189,7 +189,7 @@ public class ContextVariableReaderTests
                 Value = new VariableValue("{{ test }}")
             } }.ToImmutableList()
         };
-        var variableReader = new ContextVariableReader(Substitute.For<IOutput>(), contextVariableStorage);
+        var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
         var result = variableReader.ReadVariableValue(new VariableValue("{{ test }}"));
         Assert.Equal("{{ test }}", result?.TextValue);
         Assert.Null(result?.ObjectValue);
@@ -207,7 +207,7 @@ public class ContextVariableReaderTests
                 Value = new VariableValueFactory().List().AddElementWithTextProperty("value1", "prop", "propValue1").AddElementWithTextProperty("value2", "prop", "propValue2").Build(),
             } }.ToImmutableList()
         };
-        var variableReader = new ContextVariableReader(Substitute.For<IOutput>(), contextVariableStorage);
+        var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
         var result = variableReader.ReadVariableValue(new VariableValue("{{ test[value1] }}"));
         Assert.Null(result?.TextValue);
         Assert.Equal("value1", result?.ObjectValue?["key"]?.TextValue);
@@ -225,7 +225,7 @@ public class ContextVariableReaderTests
                 Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value1")).With("prop",new VariableValue("valueProp1"))).Add(new VariableValueObject().With("key",new VariableValue("value2")).With("prop",new VariableValue("valueProp2"))))
             } }.ToImmutableList()
         };
-        var variableReader = new ContextVariableReader(Substitute.For<IOutput>(), contextVariableStorage);
+        var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
         var result = variableReader.ReadVariableValue(new VariableValue("{{ test[value2].prop }}"));
         Assert.Equal("valueProp2", result?.TextValue);
         Assert.Null(result?.ObjectValue);
@@ -258,7 +258,7 @@ public class ContextVariableReaderTests
             Key = "test",
             Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key", new VariableValue("value4")).With("prop", new VariableValue("valueProp4"))))
         });
-        var variableReader = new ContextVariableReader(Substitute.For<IOutput>(), contextVariableStorage);
+        var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
         var result = variableReader.ResolveSingleValue("test");
         Assert.Null(result?.TextValue);
         Assert.Null(result?.ObjectValue);
@@ -289,7 +289,7 @@ public class ContextVariableReaderTests
                 Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value2")).With("prop",new VariableValue("newValue"))))
             } }.ToImmutableList()
         };
-        var variableReader = new ContextVariableReader(Substitute.For<IOutput>(), contextVariableStorage);
+        var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
         var result = variableReader.ResolveSingleValue("test");
         Assert.Null(result?.TextValue);
         Assert.Null(result?.ObjectValue);
@@ -318,7 +318,7 @@ public class ContextVariableReaderTests
                 Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value2")).With("prop",new VariableValue("newValue"))))
             } }.ToImmutableList()
         };
-        var variableReader = new ContextVariableReader(Substitute.For<IOutput>(), contextVariableStorage);
+        var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
         var result = variableReader.ResolveSingleValue("test[value2].prop");
         Assert.Equal("newValue", result?.TextValue);
         Assert.Null(result?.ObjectValue);
@@ -341,7 +341,7 @@ public class ContextVariableReaderTests
                 Value = new VariableValue("testValue2")
             } }.ToImmutableList()
         };
-        var variableReader = new ContextVariableReader(Substitute.For<IOutput>(), contextVariableStorage);
+        var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
         var result = variableReader.ResolveSingleValue("test");
         Assert.Equal("testValue2", result?.TextValue);
         Assert.Null(result?.ObjectValue);
@@ -369,7 +369,7 @@ public class ContextVariableReaderTests
                 Value = new VariableValue("testValue3")
             } }.ToImmutableList()
         };
-        var variableReader = new ContextVariableReader(Substitute.For<IOutput>(), contextVariableStorage);
+        var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
         var result = variableReader.ResolveSingleValue("test");
         Assert.Equal("testValue3", result?.TextValue);
         Assert.Null(result?.ObjectValue);
@@ -398,7 +398,7 @@ public class ContextVariableReaderTests
             } }.ToImmutableList()
         };
         contextVariableStorage.Changes.Add(new Variable { Key = "test", Value = new VariableValue("testValue4") });
-        var variableReader = new ContextVariableReader(Substitute.For<IOutput>(), contextVariableStorage);
+        var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
         var result = variableReader.ResolveSingleValue("test");
         Assert.Equal("testValue4", result?.TextValue);
         Assert.Null(result?.ObjectValue);

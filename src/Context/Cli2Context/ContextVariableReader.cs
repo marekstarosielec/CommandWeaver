@@ -7,7 +7,7 @@ namespace Cli2Context;
 /// Reads context variables value from different repository locations, using the provided
 /// <see cref="ContextVariableStorage"/> to access built-in, local, session, and changes lists.
 /// </summary>
-internal class ContextVariableReader(IOutput output, ContextVariableStorage variableStorage)
+internal class ContextVariableReader(IContext context, ContextVariableStorage variableStorage)
 {
     /// <summary>
     /// Reads the given variable value, attempting to interpret any text or embedded objects that might reference other variables.
@@ -33,7 +33,7 @@ internal class ContextVariableReader(IOutput output, ContextVariableStorage vari
         depth++;
         if (depth > 50)
         {
-            output.Error("Too deep variable resolving. Make sure that you have no circular reference.");
+            context.Services.Output.Error("Too deep variable resolving. Make sure that you have no circular reference.");
             return variableValue;
         }
         var result = variableValue with { };
@@ -82,7 +82,7 @@ internal class ContextVariableReader(IOutput output, ContextVariableStorage vari
             return ReadVariableValue(new VariableValue(resolvedKey), false, depth);
         }
 
-        output.Error($"{{{{ {variableName} }}}} resolved to a non-text value, it cannot be part of text.");
+        context.Services.Output.Error($"{{{{ {variableName} }}}} resolved to a non-text value, it cannot be part of text.");
         return null;
     }
 
@@ -192,23 +192,23 @@ internal class ContextVariableReader(IOutput output, ContextVariableStorage vari
         for (int i = 0; i < pathSections.Count; i++)
         {
             if (i == 0 && pathSections[i].Groups[1].Success)
-                result = variables.FirstOrDefault(v => v.Key.Equals(pathSections[i].Groups[1].Value, StringComparison.InvariantCultureIgnoreCase))?.Value;
+                result = variables.FirstOrDefault(v => v.Key.Equals(pathSections[i].Groups[1].Value))?.Value;
             else if (i == 0 && pathSections[i].Groups[2].Success)
             {
                 // Key cannot start with an index
-                output.Error($"Invalid key {key}");
+                context.Services.Output.Error($"Invalid key {key}");
                 return null;
             }
             else if (!pathSections[i].Groups[1].Success && !pathSections[i].Groups[2].Success)
             {
                 // Invalid element in key
-                output.Error($"Invalid key {key}");
+                context.Services.Output.Error($"Invalid key {key}");
                 return null;
             }
             else if (i > 0 && pathSections[i].Groups[1].Success)
                 result = result?.ObjectValue?[pathSections[i].Groups[1].Value];
             else if (i > 0 && pathSections[i].Groups[2].Success)
-                result = new VariableValue(result?.ListValue?.FirstOrDefault(v => v["key"].TextValue?.Equals(pathSections[i].Groups[2].Value, StringComparison.InvariantCultureIgnoreCase) == true));
+                result = new VariableValue(result?.ListValue?.FirstOrDefault(v => v["key"].TextValue?.Equals(pathSections[i].Groups[2].Value) == true));
 
             if (result == null)
                 return null;

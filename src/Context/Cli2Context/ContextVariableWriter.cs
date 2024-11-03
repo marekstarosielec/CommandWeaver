@@ -3,31 +3,38 @@ using Models.Interfaces.Context;
 
 namespace Cli2Context;
 
-internal class ContextVariableWriter(IOutput output, ContextVariableStorage variableStorage)
+internal class ContextVariableWriter(IContext context, ContextVariableStorage variableStorage)
 {
     public void SetVariableValue(VariableScope scope, string path, VariableValue value, string? description = null)
     {
-        //Find current values.
-        var existingVariable = GetVariable(path);
-        var resolvedDescription = description ?? existingVariable?.Description;
-        var allowedValues = existingVariable?.AllowedValues ?? new List<string>();
-        var locationId = existingVariable?.LocationId;
 
         //Replacing whole variable.
         if (VariableValuePath.PathIsTopLevel(path))
-            SetVariableValueOnTopLevelVariable(scope, path, value, resolvedDescription, allowedValues, locationId);
+            SetVariableValueOnTopLevelVariable(scope, path, value, description);
         //Adding or replacing element in list.
         else if (VariableValuePath.PathIsTopLevelList(path))
-            SetVariableValueOnTopLevelList(scope, path, value, resolvedDescription, allowedValues, locationId);
-
+            SetVariableValueOnTopLevelList(scope, path, value);
         else
         {
+            context.Services.Output.Error("Writing to sub-property is not supported");
 
         }
     }
 
-    internal void SetVariableValueOnTopLevelVariable(VariableScope scope, string path, VariableValue value, string? resolvedDescription, List<string> allowedValues, string? locationId)
+    internal void SetVariableValueOnTopLevelVariable(VariableScope scope, string path, VariableValue value, string? description)
     {
+        //Find current values.
+        var existingVariable =
+            variableStorage.Changes.FirstOrDefault(v => v.Key == path && v.Scope == VariableScope.Command)
+            ?? variableStorage.Changes.FirstOrDefault(v => v.Key == path && v.Scope == VariableScope.Session)
+            ?? variableStorage.Session.FirstOrDefault(v => v.Key == path && v.Scope == VariableScope.Session)
+            ?? variableStorage.Changes.FirstOrDefault(v => v.Key == path && v.Scope == VariableScope.Application)
+            ?? variableStorage.Local.FirstOrDefault(v => v.Key == path && v.Scope == VariableScope.Application)
+            ?? variableStorage.BuiltIn.FirstOrDefault(v => v.Key == path && v.Scope == VariableScope.Application);
+        var resolvedDescription = description ?? existingVariable?.Description;
+        var allowedValues = existingVariable?.AllowedValues ?? new List<string>();
+        var locationId = existingVariable?.LocationId;
+
         //Remove earlier changes.
         if (scope == VariableScope.Command)
             //When setting value for command scope, only previous command scoped values are removed.
@@ -42,23 +49,23 @@ internal class ContextVariableWriter(IOutput output, ContextVariableStorage vari
         variableStorage.Changes.Add(new Variable { Key = path, Value = value, Description = resolvedDescription, Scope = scope, LocationId = locationId, AllowedValues = allowedValues });
     }
 
-    internal void SetVariableValueOnTopLevelList(VariableScope scope, string path, VariableValue value, string? resolvedDescription, List<string> allowedValues, string? locationId)
+    internal void SetVariableValueOnTopLevelList(VariableScope scope, string path, VariableValue value)
     {
         var variableName = VariableValuePath.GetVariableName(path);
         var key = VariableValuePath.TopLevelListKey(path);
         if (key == null)
         {
-            output.Error("Error while updating variable value.");
+            context.Services.Output.Error("Error while updating variable value.");
             return;
         }
         if (value.ObjectValue == null)
         {
-            output.Error("List can contain only objects.");
+            context.Services.Output.Error("List can contain only objects.");
             return;
         }
         if (value.ObjectValue["key"]?.TextValue != key)
         {
-            output.Error("Object key must have same value as index of updated list.");
+            context.Services.Output.Error("Object key must have same value as index of updated list.");
             return;
         }
 
@@ -91,20 +98,11 @@ internal class ContextVariableWriter(IOutput output, ContextVariableStorage vari
                 ObjectValue = null,
                 TextValue = null,
             };
-            if (existingChange.Description != resolvedDescription || existingChange.AllowedValues != allowedValues)
-                existingChange = existingChange with { Description = resolvedDescription, AllowedValues = allowedValues };
         }
         else
             //When given list element was not yet edited.
-            variableStorage.Changes.Add(new Variable { Scope = scope, Key = variableName, Value = new VariableValue(new VariableValueList([value.ObjectValue])), Description = resolvedDescription, AllowedValues = allowedValues });
+            variableStorage.Changes.Add(new Variable { Scope = scope, Key = variableName, Value = new VariableValue(new VariableValueList([value.ObjectValue])) });
 
     }
 
-    private Variable? GetVariable(string variableName)
-        => variableStorage.Changes.FirstOrDefault(v => v.Key == variableName && v.Scope == VariableScope.Command)
-        ?? variableStorage.Changes.FirstOrDefault(v => v.Key == variableName && v.Scope == VariableScope.Session)
-        ?? variableStorage.Session.FirstOrDefault(v => v.Key == variableName && v.Scope == VariableScope.Session)
-        ?? variableStorage.Changes.FirstOrDefault(v => v.Key == variableName && v.Scope == VariableScope.Application)
-        ?? variableStorage.Local.FirstOrDefault(v => v.Key == variableName && v.Scope == VariableScope.Application)
-        ?? variableStorage.BuiltIn.FirstOrDefault(v => v.Key == variableName && v.Scope == VariableScope.Application);
 }

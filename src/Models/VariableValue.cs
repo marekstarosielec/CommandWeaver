@@ -30,6 +30,6 @@ public record VariableValue
     private string DebuggerDisplay =>
         TextValue != null ? $"Text: {TextValue}" :
         ListValue != null ? $"List (Count: {ListValue.ToList().Count})" :
-        ObjectValue != null ? $"Object: {ObjectValue["key"]?.TextValue}" :
+        ObjectValue != null ? $"Object: {ObjectValue[ObjectValue.Keys.First()]?.TextValue}" :
         "Null";
 }

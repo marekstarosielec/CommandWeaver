@@ -6,19 +6,19 @@ namespace Cli2Context;
 
 public class ContextVariables : IContextVariables
 {
-    private readonly IOutput _output;
+    private readonly IContext _context;
     private readonly ContextVariableStorage _variableStorage;
     private readonly ContextVariableReader _variableReader;
     private readonly ContextVariableWriter _variableWriter;
 
-    public ContextVariables(IOutput output) : this(output, new ContextVariableStorage()) { }
+    public ContextVariables(IContext context) : this(context, new ContextVariableStorage()) { }
 
-    internal ContextVariables(IOutput output, ContextVariableStorage variableStorage)
+    internal ContextVariables(IContext context, ContextVariableStorage variableStorage)
     {
-        _output = output;
+        _context = context;
         _variableStorage = variableStorage ?? new ContextVariableStorage();
-        _variableReader = new ContextVariableReader(output, _variableStorage);
-        _variableWriter = new ContextVariableWriter(output, _variableStorage);
+        _variableReader = new ContextVariableReader(context, _variableStorage);
+        _variableWriter = new ContextVariableWriter(context, _variableStorage);
     }
 
     public string CurrentSessionName
@@ -62,7 +62,7 @@ public class ContextVariables : IContextVariables
         var variableName = VariableValuePath.GetVariableName(path);
 
         var existingVariable = _variableStorage.Changes.FirstOrDefault(v =>
-            v.Key.Equals(variableName, StringComparison.InvariantCultureIgnoreCase) && v.Scope == scope);
+            v.Key.Equals(variableName) && v.Scope == scope);
 
         var newValue = _variableReader.ReadVariableValue(value);
 
@@ -72,7 +72,7 @@ public class ContextVariables : IContextVariables
                 //Add single element or whole list
                 _variableStorage.Changes.Add(new Variable { Key = variableName, Value = value, Scope = scope, Description = description });
             else
-                _output.Error("Tried to insert wrong type into list");
+                _context.Services.Output.Error("Tried to insert wrong type into list");
         }
         else if (path == variableName && existingVariable == null) // new variable
             _variableStorage.Changes.Add(new Variable { Key = path, Value = value, Scope = scope, Description = description });

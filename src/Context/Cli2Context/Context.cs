@@ -7,14 +7,25 @@ using Serializer.Abstractions;
 
 namespace Cli2Context;
 
-public class Context(IRepository repository, ISerializerFactory serializerFactory, IOutput output) : IContext
+public class Context : IContext
 {
-    public IContextServices Services { get; } = new ContextServices(output);
+    private readonly IRepository repository;
+    private readonly ISerializerFactory serializerFactory;
 
-    public IContextVariables Variables { get; } = new ContextVariables(output);
+    public IContextServices Services { get; }
+
+    public IContextVariables Variables { get; }
 
     public List<Command> Commands { get; } = [];
-    
+
+    public Context(IRepository repository, ISerializerFactory serializerFactory, IOutput output)
+    {
+        this.repository = repository;
+        this.serializerFactory = serializerFactory;
+        Services = new ContextServices(output);
+        Variables = new ContextVariables(this);
+    }
+
     public async Task Load(CancellationToken cancellationToken = default)
     {
         var builtInElements = repository.GetList(RepositoryLocation.BuiltIn, null, cancellationToken);
@@ -37,7 +48,7 @@ public class Context(IRepository repository, ISerializerFactory serializerFactor
         foreach (var parameter in command.Parameters)
         {
             var t = parsedArguments.FirstOrDefault(p =>
-                p.Name.Equals(parameter.Key, StringComparison.InvariantCultureIgnoreCase));
+                p.Name.Equals(parameter.Key));
             //What will happen if argument was not provided?
             Variables.SetVariableValue(VariableScope.Command, parameter.Key, new VariableValue(t.Value), parameter.Description);
             //How to validate value?
