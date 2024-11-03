@@ -63,7 +63,9 @@ public class ContextVariables : IContextVariables
 
         var existingVariable = _variableStorage.Changes.FirstOrDefault(v =>
             v.Key.Equals(variableName, StringComparison.InvariantCultureIgnoreCase) && v.Scope == scope);
-        
+
+        var newValue = _variableReader.ReadVariableValue(value);
+
         if (path != variableName && existingVariable == null) // new element in list
         {
             if (value.ObjectValue != null || value.ListValue != null)

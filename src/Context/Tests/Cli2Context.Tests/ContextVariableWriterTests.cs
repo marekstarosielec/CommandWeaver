@@ -122,4 +122,56 @@ public class ContextVariableWriterTests
         Assert.Equal("applicationPropertyValue", storage.Changes.FirstOrDefault(v => v.Scope == VariableScope.Application)?.Value?.ListValue?.Single()["property"].TextValue);
     }
 
+
+    [Fact]
+    public void SetVariableValueOnTopLevelList_SetsCorrectValue_WhenScopeIsSession_AndPreviousValueExisted()
+    {
+        var storage = new ContextVariableStorage();
+        storage.Changes.Add(new Variable { Key = "test", Scope = VariableScope.Command, Value = new VariableValueFactory().List().AddElementWithTextProperty("commandKey", "property", "commandPropertyValue").Build(), Description = "old description", LocationId = "locationId", AllowedValues = ["allowed1"] });
+        storage.Changes.Add(new Variable { Key = "test", Scope = VariableScope.Session, Value = new VariableValueFactory().List().AddElementWithTextProperty("sessionKey", "property", "sessionPropertyValue").Build(), Description = "old description", LocationId = "locationId", AllowedValues = ["allowed1"] });
+        storage.Changes.Add(new Variable { Key = "test", Scope = VariableScope.Application, Value = new VariableValueFactory().List().AddElementWithTextProperty("applicationKey", "property", "applicationPropertyValue").Build(), Description = "old description", LocationId = "locationId", AllowedValues = ["allowed1"] });
+        var writer = new ContextVariableWriter(Substitute.For<IOutput>(), storage);
+        writer.SetVariableValueOnTopLevelList(VariableScope.Session, "test[sessionKey]", new VariableValueFactory().Object().AddTextProperty("key", "sessionKey").AddTextProperty("property", "newSessionPropertyValue").Build(), "description", new List<string>(), "locationId");
+        Assert.Equal(2, storage.Changes.Count);
+        Assert.Equal("newSessionPropertyValue", storage.Changes.FirstOrDefault(v => v.Scope == VariableScope.Session)?.Value?.ListValue?.Single()["property"].TextValue);
+        Assert.Equal("applicationPropertyValue", storage.Changes.FirstOrDefault(v => v.Scope == VariableScope.Application)?.Value?.ListValue?.Single()["property"].TextValue);
+    }
+
+    [Fact]
+    public void SetVariableValueOnTopLevelList_SetsCorrectValue_WhenScopeIsSession_AndPreviousValueDidNotExist()
+    {
+        var storage = new ContextVariableStorage();
+        storage.Changes.Add(new Variable { Key = "test", Scope = VariableScope.Command, Value = new VariableValueFactory().List().AddElementWithTextProperty("commandKey", "property", "commandPropertyValue").Build(), Description = "old description", LocationId = "locationId", AllowedValues = ["allowed1"] });
+        storage.Changes.Add(new Variable { Key = "test", Scope = VariableScope.Application, Value = new VariableValueFactory().List().AddElementWithTextProperty("appliactionKey", "property", "applicationPropertyValue").Build(), Description = "old description", LocationId = "locationId", AllowedValues = ["allowed1"] });
+        var writer = new ContextVariableWriter(Substitute.For<IOutput>(), storage);
+        writer.SetVariableValueOnTopLevelList(VariableScope.Session, "test[sessionKey]", new VariableValueFactory().Object().AddTextProperty("key", "sessionKey").AddTextProperty("property", "newSessionPropertyValue").Build(), "description", new List<string>(), "locationId");
+        Assert.Equal(2, storage.Changes.Count);
+        Assert.Equal("newSessionPropertyValue", storage.Changes.FirstOrDefault(v => v.Scope == VariableScope.Session)?.Value?.ListValue?.Single()["property"].TextValue);
+        Assert.Equal("applicationPropertyValue", storage.Changes.FirstOrDefault(v => v.Scope == VariableScope.Application)?.Value?.ListValue?.Single()["property"].TextValue);
+    }
+
+    [Fact]
+    public void SetVariableValueOnTopLevelList_SetsCorrectValue_WhenScopeIsApplication_AndPreviousValueExisted()
+    {
+        var storage = new ContextVariableStorage();
+        storage.Changes.Add(new Variable { Key = "test", Scope = VariableScope.Command, Value = new VariableValueFactory().List().AddElementWithTextProperty("commandKey", "property", "commandPropertyValue").Build(), Description = "old description", LocationId = "locationId", AllowedValues = ["allowed1"] });
+        storage.Changes.Add(new Variable { Key = "test", Scope = VariableScope.Session, Value = new VariableValueFactory().List().AddElementWithTextProperty("sessionKey", "property", "sessionPropertyValue").Build(), Description = "old description", LocationId = "locationId", AllowedValues = ["allowed1"] });
+        storage.Changes.Add(new Variable { Key = "test", Scope = VariableScope.Application, Value = new VariableValueFactory().List().AddElementWithTextProperty("applicationKey", "property", "applicationPropertyValue").Build(), Description = "old description", LocationId = "locationId", AllowedValues = ["allowed1"] });
+        var writer = new ContextVariableWriter(Substitute.For<IOutput>(), storage);
+        writer.SetVariableValueOnTopLevelList(VariableScope.Application, "test[applicationKey]", new VariableValueFactory().Object().AddTextProperty("key", "applicationKey").AddTextProperty("property", "newApplicationPropertyValue").Build(), "description", new List<string>(), "locationId");
+        Assert.Single(storage.Changes);
+        Assert.Equal("newApplicationPropertyValue", storage.Changes.FirstOrDefault(v => v.Scope == VariableScope.Application)?.Value?.ListValue?.Single()["property"].TextValue);
+    }
+
+    [Fact]
+    public void SetVariableValueOnTopLevelList_SetsCorrectValue_WhenScopeIsApplication_AndPreviousValueDidNotExist()
+    {
+        var storage = new ContextVariableStorage();
+        storage.Changes.Add(new Variable { Key = "test", Scope = VariableScope.Command, Value = new VariableValueFactory().List().AddElementWithTextProperty("commandKey", "property", "commandPropertyValue").Build(), Description = "old description", LocationId = "locationId", AllowedValues = ["allowed1"] });
+        storage.Changes.Add(new Variable { Key = "test", Scope = VariableScope.Session, Value = new VariableValueFactory().List().AddElementWithTextProperty("sessionKey", "property", "sessionPropertyValue").Build(), Description = "old description", LocationId = "locationId", AllowedValues = ["allowed1"] });
+        var writer = new ContextVariableWriter(Substitute.For<IOutput>(), storage);
+        writer.SetVariableValueOnTopLevelList(VariableScope.Application, "test[applicationKey]", new VariableValueFactory().Object().AddTextProperty("key", "applicationKey").AddTextProperty("property", "newApplicationPropertyValue").Build(), "description", new List<string>(), "locationId");
+        Assert.Single(storage.Changes);
+        Assert.Equal("newApplicationPropertyValue", storage.Changes.FirstOrDefault(v => v.Scope == VariableScope.Application)?.Value?.ListValue?.Single()["property"].TextValue);
+    }
 }

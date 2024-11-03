@@ -16,11 +16,10 @@ internal class ContextVariableWriter(IOutput output, ContextVariableStorage vari
         //Replacing whole variable.
         if (VariableValuePath.PathIsTopLevel(path))
             SetVariableValueOnTopLevelVariable(scope, path, value, resolvedDescription, allowedValues, locationId);
-
+        //Adding or replacing element in list.
         else if (VariableValuePath.PathIsTopLevelList(path))
-        {
-            
-        }
+            SetVariableValueOnTopLevelList(scope, path, value, resolvedDescription, allowedValues, locationId);
+
         else
         {
 
@@ -63,58 +62,41 @@ internal class ContextVariableWriter(IOutput output, ContextVariableStorage vari
             return;
         }
 
+        Variable? existingChange = null;
         //Remove earlier changes of given key in list.
         if (scope == VariableScope.Command)
-        {
-            //When setting value for command scope, only previous command scoped values are removed.
-            var existingChange = variableStorage.Changes.FirstOrDefault(v => v.Key == variableName && v.Scope == VariableScope.Command);
-            if (existingChange != null)
-            {
-                //When given list element was already edited - remove previous value and add new one.
-                existingChange.Value = existingChange.Value with
-                {
-                    ListValue = (existingChange.Value.ListValue?.RemoveAll(v => v["key"].TextValue == key) ?? new VariableValueList())
-                        .Add(value.ObjectValue),
-                    ObjectValue = null,
-                    TextValue = null,
-                };
-                if (existingChange.Description != resolvedDescription || existingChange.AllowedValues != allowedValues) 
-                    existingChange = existingChange with { Description = resolvedDescription, AllowedValues = allowedValues };
-            }
-            else
-                //When given list element was not yet edited.
-                variableStorage.Changes.Add(new Variable { Key = variableName, Value = new VariableValue(new VariableValueList([value.ObjectValue])), Description = resolvedDescription, AllowedValues = allowedValues });
-
-        }
+            //When setting value for command scope, previous command scoped values are removed.
+            existingChange = variableStorage.Changes.FirstOrDefault(v => v.Key == variableName && v.Scope == VariableScope.Command);
         else if (scope == VariableScope.Session)
         {
-            ////When setting value for session scope, only application level changes remain.
-            //var existingChange = variableStorage.Changes.FirstOrDefault(v => v.Key == variableName && scope == VariableScope.Command);
-            //if (existingChange != null && existingChange.Value?.ListValue?.Count() == 1 && existingChange.Value?.ListValue?.Any(v => v["key"]?.TextValue == key) == true)
-            //    //There is already a command scoped change and it contains only change for given index, so we can delete it fully.
-            //    variableStorage.Changes.RemoveAll(v => v.Key == variableName && scope == VariableScope.Command);
-            //else if (existingChange != null && existingChange.Value?.ListValue?.Count() > 1)
-            //    //There is already a command scoped change but it contains more changes, so we can delete only change for given index.
-            //    existingChange.Value = existingChange.Value with { ListValue = existingChange.Value.ListValue.RemoveAll(v => v["key"].TextValue == key) };
-
-            //existingChange = variableStorage.Changes.FirstOrDefault(v => v.Key == variableName && scope == VariableScope.Session);
-            //if (existingChange != null && existingChange.Value?.ListValue?.Any(v => v["key"]?.TextValue == key) == true)
-            //{
-            //    //There is already a session scoped change and it contains change for given index, so we can modify it.
-            //    existingChange.Value
-            //}
-            //else if (existingChange != null && existingChange.Value?.ListValue?.Count() > 1)
-            //    //There is already a command scoped change but it contains more changes, so we can delete only change for given index.
-            //    existingChange.Value.ListValue = existingChange.Value.ListValue.RemoveAll(v => v["key"].TextValue == key);
-            //else if (existingChange == null)
-            //{
-
-            //}
+            //When setting value for session scope, previous command scoped values are removed.
+            variableStorage.Changes.RemoveAll(v => v.Key == variableName && v.Scope == VariableScope.Command);
+            existingChange = variableStorage.Changes.FirstOrDefault(v => v.Key == variableName && v.Scope == VariableScope.Session);
         }
-        //else if (scope == VariableScope.Application)
-        //    //When setting value for application scope, all previous changes are removed.
-        //    foreach (var item in variableStorage.Changes.Where(v => v.Key == variableName))
-        //        item.Value?.ListValue?.RemoveAll(v => v["key"].TextValue == key);
+        else
+        {
+            //When setting value for application scope, previous command and session scoped values are removed.
+            variableStorage.Changes.RemoveAll(v => v.Key == variableName && v.Scope is VariableScope.Command or VariableScope.Session);
+            existingChange = variableStorage.Changes.FirstOrDefault(v => v.Key == variableName && v.Scope == VariableScope.Application);
+        }
+
+
+        if (existingChange != null)
+        {
+            //When given list element was already edited - remove previous value and add new one.
+            existingChange.Value = existingChange.Value with
+            {
+                ListValue = (existingChange.Value.ListValue?.RemoveAll(v => v["key"].TextValue == key) ?? new VariableValueList())
+                    .Add(value.ObjectValue),
+                ObjectValue = null,
+                TextValue = null,
+            };
+            if (existingChange.Description != resolvedDescription || existingChange.AllowedValues != allowedValues)
+                existingChange = existingChange with { Description = resolvedDescription, AllowedValues = allowedValues };
+        }
+        else
+            //When given list element was not yet edited.
+            variableStorage.Changes.Add(new Variable { Scope = scope, Key = variableName, Value = new VariableValue(new VariableValueList([value.ObjectValue])), Description = resolvedDescription, AllowedValues = allowedValues });
 
     }
 
