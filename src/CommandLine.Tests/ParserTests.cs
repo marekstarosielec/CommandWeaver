@@ -16,12 +16,12 @@ public class ParserTests
         // Assert
         Assert.Equal(2, result.Count);
         Assert.Equal("flag1", result[0].Name);
-        Assert.Null(result[0].Value);
-        Assert.Equal("flag", result[0].Type);
+        Assert.Equal("true", result[0].Value);
+        Assert.Equal("argument", result[0].Type);
         
         Assert.Equal("flag2", result[1].Name);
-        Assert.Null(result[1].Value);
-        Assert.Equal("flag", result[1].Type);
+        Assert.Equal("true", result[1].Value);
+        Assert.Equal("argument", result[1].Type);
     }
 
     [Fact]
@@ -106,13 +106,14 @@ public class ParserTests
         Assert.Equal("command", result[0].Type);
     
         Assert.Equal("flag1", result[1].Name);
-        Assert.Null(result[1].Value);
-        Assert.Equal("flag", result[1].Type);
+        Assert.Equal("true", result[1].Value);
+        Assert.Equal("argument", result[1].Type);
     
         Assert.Equal("arg1", result[2].Name);
         Assert.Equal("value with spaces", result[2].Value);
         Assert.Equal("argument", result[2].Type);
     }
+
     
     [Fact]
     public void Test_Multiple_Arguments_With_Quotes_And_Escapes()
@@ -178,8 +179,8 @@ public class ParserTests
         // No argument is recognized because the space is missing between the argument name and value
         Assert.Single(result);
         Assert.Equal("arg1valuewithoutspace", result[0].Name);
-        Assert.Null(result[0].Value);
-        Assert.Equal("flag", result[0].Type);
+        Assert.Equal("true", result[0].Value);
+        Assert.Equal("argument", result[0].Type);
     }
     
     [Fact]

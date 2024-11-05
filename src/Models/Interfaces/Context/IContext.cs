@@ -2,12 +2,10 @@ namespace Models.Interfaces.Context;
 
 public interface IContext
 {
-
-    
     IContextServices Services { get; }
     IContextVariables Variables { get; }
     
-    Task Load(CancellationToken cancellationToken);
-    Task Run(string commandLineArguments, CancellationToken cancellationToken);
+    Task Initialize(CancellationToken cancellationToken);
+    Task Run(string commmandName, Dictionary<string, string> arguments, CancellationToken cancellationToken = default);
     void Terminate(string? message = null, int exitCode = 1);
 }

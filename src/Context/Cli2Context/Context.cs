@@ -26,7 +26,7 @@ public class Context : IContext
         Variables = new ContextVariables(this);
     }
 
-    public async Task Load(CancellationToken cancellationToken = default)
+    public async Task Initialize(CancellationToken cancellationToken = default)
     {
         var builtInElements = repository.GetList(RepositoryLocation.BuiltIn, null, cancellationToken);
         await ProcessElements(RepositoryLocation.BuiltIn, null, builtInElements);
@@ -37,23 +37,33 @@ public class Context : IContext
         await ProcessElements(RepositoryLocation.Session, currentSessionName, sessionElements);
     }
 
-    public async Task Run(string commandLineArguments, CancellationToken cancellationToken = default)
+    public async Task Run(string commmandName, Dictionary<string, string> arguments, CancellationToken cancellationToken = default)
     {
         Variables.SetVariableValue(VariableScope.Command, "BuiltInPath", new VariableValue(repository.GetPath(RepositoryLocation.BuiltIn)));
         Variables.SetVariableValue(VariableScope.Command, "LocalPath", new VariableValue(repository.GetPath(RepositoryLocation.Local)));
         Variables.SetVariableValue(VariableScope.Command, "SessionPath", new VariableValue(repository.GetPath(RepositoryLocation.Session, Variables.CurrentSessionName)));
-        var cmd = new Parser().ParseFullCommandLine(commandLineArguments);
-        var parsedArguments = cmd.ParsedArguments.ToList();
-        var command = Commands.First(c => c.Name == "nag-core-environment-add");
-        foreach (var parameter in command.Parameters)
+
+        if (string.IsNullOrWhiteSpace(commmandName))
         {
-            var t = parsedArguments.FirstOrDefault(p =>
-                p.Name.Equals(parameter.Key));
-            //What will happen if argument was not provided?
-            Variables.SetVariableValue(VariableScope.Command, parameter.Key, new VariableValue(t.Value), parameter.Description);
-            //How to validate value?
+            Terminate($"Command not provided.");
+            return;
         }
 
+        var command = Commands.FirstOrDefault(c => c.Name == commmandName);
+        if (command == null)
+        {
+            Terminate($"Unknown command {commmandName}");
+            return;
+        }
+
+        //Fill variables from provided arguments.
+        foreach (var parameter in command.Parameters)
+        {
+            arguments.TryGetValue(parameter.Key, out var parameterValue);
+            Variables.SetVariableValue(VariableScope.Command, parameter.Key, new VariableValue(parameterValue), parameter.Description);
+        }
+
+        //Run operations for selected command.
         foreach (var operation in command.Operations)
         {
             Services.Output.Debug($"{operation.Name}: Starting");

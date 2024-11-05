@@ -1,42 +1,16 @@
 ﻿using System.Text;
-using System.Text.RegularExpressions;
 
 namespace CommandLine;
 
-public interface IParser
+public class Parser
 {
-    ParserResult ParseFullCommandLine(string commandLine);
-}
-
-public readonly struct ParsedElement(string name, string? value, string type)
-{
-    public string Name { get; } = name;   // Name of the parsed element
-    public string? Value { get; } = value; // Nullable value (only for arguments)
-    public string Type { get; } = type;   // Type of the element (flag, command, or argument)
-}
-
-public struct ParserResult
-{
-    public required string CommandLine { get; set; }
-    public required string Executable { get; set; }
-    public required string Arguments { get; set; }
-    public required IEnumerable<ParsedElement> ParsedArguments { get; set; }
-}
-
-public class Parser : IParser
-{
-    public ParserResult ParseFullCommandLine(string commandLine)
+    public void ParseFullCommandLine(string commandLine, out string command, out Dictionary<string, string> arguments)
     {
-        var executable = ExtractExecutable(commandLine);
-        var arguments = ExtractArguments(commandLine, executable);
-        var parsedArguments = ParseArguments(arguments);
-        return new ParserResult
-        {
-            CommandLine = commandLine,
-            Executable = executable,
-            Arguments = arguments,
-            ParsedArguments = parsedArguments
-        };
+        var commandLineExecutable = ExtractExecutable(commandLine);
+        var commandLineArguments = ExtractArguments(commandLine, commandLineExecutable);
+        var parsedArguments = ParseArguments(commandLineArguments);
+        command = string.Join(' ', parsedArguments.Where(p => p.Type == "command").Select(p => p.Name));
+        arguments = parsedArguments.Where(p => p.Type == "argument").ToDictionary(a => a.Name, a => a.Value ?? string.Empty);
     }
 
     private string ExtractExecutable(string commandLine)
@@ -61,19 +35,18 @@ public class Parser : IParser
 
     internal IEnumerable<ParsedElement> ParseArguments(string input)
     {
-        var current = new StringBuilder(); // Holds the current word being processed
-        string? lastFlagOrArgument = null; // Tracks the last flag or argument seen
+        var wordBuilder = new StringBuilder(); // Holds the current word being processed
+        string? previousWord = null; // Tracks the last flag or argument seen
         var inQuotes = false; // Tracks whether we're inside quotes
         var quoteChar = '\0'; // The type of quote being used
         var escapeNext = false; // Tracks if the next character is escaped
-
         for (var i = 0; i < input.Length; i++)
         {
             var c = input[i];
 
             if (escapeNext)
             {
-                current.Append(c); // Append the escaped character
+                wordBuilder.Append(c); // Append the escaped character
                 escapeNext = false;
                 continue;
             }
@@ -92,7 +65,7 @@ public class Parser : IParser
                     quoteChar = '\0';
                 }
                 else
-                    current.Append(c); // Append character inside quotes
+                    wordBuilder.Append(c); // Append character inside quotes
 
                 continue;
             }
@@ -106,26 +79,26 @@ public class Parser : IParser
 
             if (char.IsWhiteSpace(c)) // Handle spaces (end of a word)
             {
-                if (current.Length > 0)
+                if (wordBuilder.Length > 0)
                 {
-                    var word = current.ToString();
-                    current.Clear();
+                    var word = wordBuilder.ToString();
+                    wordBuilder.Clear();
 
                     if (word.StartsWith("--") || word.StartsWith("-"))
                     {
-                        // If there's a previously stored flag or argument, yield it as a flag (no value follows)
-                        if (lastFlagOrArgument != null)
-                            yield return new ParsedElement(lastFlagOrArgument.TrimStart('-'), null, "flag");
+                        // If there's a previously stored flag or argument, yield it as a argument with default true
+                        if (previousWord != null)
+                            yield return new ParsedElement(previousWord.TrimStart('-'), "true", "argument");
 
-                        lastFlagOrArgument = word; // Store this flag or argument
+                        previousWord = word; // Store this flag or argument
                     }
                     else
                     {
                         // If the last word was a flag/argument, this word is the value
-                        if (lastFlagOrArgument != null)
+                        if (previousWord != null)
                         {
-                            yield return new ParsedElement(lastFlagOrArgument.TrimStart('-'), word, "argument");
-                            lastFlagOrArgument = null;
+                            yield return new ParsedElement(previousWord.TrimStart('-'), word, "argument");
+                            previousWord = null;
                         }
                         else
                             yield return new ParsedElement(word.TrimStart('-'), null, "command"); // It's a command
@@ -135,31 +108,31 @@ public class Parser : IParser
                 continue;
             }
 
-            current.Append(c); // Continue building the current word
+            wordBuilder.Append(c); // Continue building the current word
         }
 
         // Handle the last word after the loop finishes
-        if (current.Length > 0)
+        if (wordBuilder.Length > 0)
         {
-            var word = current.ToString();
+            var word = wordBuilder.ToString();
 
-            if (lastFlagOrArgument != null)
+            if (previousWord == null)
+            { 
+                // This could be a standalone command or flag
+                yield return new ParsedElement(word.TrimStart('-'), word.StartsWith("-") ? "true" : null, word.StartsWith("-") ? "argument" : "command");
+                yield break;
+            }
+            if (word.StartsWith("-"))
             {
-                if (word.StartsWith("-"))
-                {
-                    // If the last word was a flag/argument and we reached the end, yield it as a flag
-                    yield return new ParsedElement(lastFlagOrArgument.TrimStart('-'), word.StartsWith("-") ? null : word, "flag");
-                    yield return new ParsedElement(word.TrimStart('-'), null, "flag");
-                }
-                else
-                    yield return new ParsedElement(lastFlagOrArgument.TrimStart('-'), word,"argument");
+                // If the last word was a flag/argument and we reached the end, yield it as a flag
+                yield return new ParsedElement(previousWord.TrimStart('-'), word.StartsWith("-") ? "true" : word, "argument");
+                yield return new ParsedElement(word.TrimStart('-'), "true", "argument");
             }
             else
-                // This could be a standalone command or flag
-                yield return new ParsedElement(word.TrimStart('-'), null, word.StartsWith("-") ? "flag" : "command");
-            
+                yield return new ParsedElement(previousWord.TrimStart('-'), word, "argument");
+               
         }
-        else if (lastFlagOrArgument != null)
-            yield return new ParsedElement(lastFlagOrArgument.TrimStart('-'), null, "flag");
+        else if (previousWord != null)
+            yield return new ParsedElement(previousWord.TrimStart('-'), "true", "argument");
     }
 }
