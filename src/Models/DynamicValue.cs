@@ -19,6 +19,7 @@ public record DynamicValue
 
     public DynamicValueList? ListValue { get; set; }
 
+    public bool IsNull => TextValue == null && ObjectValue == null && ListValue == null;
     //public int? NumericValue { get; set; }
 
     //public bool? BoolValue { get; set; }

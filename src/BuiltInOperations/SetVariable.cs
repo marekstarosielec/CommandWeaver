@@ -9,8 +9,8 @@ public class SetVariable : Operation
 
     public override Dictionary<string, OperationParameter> Parameters { get; } = new Dictionary<string, OperationParameter>
     {
-        { "key", new OperationParameter { Description = "Key of variable to set value to." } },
-        { "value", new OperationParameter { Description = "Value which should be set." } },
+        { "key", new OperationParameter { Description = "Key of variable to set value to.", RequiredText = true } },
+        { "value", new OperationParameter { Description = "Value which should be set.", Required = true } },
         { "scope", new OperationParameter { Description = "Optional scope for variable." } },
     };
 
@@ -23,22 +23,6 @@ public class SetVariable : Operation
 
     public override Task Run(IContext context, CancellationToken cancellationToken)
     {
-        //Add variables validation before running.
-        if (Parameters["key"].Value?.TextValue == null)
-        {
-            //Name of variable to update must be resolved to string.
-            context.Terminate($"{Parameters["key"].Value} does not contain valid variable name.");
-            return Task.CompletedTask;
-        }
-
-        if (Parameters["value"].Value == null)
-        {
-            //New value is required.
-            //TODO: No value means remove variable.
-            context.Terminate($"Value is required.");
-            return Task.CompletedTask;
-        }
-
         var scopeEnum = VariableScope.Command;
         if (!string.IsNullOrWhiteSpace(Parameters["scope"].Value?.TextValue) && !Enum.TryParse(Parameters["scope"].Value.TextValue, false, out scopeEnum))
         {

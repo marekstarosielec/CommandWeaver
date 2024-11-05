@@ -3,6 +3,7 @@ using Models.Interfaces.Context;
 using Repositories.Abstraction;
 using Repositories.Abstraction.Interfaces;
 using Serializer.Abstractions;
+using System.Reflection.Metadata;
 
 namespace Cli2Context;
 
@@ -83,6 +84,16 @@ public class Context : IContext
             {
                 //Evaluate all operation parametes.
                 operation.Parameters[parameterKey] = operation.Parameters[parameterKey] with { Value = Variables.ReadVariableValue(operation.Parameters[parameterKey].Value) ?? new DynamicValue() };
+                if (operation.Parameters[parameterKey].Required && operation.Parameters[parameterKey].Value.IsNull)
+                {
+                    Terminate($"Parameter {parameterKey} is required in operation {operation.Name}.");
+                    return;
+                }
+                if (operation.Parameters[parameterKey].RequiredText && string.IsNullOrWhiteSpace(operation.Parameters[parameterKey].Value.TextValue))
+                {
+                    Terminate($"Parameter {parameterKey} requires text value in operation {operation.Name}.");
+                    return;
+                }
             }
             await operation.Run(this, cancellationToken);
         }

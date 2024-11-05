@@ -10,4 +10,7 @@ public record OperationParameter
     public List<string> AllowedValues { get; init; } = [];
 
     public bool Required { get; set; }
+
+
+    public bool RequiredText { get; set; }
 }
