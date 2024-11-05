@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 
 namespace Models;
 
@@ -28,8 +29,13 @@ public record DynamicValue
 
     //public DateTime? DateTimeValue { get; set; }
 
+    public T? GetEnumValue<T>() where T : struct, Enum =>
+        !string.IsNullOrWhiteSpace(TextValue) && Enum.TryParse(TextValue, out T result)
+        ? result
+        : null;
+
     private string? DebuggerDisplay =>
-        TextValue != null ? $"Text: {TextValue}" :
+    TextValue != null ? $"Text: {TextValue}" :
         ListValue != null ? $"List (Count: {ListValue.ToList().Count})" :
         ObjectValue != null ? $"Object: {ObjectValue[ObjectValue.Keys.First()]?.TextValue}" :
         null;

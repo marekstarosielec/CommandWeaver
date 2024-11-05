@@ -13,4 +13,6 @@ public record OperationParameter
 
 
     public bool RequiredText { get; set; }
+
+    public Type? AllowedEnumValues { get; set; }
 }

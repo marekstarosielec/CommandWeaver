@@ -85,14 +85,18 @@ public class Context : IContext
                 //Evaluate all operation parametes.
                 operation.Parameters[parameterKey] = operation.Parameters[parameterKey] with { Value = Variables.ReadVariableValue(operation.Parameters[parameterKey].Value) ?? new DynamicValue() };
                 if (operation.Parameters[parameterKey].Required && operation.Parameters[parameterKey].Value.IsNull)
-                {
                     Terminate($"Parameter {parameterKey} is required in operation {operation.Name}.");
-                    return;
-                }
                 if (operation.Parameters[parameterKey].RequiredText && string.IsNullOrWhiteSpace(operation.Parameters[parameterKey].Value.TextValue))
-                {
                     Terminate($"Parameter {parameterKey} requires text value in operation {operation.Name}.");
-                    return;
+                if (operation.Parameters[parameterKey].AllowedEnumValues != null)
+                {
+                    if (!operation.Parameters[parameterKey].AllowedEnumValues!.IsEnum)
+                        //TODO: This should be checked by unit test.
+                        Terminate($"Parameter {parameterKey} contains invalid AllowedEnumValues in operation {operation.Name}.");
+                   
+                    if (!string.IsNullOrWhiteSpace(operation.Parameters[parameterKey].Value.TextValue) && !Enum.IsDefined(operation.Parameters[parameterKey].AllowedEnumValues!, operation.Parameters[parameterKey].Value.TextValue!))
+                        Terminate($"Parameter {parameterKey} has invalid value in operation {operation.Name}."); 
+           
                 }
             }
             await operation.Run(this, cancellationToken);
