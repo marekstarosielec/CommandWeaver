@@ -38,9 +38,9 @@ public class Context : IContext
 
     public async Task Run(string commmandName, Dictionary<string, string> arguments, CancellationToken cancellationToken = default)
     {
-        Variables.SetVariableValue(VariableScope.Command, "BuiltInPath", new VariableValue(_repository.GetPath(RepositoryLocation.BuiltIn)));
-        Variables.SetVariableValue(VariableScope.Command, "LocalPath", new VariableValue(_repository.GetPath(RepositoryLocation.Local)));
-        Variables.SetVariableValue(VariableScope.Command, "SessionPath", new VariableValue(_repository.GetPath(RepositoryLocation.Session, Variables.CurrentSessionName)));
+        Variables.WriteVariableValue(VariableScope.Command, "BuiltInPath", new VariableValue(_repository.GetPath(RepositoryLocation.BuiltIn)));
+        Variables.WriteVariableValue(VariableScope.Command, "LocalPath", new VariableValue(_repository.GetPath(RepositoryLocation.Local)));
+        Variables.WriteVariableValue(VariableScope.Command, "SessionPath", new VariableValue(_repository.GetPath(RepositoryLocation.Session, Variables.CurrentSessionName)));
 
         if (string.IsNullOrWhiteSpace(commmandName))
         {
@@ -59,7 +59,7 @@ public class Context : IContext
         foreach (var parameter in command.Parameters)
         {
             arguments.TryGetValue(parameter.Key, out var parameterValue);
-            Variables.SetVariableValue(VariableScope.Command, parameter.Key, new VariableValue(parameterValue), parameter.Description);
+            Variables.WriteVariableValue(VariableScope.Command, parameter.Key, new VariableValue(parameterValue), parameter.Description);
         }
 
         //Fill variables for build in parameters (common for every command).
@@ -67,7 +67,20 @@ public class Context : IContext
         {
             //Those are optional. Need to set value only if provided. They might have fallback value.
             arguments.TryGetValue(parameter.Key, out var parameterValue);
-            Variables.SetVariableValue(VariableScope.Command, parameter.Key, new VariableValue(parameterValue), parameter.Description);
+            Variables.WriteVariableValue(VariableScope.Command, parameter.Key, new VariableValue(parameterValue), parameter.Description);
+        }
+
+        //Check if all required parameters have value
+        foreach (var parameter in command.Parameters)
+        {
+            //parameter is different variable - need to find variable with same name and read its value.
+            var variable = Variables.FindVariable(parameter.Key);
+            var value = variable == null? null : Variables.ReadVariableValue(variable.Value);
+            if (parameter.Required && string.IsNullOrWhiteSpace(value?.TextValue))
+            {
+                Terminate($"Parameter {parameter.Key} requires value.");
+                return;
+            }
         }
 
         //Run operations for selected command.

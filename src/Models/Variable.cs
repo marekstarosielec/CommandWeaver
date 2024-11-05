@@ -13,4 +13,6 @@ public record Variable
     public VariableScope Scope { get; init; } = VariableScope.Command;
 
     public string? LocationId { get; set; }
+
+    public bool Required { get; set; }
 }

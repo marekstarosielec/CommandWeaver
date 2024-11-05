@@ -3,11 +3,13 @@
   "parameters": [
     {
       "key": "key",
-      "description": "Name of nag-core environment. Must be unique"
+      "description": "Name of nag-core environment. Must be unique",
+      "required": true
     },
     {
       "key": "host",
-      "description": "Nag-core host"
+      "description": "Nag-core host",
+      "required": true
     },
     {
       "key": "proxy",
@@ -28,7 +30,7 @@
         "proxy": "{{proxy}}",
         "defaultPartner": "{{defaultPartner}}"
       },
-      "scope": "application"
+      "scope": "Application"
     },
     {
       "operation": "output",

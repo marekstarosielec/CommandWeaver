@@ -5,20 +5,20 @@ namespace Cli2Context;
 
 internal class ContextVariableWriter(IContext context, ContextVariableStorage variableStorage)
 {
-    public void SetVariableValue(VariableScope scope, string path, VariableValue value, string? description = null)
+    public void WriteVariableValue(VariableScope scope, string path, VariableValue value, string? description = null)
     {
 
         //Replacing whole variable.
         if (VariableValuePath.PathIsTopLevel(path))
-            SetVariableValueOnTopLevelVariable(scope, path, value, description);
+            WriteVariableValueOnTopLevelVariable(scope, path, value, description);
         //Adding or replacing element in list.
         else if (VariableValuePath.PathIsTopLevelList(path))
-            SetVariableValueOnTopLevelList(scope, path, value);
+            WriteVariableValueOnTopLevelList(scope, path, value);
         else
             context.Terminate("Writing to sub-property is not supported");
     }
 
-    internal void SetVariableValueOnTopLevelVariable(VariableScope scope, string path, VariableValue value, string? description)
+    internal void WriteVariableValueOnTopLevelVariable(VariableScope scope, string path, VariableValue value, string? description)
     {
         //Find current values.
         var existingVariable =
@@ -46,7 +46,7 @@ internal class ContextVariableWriter(IContext context, ContextVariableStorage va
         variableStorage.Changes.Add(new Variable { Key = path, Value = value, Description = resolvedDescription, Scope = scope, LocationId = locationId, AllowedValues = allowedValues });
     }
 
-    internal void SetVariableValueOnTopLevelList(VariableScope scope, string path, VariableValue value)
+    internal void WriteVariableValueOnTopLevelList(VariableScope scope, string path, VariableValue value)
     {
         var variableName = VariableValuePath.GetVariableName(path);
         var key = VariableValuePath.TopLevelListKey(path);

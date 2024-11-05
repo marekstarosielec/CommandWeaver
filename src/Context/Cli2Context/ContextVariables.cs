@@ -24,16 +24,22 @@ public class ContextVariables : IContextVariables
     public string CurrentSessionName
     {
         get => _variableReader.ReadVariableValue(new VariableValue("currentSessionName"), true)?.TextValue ?? "session1";
-        set => SetVariableValue(VariableScope.Application, "currentSessionName", new VariableValue(value));
+        set => WriteVariableValue(VariableScope.Application, "currentSessionName", new VariableValue(value));
     }
 
     public string? CurrentlyProcessedElement
     {
         get => _variableReader.ReadVariableValue(new VariableValue("currentlyProcessedElement"), true)?.TextValue;
-        set => SetVariableValue(VariableScope.Command, "currentlyProcessedElement", new VariableValue(value));
+        set => WriteVariableValue(VariableScope.Command, "currentlyProcessedElement", new VariableValue(value));
     }
 
-    public VariableValue? ResolveVariableValue(VariableValue? variableValue, bool treatTextValueAsVariable = false)
+    public Variable? FindVariable(string variableName) 
+            => _variableStorage.Changes.FirstOrDefault(v => v.Key == variableName)
+            ?? _variableStorage.Session.FirstOrDefault(v => v.Key == variableName)
+            ?? _variableStorage.Local.FirstOrDefault(v => v.Key == variableName)
+            ?? _variableStorage.BuiltIn.FirstOrDefault(v => v.Key == variableName);
+
+    public VariableValue? ReadVariableValue(VariableValue? variableValue, bool treatTextValueAsVariable = false)
     => _variableReader.ReadVariableValue(variableValue, treatTextValueAsVariable);
 
     public void SetVariableList(RepositoryLocation repositoryLocation, List<Variable?> elementsWithContent, string locationId)
@@ -56,27 +62,5 @@ public class ContextVariables : IContextVariables
         }
     }
 
-    public void SetVariableValue(VariableScope scope, string path, VariableValue value, string? description = null)
-    {
-        
-        var variableName = VariableValuePath.GetVariableName(path);
-
-        var existingVariable = _variableStorage.Changes.FirstOrDefault(v =>
-            v.Key.Equals(variableName) && v.Scope == scope);
-
-        var newValue = _variableReader.ReadVariableValue(value);
-
-        if (path != variableName && existingVariable == null) // new element in list
-        {
-            if (value.ObjectValue != null || value.ListValue != null)
-                //Add single element or whole list
-                _variableStorage.Changes.Add(new Variable { Key = variableName, Value = value, Scope = scope, Description = description });
-            else
-                _context.Terminate("Tried to insert wrong type into list");
-        }
-        else if (path == variableName && existingVariable == null) // new variable
-            _variableStorage.Changes.Add(new Variable { Key = path, Value = value, Scope = scope, Description = description });
-        else if (existingVariable != null) // existing variable
-            existingVariable.Value = value;
-    }
+    public void WriteVariableValue(VariableScope scope, string path, VariableValue value, string? description = null) => _variableWriter.WriteVariableValue(scope, path, value, description);
 }
