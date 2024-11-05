@@ -1,8 +1,7 @@
 ﻿namespace Models;
 
-public class OperationParameter
+public record OperationParameter
 {
-    public required string Key { get; init; }
 
     public DynamicValue Value { get; set; } = new DynamicValue();
 

@@ -27,9 +27,9 @@ public record DynamicValue
 
     //public DateTime? DateTimeValue { get; set; }
 
-    private string DebuggerDisplay =>
+    private string? DebuggerDisplay =>
         TextValue != null ? $"Text: {TextValue}" :
         ListValue != null ? $"List (Count: {ListValue.ToList().Count})" :
         ObjectValue != null ? $"Object: {ObjectValue[ObjectValue.Keys.First()]?.TextValue}" :
-        "Null";
+        null;
 }

@@ -46,24 +46,18 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
             if (property.Name.Equals("operation", StringComparison.CurrentCultureIgnoreCase))
                 continue;
             
-            var propertyInfo = type.GetProperty(property.Name, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-            if (propertyInfo == null)
+            if (!operationInstance.Parameters.ContainsKey(property.Name))
             {
                 //Property defined in json is not defined in operation class.
                 context.Services.Output.Warning($"Property {property.Name} is invalid for operation {operationName} in {context.Variables.CurrentlyProcessedElement}");
                 continue;
             }
 
-            if (propertyInfo.GetValue(operationInstance) is not OperationParameter operationParameter)
-                //Property is not initialized in operation class.
-                throw new InvalidOperationException(
-                    $"Property {property.Name} is not initialized in operation {operationName} or has incorrect type");
-
-            operationParameter.Value = ReadElement(property.Value);
+            operationInstance.Parameters[property.Name] = operationInstance.Parameters[property.Name] with { Value = ReadElement(property.Value) };
         }
     }
 
-    private DynamicValue? ReadElement(JsonElement element)
+    private DynamicValue ReadElement(JsonElement element)
     {
         switch (element.ValueKind)
         {
@@ -80,12 +74,12 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
             case JsonValueKind.Array:
                 return ReadArray(element);
             case JsonValueKind.Null:
-                return null; 
+                return new DynamicValue(); 
             default:
                 throw new JsonException("Unexpected JSON value kind");
         }
     }
-    private DynamicValue? ReadString(JsonElement element)
+    private DynamicValue ReadString(JsonElement element)
     {
         // Attempt to parse as DateTime, otherwise return as string
         if (element.TryGetDateTime(out DateTime dateTimeValue))

@@ -3,6 +3,7 @@ using Models.Interfaces.Context;
 using Repositories.Abstraction;
 using Repositories.Abstraction.Interfaces;
 using Serializer.Abstractions;
+using System.Reflection.Metadata;
 
 namespace Cli2Context;
 
@@ -55,19 +56,11 @@ public class Context : IContext
             return;
         }
 
-        //Fill variables from provided arguments.
-        foreach (var parameter in command.Parameters)
+        //Conver command parameters (both defined by command and built-in) to variables with values from arguments.
+        foreach (var parameter in command.Parameters.Union(BuiltInCommandParameters.List))
         {
-            arguments.TryGetValue(parameter.Key, out var parameterValue);
-            Variables.WriteVariableValue(VariableScope.Command, parameter.Key, new DynamicValue(parameterValue));
-        }
-
-        //Fill variables for build in parameters (common for every command).
-        foreach (var parameter in BuiltInParameters.List)
-        {
-            //Those are optional. Need to set value only if provided. They might have fallback value.
-            arguments.TryGetValue(parameter.Key, out var parameterValue);
-            Variables.WriteVariableValue(VariableScope.Command, parameter.Key, new DynamicValue(parameterValue));
+            arguments.TryGetValue(parameter.Key, out var argumentValue);
+            Variables.WriteVariableValue(VariableScope.Command, parameter.Key, new DynamicValue(argumentValue));
         }
 
         //Check if all required parameters have value
@@ -87,6 +80,10 @@ public class Context : IContext
         foreach (var operation in command.Operations)
         {
             Services.Output.Debug($"{operation.Name}: Starting");
+            foreach (var parameterKey in operation.Parameters.Keys)
+            {
+                operation.Parameters[parameterKey] = operation.Parameters[parameterKey] with { Value = Variables.ReadVariableValue(operation.Parameters[parameterKey].Value) ?? new DynamicValue() };
+            }
             await operation.Run(this, cancellationToken);
         }
 

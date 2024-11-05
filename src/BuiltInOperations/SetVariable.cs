@@ -3,38 +3,35 @@ using Models.Interfaces.Context;
 
 namespace BuiltInOperations;
 
-public class SetVariable: Operation
+public class SetVariable : Operation
 {
     public override string Name => nameof(SetVariable);
 
-    //Add test - every Variable should be public, initialized, have getter and setter.
-    public OperationParameter Key { get; set; } = new OperationParameter { Key = "key", Description = "Key of variable to set value to." };
-    public OperationParameter Value { get; set; } = new OperationParameter { Key = "value", Description = "Value which should be set." };
-   // public OperationParameter Description { get; set; } = new OperationParameter { Key = "description", Description = "Optional description for variable." };
-    public OperationParameter Scope { get; set; } = new OperationParameter { Key = "scope", Description = "Optional scope for variable." };
+    public override Dictionary<string, OperationParameter> Parameters { get; } = new Dictionary<string, OperationParameter>
+    {
+        { "key", new OperationParameter { Description = "Key of variable to set value to." } },
+        { "value", new OperationParameter { Description = "Value which should be set." } },
+        { "scope", new OperationParameter { Description = "Optional scope for variable." } },
+    };
 
     public SetVariable()
     {
-        //This should be prefileld in variable + test to detect changes.
+        //This should be prefileld in variable + test to detect changes (?).
         foreach (var item in Enum.GetNames<VariableScope>())
-            Scope.AllowedValues.Add(item);
+            Parameters["scope"].AllowedValues.Add(item);
     }
 
     public override Task Run(IContext context, CancellationToken cancellationToken)
     {
         //Add variables validation before running.
-        context.Services.Output.Trace($"Getting variable key from {nameof(Key)}.");
-        var key = context.Variables.ReadVariableValue(Key.Value);
-        if (key?.TextValue == null)
+        if (Parameters["key"].Value?.TextValue == null)
         {
             //Name of variable to update must be resolved to string.
-            context.Terminate($"{Key.Value} does not contain valid variable name.");
+            context.Terminate($"{Parameters["key"].Value} does not contain valid variable name.");
             return Task.CompletedTask;
         }
 
-        context.Services.Output.Trace($"Getting variable value from {nameof(Value)}.");
-        var newValue = context.Variables.ReadVariableValue(Value.Value);
-        if (newValue == null)
+        if (Parameters["value"].Value == null)
         {
             //New value is required.
             //TODO: No value means remove variable.
@@ -42,20 +39,15 @@ public class SetVariable: Operation
             return Task.CompletedTask;
         }
 
-        //context.Services.Output.Trace($"Getting description value from {nameof(Description)}.");
-        //var description = context.Variables.ReadVariableValue(Description.Value);
-
-        context.Services.Output.Trace($"Getting scope value from {nameof(Scope)}.");
-        var scope = context.Variables.ReadVariableValue(Scope.Value);
         var scopeEnum = VariableScope.Command;
-        if (!string.IsNullOrWhiteSpace(scope?.TextValue) && !Enum.TryParse(scope.TextValue, false, out scopeEnum))
+        if (!string.IsNullOrWhiteSpace(Parameters["scope"].Value?.TextValue) && !Enum.TryParse(Parameters["scope"].Value.TextValue, false, out scopeEnum))
         {
-            context.Terminate($"Scope {scope.TextValue} is not a valid value");
+            context.Terminate($"Scope {Parameters["scope"].Value?.TextValue} is not a valid value");
             return Task.CompletedTask;
         }  
 
         context.Services.Output.Trace($"Value evaluated to not null");
-        context.Variables.WriteVariableValue(scopeEnum, key.TextValue, newValue);
+        context.Variables.WriteVariableValue(scopeEnum, Parameters["key"].Value.TextValue!, Parameters["value"].Value);
       
         return Task.CompletedTask;
     }
