@@ -9,4 +9,5 @@ public interface IContext
     
     Task Load(CancellationToken cancellationToken);
     Task Run(string commandLineArguments, CancellationToken cancellationToken);
+    void Terminate(string? message = null, int exitCode = 1);
 }

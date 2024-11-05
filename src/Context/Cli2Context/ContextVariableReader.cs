@@ -33,7 +33,7 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
         depth++;
         if (depth > 50)
         {
-            context.Services.Output.Error("Too deep variable resolving. Make sure that you have no circular reference.");
+            context.Terminate("Too deep variable resolving. Make sure that you have no circular reference.");
             return variableValue;
         }
         var result = variableValue with { };
@@ -82,7 +82,7 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
             return ReadVariableValue(new VariableValue(resolvedKey), false, depth);
         }
 
-        context.Services.Output.Error($"{{{{ {variableName} }}}} resolved to a non-text value, it cannot be part of text.");
+        context.Terminate($"{{{{ {variableName} }}}} resolved to a non-text value, it cannot be part of text.");
         return null;
     }
 
@@ -196,13 +196,13 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
             else if (i == 0 && pathSections[i].Groups[2].Success)
             {
                 // Key cannot start with an index
-                context.Services.Output.Error($"Invalid key {key}");
+                context.Terminate($"Invalid key {key}");
                 return null;
             }
             else if (!pathSections[i].Groups[1].Success && !pathSections[i].Groups[2].Success)
             {
                 // Invalid element in key
-                context.Services.Output.Error($"Invalid key {key}");
+                context.Terminate($"Invalid key {key}");
                 return null;
             }
             else if (i > 0 && pathSections[i].Groups[1].Success)

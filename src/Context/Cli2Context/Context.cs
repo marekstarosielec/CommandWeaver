@@ -63,6 +63,13 @@ public class Context : IContext
         //Save changes in variables
     }
 
+    public void Terminate(string? message = null, int exitCode = 1)
+    {
+        if (!string.IsNullOrEmpty(message)) 
+            Services.Output.Error(message);
+        Environment.Exit(exitCode);
+    }
+
     private async Task ProcessElements(RepositoryLocation repositoryLocation, string? sessionName, IAsyncEnumerable<RepositoryElementInfo> elements)
     {
         await foreach (var element in elements)

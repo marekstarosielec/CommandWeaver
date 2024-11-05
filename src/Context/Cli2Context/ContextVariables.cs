@@ -72,7 +72,7 @@ public class ContextVariables : IContextVariables
                 //Add single element or whole list
                 _variableStorage.Changes.Add(new Variable { Key = variableName, Value = value, Scope = scope, Description = description });
             else
-                _context.Services.Output.Error("Tried to insert wrong type into list");
+                _context.Terminate("Tried to insert wrong type into list");
         }
         else if (path == variableName && existingVariable == null) // new variable
             _variableStorage.Changes.Add(new Variable { Key = path, Value = value, Scope = scope, Description = description });

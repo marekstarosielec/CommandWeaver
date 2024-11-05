@@ -15,10 +15,7 @@ internal class ContextVariableWriter(IContext context, ContextVariableStorage va
         else if (VariableValuePath.PathIsTopLevelList(path))
             SetVariableValueOnTopLevelList(scope, path, value);
         else
-        {
-            context.Services.Output.Error("Writing to sub-property is not supported");
-
-        }
+            context.Terminate("Writing to sub-property is not supported");
     }
 
     internal void SetVariableValueOnTopLevelVariable(VariableScope scope, string path, VariableValue value, string? description)
@@ -55,17 +52,17 @@ internal class ContextVariableWriter(IContext context, ContextVariableStorage va
         var key = VariableValuePath.TopLevelListKey(path);
         if (key == null)
         {
-            context.Services.Output.Error("Error while updating variable value.");
+            context.Terminate("Error while updating variable value.");
             return;
         }
         if (value.ObjectValue == null)
         {
-            context.Services.Output.Error("List can contain only objects.");
+            context.Terminate("List can contain only objects.");
             return;
         }
         if (value.ObjectValue["key"]?.TextValue != key)
         {
-            context.Services.Output.Error("Object key must have same value as index of updated list.");
+            context.Terminate("Object key must have same value as index of updated list.");
             return;
         }
 

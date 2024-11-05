@@ -27,7 +27,7 @@ public class SetVariable: Operation
         if (key?.TextValue == null)
         {
             //Name of variable to update must be resolved to string.
-            context.Services.Output.Error($"{Key.Value} does not contain valid variable name.");
+            context.Terminate($"{Key.Value} does not contain valid variable name.");
             return Task.CompletedTask;
         }
 
@@ -37,8 +37,7 @@ public class SetVariable: Operation
         {
             //New value is required.
             //TODO: No value means remove variable.
-            context.Services.Output.Error($"Value is required.");
-            Environment.Exit(1);
+            context.Terminate($"Value is required.");
             return Task.CompletedTask;
         }
 
