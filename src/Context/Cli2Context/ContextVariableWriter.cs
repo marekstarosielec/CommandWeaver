@@ -5,7 +5,7 @@ namespace Cli2Context;
 
 internal class ContextVariableWriter(IContext context, ContextVariableStorage variableStorage)
 {
-    public void WriteVariableValue(VariableScope scope, string path, VariableValue value, string? description = null)
+    public void WriteVariableValue(VariableScope scope, string path, DynamicValue value, string? description = null)
     {
 
         //Replacing whole variable.
@@ -18,7 +18,7 @@ internal class ContextVariableWriter(IContext context, ContextVariableStorage va
             context.Terminate("Writing to sub-property is not supported");
     }
 
-    internal void WriteVariableValueOnTopLevelVariable(VariableScope scope, string path, VariableValue value, string? description)
+    internal void WriteVariableValueOnTopLevelVariable(VariableScope scope, string path, DynamicValue value, string? description)
     {
         //Find current values.
         var existingVariable =
@@ -46,7 +46,7 @@ internal class ContextVariableWriter(IContext context, ContextVariableStorage va
         variableStorage.Changes.Add(new Variable { Key = path, Value = value, Description = resolvedDescription, Scope = scope, LocationId = locationId, AllowedValues = allowedValues });
     }
 
-    internal void WriteVariableValueOnTopLevelList(VariableScope scope, string path, VariableValue value)
+    internal void WriteVariableValueOnTopLevelList(VariableScope scope, string path, DynamicValue value)
     {
         var variableName = VariableValuePath.GetVariableName(path);
         var key = VariableValuePath.TopLevelListKey(path);
@@ -90,7 +90,7 @@ internal class ContextVariableWriter(IContext context, ContextVariableStorage va
             //When given list element was already edited - remove previous value and add new one.
             existingChange.Value = existingChange.Value with
             {
-                ListValue = (existingChange.Value.ListValue?.RemoveAll(v => v["key"].TextValue == key) ?? new VariableValueList())
+                ListValue = (existingChange.Value.ListValue?.RemoveAll(v => v["key"].TextValue == key) ?? new DynamicValueList())
                     .Add(value.ObjectValue),
                 ObjectValue = null,
                 TextValue = null,
@@ -98,7 +98,7 @@ internal class ContextVariableWriter(IContext context, ContextVariableStorage va
         }
         else
             //When given list element was not yet edited.
-            variableStorage.Changes.Add(new Variable { Scope = scope, Key = variableName, Value = new VariableValue(new VariableValueList([value.ObjectValue])) });
+            variableStorage.Changes.Add(new Variable { Scope = scope, Key = variableName, Value = new DynamicValue(new DynamicValueList([value.ObjectValue])) });
 
     }
 

@@ -54,16 +54,16 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
                 continue;
             }
 
-            if (propertyInfo.GetValue(operationInstance) is not Variable propertyValue)
+            if (propertyInfo.GetValue(operationInstance) is not OperationParameter operationParameter)
                 //Property is not initialized in operation class.
                 throw new InvalidOperationException(
                     $"Property {property.Name} is not initialized in operation {operationName} or has incorrect type");
 
-            propertyValue.Value = ReadElement(property.Value);
+            operationParameter.Value = ReadElement(property.Value);
         }
     }
 
-    private VariableValue? ReadElement(JsonElement element)
+    private DynamicValue? ReadElement(JsonElement element)
     {
         switch (element.ValueKind)
         {
@@ -72,9 +72,9 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
             case JsonValueKind.Number:
                 return ReadNumber(element);
             case JsonValueKind.True:
-                return new VariableValue("true");
+                return new DynamicValue("true");
             case JsonValueKind.False:
-                return new VariableValue("false");
+                return new DynamicValue("false");
             case JsonValueKind.Object:
                 return ReadObject(element);
             case JsonValueKind.Array:
@@ -85,46 +85,46 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
                 throw new JsonException("Unexpected JSON value kind");
         }
     }
-    private VariableValue? ReadString(JsonElement element)
+    private DynamicValue? ReadString(JsonElement element)
     {
         // Attempt to parse as DateTime, otherwise return as string
         if (element.TryGetDateTime(out DateTime dateTimeValue))
-            return new VariableValue(dateTimeValue.ToString("o"));
-        return new VariableValue(element.GetString());
+            return new DynamicValue(dateTimeValue.ToString("o"));
+        return new DynamicValue(element.GetString());
     }
     
-    private VariableValue ReadNumber(JsonElement element)
+    private DynamicValue ReadNumber(JsonElement element)
     {
         // Attempt to get different numeric types
         if (element.TryGetInt32(out int intValue))
-            return new VariableValue(intValue.ToString());
+            return new DynamicValue(intValue.ToString());
         if (element.TryGetInt64(out long longValue))
-            return new VariableValue(longValue.ToString());
+            return new DynamicValue(longValue.ToString());
         if (element.TryGetDouble(out double doubleValue))
-            return new VariableValue(doubleValue.ToString(CultureInfo.InvariantCulture));
+            return new DynamicValue(doubleValue.ToString(CultureInfo.InvariantCulture));
         // Default to decimal if no other numeric type fits
-        return new VariableValue(element.GetDecimal().ToString(CultureInfo.InvariantCulture));
+        return new DynamicValue(element.GetDecimal().ToString(CultureInfo.InvariantCulture));
     }
     
-    private VariableValue ReadObject(JsonElement element)
+    private DynamicValue ReadObject(JsonElement element)
     {
-        var variable = new VariableValueObject();
+        var variable = new DynamicValueObject();
         foreach (var property in element.EnumerateObject())
             variable = variable.With(property.Name, ReadElement(property.Value));
         
-        return new VariableValue(variable);
+        return new DynamicValue(variable);
     }
-    private VariableValue ReadArray(JsonElement element)
+    private DynamicValue ReadArray(JsonElement element)
     {
-        var list = new VariableValueList();
+        var list = new DynamicValueList();
         foreach (var arrayElement in element.EnumerateArray())
         {
             var arrayElementContents = ReadElement(arrayElement);
             var dictionary = arrayElementContents?.ObjectValue;
-            dictionary ??= new VariableValueObject(new Dictionary<string, VariableValue?> { { "key", arrayElementContents } });// new VariableValueObject("key", arrayElementContents);
+            dictionary ??= new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key", arrayElementContents } });// new VariableValueObject("key", arrayElementContents);
             list.Add(dictionary);
         }
-        return new VariableValue(list);
+        return new DynamicValue(list);
     }
     
 }

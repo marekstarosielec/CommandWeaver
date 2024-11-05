@@ -14,8 +14,8 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
     /// </summary>
     /// <param name="variableValue">The variable value to resolve.</param>
     /// <param name="treatTextValueAsVariable">If true, treats text value as variable name for resolution.</param>
-    /// <returns>The resolved <see cref="VariableValue"/> or null if unresolved.</returns>
-    public VariableValue? ReadVariableValue(VariableValue? variableValue, bool treatTextValueAsVariable = false)
+    /// <returns>The resolved <see cref="DynamicValue"/> or null if unresolved.</returns>
+    public DynamicValue? ReadVariableValue(DynamicValue? variableValue, bool treatTextValueAsVariable = false)
         => ReadVariableValue(variableValue, treatTextValueAsVariable, 0);
 
     /// <summary>
@@ -25,7 +25,7 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
     /// <param name="treatTextValueAsVariable">If true, treats text values as potential variable name for resolution.</param>
     /// <param name="depth">Current resolving depth.</param>
     /// <returns></returns>
-    private VariableValue? ReadVariableValue(VariableValue? variableValue, bool treatTextValueAsVariable, int depth)
+    private DynamicValue? ReadVariableValue(DynamicValue? variableValue, bool treatTextValueAsVariable, int depth)
     {
         if (variableValue == null)
             return null;
@@ -55,7 +55,7 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
     /// <param name="treatTextValueAsVariable">Indicates if the text should be treated as a variable name.</param>
     /// <param name="depth">Current resolving depth.</param>
     /// <returns>The resolved variable value, or null if the resolution fails.</returns>
-    private VariableValue? ReadTextKey(string key, bool treatTextValueAsVariable, int depth)
+    private DynamicValue? ReadTextKey(string key, bool treatTextValueAsVariable, int depth)
     {
         if (string.IsNullOrWhiteSpace(key))
             return null;
@@ -64,12 +64,12 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
         var variableName = VariableValuePath.ExtractVariableBetweenDelimiters(resolvedKey);
 
         if (variableName == null)
-            return new VariableValue(key);
+            return new DynamicValue(key);
 
         var resolvedVariable = ResolveSingleValue(variableName);
 
         if (resolvedVariable == null)
-            return new VariableValue();
+            return new DynamicValue();
 
         if (VariableValuePath.WholePathIsSingleVariable(resolvedKey, variableName))
             //If whole key is variable name, it can be replaced by any type.
@@ -79,7 +79,7 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
         {
             //If variable name is just part of text, it can be replaced only by text.
             resolvedKey = VariableValuePath.ReplaceVariableWithValue(resolvedKey, variableName, resolvedVariable.TextValue);
-            return ReadVariableValue(new VariableValue(resolvedKey), false, depth);
+            return ReadVariableValue(new DynamicValue(resolvedKey), false, depth);
         }
 
         context.Terminate($"{{{{ {variableName} }}}} resolved to a non-text value, it cannot be part of text.");
@@ -92,17 +92,17 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
     /// <param name="key">The variable object with properties containing variable tags.</param>
     /// <param name="depth">Current resolving depth.</param>
     /// <returns>The resolved object with resolved properties.</returns>
-    private VariableValue? ReadObjectKey(VariableValueObject key, int depth)
+    private DynamicValue? ReadObjectKey(DynamicValueObject key, int depth)
     {
         if (key == null)
             return null;
 
-        var result = new Dictionary<string, VariableValue?>();
+        var result = new Dictionary<string, DynamicValue?>();
 
         foreach (var keyProperty in key.Keys)
             result[keyProperty] = ReadVariableValue(key[keyProperty], false, depth);
 
-        return new VariableValue(new VariableValueObject(result));
+        return new DynamicValue(new DynamicValueObject(result));
     }
 
     /// <summary>
@@ -111,23 +111,23 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
     /// <param name="key">The list containing elements with properties that might have variable tags.</param>
     /// <param name="depth">Current resolving depth.</param>
     /// <returns>The resolved list.</returns>
-    private VariableValue? ReadListKey(VariableValueList key, int depth)
+    private DynamicValue? ReadListKey(DynamicValueList key, int depth)
     {
         if (key == null)
             return null;
 
-        var result = new List<VariableValueObject>();
+        var result = new List<DynamicValueObject>();
 
         foreach (var listElement in key)
         {
-            var resolvedElement = new Dictionary<string, VariableValue?>();
+            var resolvedElement = new Dictionary<string, DynamicValue?>();
             foreach (var keyProperty in listElement.Keys)
                 resolvedElement[keyProperty] = ReadVariableValue(listElement[keyProperty], false, depth);
 
-            result.Add(new VariableValueObject(resolvedElement));
+            result.Add(new DynamicValueObject(resolvedElement));
         }
 
-        return new VariableValue(new VariableValueList(result));
+        return new DynamicValue(new DynamicValueList(result));
     }
 
     /// <summary>
@@ -136,7 +136,7 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
     /// </summary>
     /// <param name="variableName">The name of the variable to resolve.</param>
     /// <returns>The resolved variable value, or null if the variable is not found.</returns>
-    internal VariableValue? ResolveSingleValue(string variableName)
+    internal DynamicValue? ResolveSingleValue(string variableName)
     {
         var builtIn = ResolveSingleValueFromSingleList(variableStorage.BuiltIn, variableName);
         var local = ResolveSingleValueFromSingleList(variableStorage.Local, variableName);
@@ -150,7 +150,7 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
             || changes?.ListValue != null))
         {
             // If the whole variable value is requested and it is a list, values from all locations will be combined.
-            var result = new List<VariableValueObject>();
+            var result = new List<DynamicValueObject>();
 
             if (changes?.ListValue != null)
                 foreach (var item in changes.ListValue)
@@ -171,7 +171,7 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
                     if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
                         result.Add(item);
 
-            return new VariableValue { ListValue = new VariableValueList(result) };
+            return new DynamicValue { ListValue = new DynamicValueList(result) };
         }
 
         return changes ?? session ?? local ?? builtIn;
@@ -183,10 +183,10 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
     /// </summary>
     /// <param name="variables">The list of variables to search within.</param>
     /// <param name="key">The full key for the variable, in the form variable.property[listIndex].subProperty.</param>
-    /// <returns>The resolved <see cref="VariableValue"/> or null if the key is not found.</returns>
-    private VariableValue? ResolveSingleValueFromSingleList(IEnumerable<Variable> variables, string key)
+    /// <returns>The resolved <see cref="DynamicValue"/> or null if the key is not found.</returns>
+    private DynamicValue? ResolveSingleValueFromSingleList(IEnumerable<Variable> variables, string key)
     {
-        VariableValue? result = null;
+        DynamicValue? result = null;
         var pathSections = VariableValuePath.GetPathSections(key);
 
         for (int i = 0; i < pathSections.Count; i++)
@@ -208,7 +208,7 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
             else if (i > 0 && pathSections[i].Groups[1].Success)
                 result = result?.ObjectValue?[pathSections[i].Groups[1].Value];
             else if (i > 0 && pathSections[i].Groups[2].Success)
-                result = new VariableValue(result?.ListValue?.FirstOrDefault(v => v["key"].TextValue?.Equals(pathSections[i].Groups[2].Value) == true));
+                result = new DynamicValue(result?.ListValue?.FirstOrDefault(v => v["key"].TextValue?.Equals(pathSections[i].Groups[2].Value) == true));
 
             if (result == null)
                 return null;

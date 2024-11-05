@@ -67,7 +67,7 @@ public class ContextVariableWriterTests
         storage.Changes.Add(new Variable { Key = "test", Scope = VariableScope.Session, Description = "old description", LocationId = "locationId", AllowedValues = ["allowed1"] });
         storage.Changes.Add(new Variable { Key = "test", Scope = VariableScope.Application, Description = "old description", LocationId = "locationId", AllowedValues = ["allowed1"] });
         var writer = new ContextVariableWriter(Substitute.For<IContext>(), storage);
-        writer.WriteVariableValueOnTopLevelVariable(VariableScope.Session, "test", new VariableValue("test value"), "description");
+        writer.WriteVariableValueOnTopLevelVariable(VariableScope.Session, "test", new DynamicValue("test value"), "description");
         Assert.Equal(2, storage.Changes.Count);
         Assert.Equal("test", storage.Changes.FirstOrDefault(v => v.Scope == VariableScope.Session)?.Key);
         Assert.Equal(VariableScope.Session, storage.Changes.FirstOrDefault(v => v.Scope == VariableScope.Session)?.Scope);
@@ -83,7 +83,7 @@ public class ContextVariableWriterTests
         storage.Changes.Add(new Variable { Key = "test", Scope = VariableScope.Session, Description = "old description", LocationId = "locationId", AllowedValues = ["allowed1"] });
         storage.Changes.Add(new Variable { Key = "test", Scope = VariableScope.Application, Description = "old description", LocationId = "locationId", AllowedValues = ["allowed1"] });
         var writer = new ContextVariableWriter(Substitute.For<IContext>(), storage);
-        writer.WriteVariableValueOnTopLevelVariable(VariableScope.Application, "test", new VariableValue("test value"), "description");
+        writer.WriteVariableValueOnTopLevelVariable(VariableScope.Application, "test", new DynamicValue("test value"), "description");
         Assert.Single(storage.Changes);
         Assert.Equal("test", storage.Changes.FirstOrDefault()?.Key);
         Assert.Equal(VariableScope.Application, storage.Changes.FirstOrDefault()?.Scope);

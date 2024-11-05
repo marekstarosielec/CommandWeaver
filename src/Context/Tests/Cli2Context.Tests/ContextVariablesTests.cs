@@ -15,7 +15,7 @@ public class ContextVariablesTests
             BuiltIn = new List<Variable> {
             new Variable {
                 Key = "currentSessionName",
-                Value = new VariableValue("testValue")
+                Value = new DynamicValue("testValue")
             } }.ToImmutableList()
         };
         var contextVariables = new ContextVariables(Substitute.For<IContext>(), contextVariableStorage);
@@ -38,7 +38,7 @@ public class ContextVariablesTests
             BuiltIn = ImmutableList<Variable>.Empty
         };
         var contextVariables = new ContextVariables(Substitute.For<IContext>(), contextVariableStorage);
-        contextVariables.WriteVariableValue(VariableScope.Command, "testVariable", new VariableValue("variableText"), "testDescription");
+        contextVariables.WriteVariableValue(VariableScope.Command, "testVariable", new DynamicValue("variableText"), "testDescription");
         Assert.Single(contextVariableStorage.Changes);
         Assert.Equal(VariableScope.Command, contextVariableStorage.Changes.First().Scope);
         Assert.Equal("testVariable", contextVariableStorage.Changes.First().Key);
@@ -54,11 +54,11 @@ public class ContextVariablesTests
             BuiltIn = new List<Variable> {
             new Variable {
                 Key = "testVariable",
-                Value = new VariableValue("testValue")
+                Value = new DynamicValue("testValue")
             } }.ToImmutableList()
         };
         var contextVariables = new ContextVariables(Substitute.For<IContext>(), contextVariableStorage);
-        contextVariables.WriteVariableValue(VariableScope.Command, "testVariable", new VariableValue("variableText"), "testDescription");
+        contextVariables.WriteVariableValue(VariableScope.Command, "testVariable", new DynamicValue("variableText"), "testDescription");
         Assert.Equal("testVariable", contextVariableStorage.BuiltIn.First().Key);
         Assert.Equal("testValue", contextVariableStorage.BuiltIn.First().Value?.TextValue);
         Assert.Null(contextVariableStorage.BuiltIn.First().Description);

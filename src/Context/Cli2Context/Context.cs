@@ -38,9 +38,9 @@ public class Context : IContext
 
     public async Task Run(string commmandName, Dictionary<string, string> arguments, CancellationToken cancellationToken = default)
     {
-        Variables.WriteVariableValue(VariableScope.Command, "BuiltInPath", new VariableValue(_repository.GetPath(RepositoryLocation.BuiltIn)));
-        Variables.WriteVariableValue(VariableScope.Command, "LocalPath", new VariableValue(_repository.GetPath(RepositoryLocation.Local)));
-        Variables.WriteVariableValue(VariableScope.Command, "SessionPath", new VariableValue(_repository.GetPath(RepositoryLocation.Session, Variables.CurrentSessionName)));
+        Variables.WriteVariableValue(VariableScope.Command, "BuiltInPath", new DynamicValue(_repository.GetPath(RepositoryLocation.BuiltIn)));
+        Variables.WriteVariableValue(VariableScope.Command, "LocalPath", new DynamicValue(_repository.GetPath(RepositoryLocation.Local)));
+        Variables.WriteVariableValue(VariableScope.Command, "SessionPath", new DynamicValue(_repository.GetPath(RepositoryLocation.Session, Variables.CurrentSessionName)));
 
         if (string.IsNullOrWhiteSpace(commmandName))
         {
@@ -59,7 +59,7 @@ public class Context : IContext
         foreach (var parameter in command.Parameters)
         {
             arguments.TryGetValue(parameter.Key, out var parameterValue);
-            Variables.WriteVariableValue(VariableScope.Command, parameter.Key, new VariableValue(parameterValue), parameter.Description);
+            Variables.WriteVariableValue(VariableScope.Command, parameter.Key, new DynamicValue(parameterValue), parameter.Description);
         }
 
         //Fill variables for build in parameters (common for every command).
@@ -67,7 +67,7 @@ public class Context : IContext
         {
             //Those are optional. Need to set value only if provided. They might have fallback value.
             arguments.TryGetValue(parameter.Key, out var parameterValue);
-            Variables.WriteVariableValue(VariableScope.Command, parameter.Key, new VariableValue(parameterValue), parameter.Description);
+            Variables.WriteVariableValue(VariableScope.Command, parameter.Key, new DynamicValue(parameterValue), parameter.Description);
         }
 
         //Check if all required parameters have value

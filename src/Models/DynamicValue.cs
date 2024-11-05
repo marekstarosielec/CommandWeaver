@@ -3,21 +3,21 @@
 namespace Models;
 
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public record VariableValue
+public record DynamicValue
 {
-    public VariableValue() { }
+    public DynamicValue() { }
 
-    public VariableValue(string? textValue) => TextValue = textValue;
+    public DynamicValue(string? textValue) => TextValue = textValue;
 
-    public VariableValue(VariableValueObject? objectValue) => ObjectValue = objectValue;
+    public DynamicValue(DynamicValueObject? objectValue) => ObjectValue = objectValue;
 
-    public VariableValue(VariableValueList? listValue) => ListValue = listValue;
+    public DynamicValue(DynamicValueList? listValue) => ListValue = listValue;
 
     public string? TextValue { get; set; }
 
-    public VariableValueObject? ObjectValue { get; set; }
+    public DynamicValueObject? ObjectValue { get; set; }
 
-    public VariableValueList? ListValue { get; set; }
+    public DynamicValueList? ListValue { get; set; }
 
     //public int? NumericValue { get; set; }
 

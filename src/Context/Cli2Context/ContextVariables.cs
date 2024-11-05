@@ -23,14 +23,14 @@ public class ContextVariables : IContextVariables
 
     public string CurrentSessionName
     {
-        get => _variableReader.ReadVariableValue(new VariableValue("currentSessionName"), true)?.TextValue ?? "session1";
-        set => WriteVariableValue(VariableScope.Application, "currentSessionName", new VariableValue(value));
+        get => _variableReader.ReadVariableValue(new DynamicValue("currentSessionName"), true)?.TextValue ?? "session1";
+        set => WriteVariableValue(VariableScope.Application, "currentSessionName", new DynamicValue(value));
     }
 
     public string? CurrentlyProcessedElement
     {
-        get => _variableReader.ReadVariableValue(new VariableValue("currentlyProcessedElement"), true)?.TextValue;
-        set => WriteVariableValue(VariableScope.Command, "currentlyProcessedElement", new VariableValue(value));
+        get => _variableReader.ReadVariableValue(new DynamicValue("currentlyProcessedElement"), true)?.TextValue;
+        set => WriteVariableValue(VariableScope.Command, "currentlyProcessedElement", new DynamicValue(value));
     }
 
     public Variable? FindVariable(string variableName) 
@@ -39,7 +39,7 @@ public class ContextVariables : IContextVariables
             ?? _variableStorage.Local.FirstOrDefault(v => v.Key == variableName)
             ?? _variableStorage.BuiltIn.FirstOrDefault(v => v.Key == variableName);
 
-    public VariableValue? ReadVariableValue(VariableValue? variableValue, bool treatTextValueAsVariable = false)
+    public DynamicValue? ReadVariableValue(DynamicValue? variableValue, bool treatTextValueAsVariable = false)
     => _variableReader.ReadVariableValue(variableValue, treatTextValueAsVariable);
 
     public void SetVariableList(RepositoryLocation repositoryLocation, List<Variable?> elementsWithContent, string locationId)
@@ -62,5 +62,5 @@ public class ContextVariables : IContextVariables
         }
     }
 
-    public void WriteVariableValue(VariableScope scope, string path, VariableValue value, string? description = null) => _variableWriter.WriteVariableValue(scope, path, value, description);
+    public void WriteVariableValue(VariableScope scope, string path, DynamicValue value, string? description = null) => _variableWriter.WriteVariableValue(scope, path, value, description);
 }

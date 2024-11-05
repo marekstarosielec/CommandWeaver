@@ -11,7 +11,7 @@ public class ContextVariableReaderTests
     public void ReadVariableValue_ReadTextValue_WhenTextValueContainsNoVariableTags()
     {
         var variableReader = new ContextVariableReader(Substitute.For<IContext>(), new ContextVariableStorage());
-        var result = variableReader.ReadVariableValue(new VariableValue("test"));
+        var result = variableReader.ReadVariableValue(new DynamicValue("test"));
         Assert.Equal("test", result?.TextValue);
     }
 
@@ -22,11 +22,11 @@ public class ContextVariableReaderTests
             BuiltIn = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue("testValue")
+                Value = new DynamicValue("testValue")
             } }.ToImmutableList()
         };
         var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
-        var result = variableReader.ReadVariableValue(new VariableValue("{{ test }}"));
+        var result = variableReader.ReadVariableValue(new DynamicValue("{{ test }}"));
         Assert.Equal("testValue", result?.TextValue);
         Assert.Null(result?.ObjectValue);
         Assert.Null(result?.ListValue);
@@ -40,11 +40,11 @@ public class ContextVariableReaderTests
             BuiltIn = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue("testValue")
+                Value = new DynamicValue("testValue")
             } }.ToImmutableList()
         };
         var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
-        var result = variableReader.ReadVariableValue(new VariableValue("this is my {{ test }}"));
+        var result = variableReader.ReadVariableValue(new DynamicValue("this is my {{ test }}"));
         Assert.Equal("this is my testValue", result?.TextValue);
         Assert.Null(result?.ObjectValue);
         Assert.Null(result?.ListValue);
@@ -62,7 +62,7 @@ public class ContextVariableReaderTests
             } }.ToImmutableList()
         };
         var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
-        var result = variableReader.ReadVariableValue(new VariableValue("this is my {{ test }}"));
+        var result = variableReader.ReadVariableValue(new DynamicValue("this is my {{ test }}"));
         Assert.Equal("this is my {{ test }}", result?.TextValue);
         Assert.Null(result?.ObjectValue);
         Assert.Null(result?.ListValue);
@@ -77,11 +77,11 @@ public class ContextVariableReaderTests
             new Variable
             {
                 Key = "test",
-                Value = new VariableValue("testValue")
+                Value = new DynamicValue("testValue")
             } }.ToImmutableList()
         };
         var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
-        var result = variableReader.ReadVariableValue(new VariableValue("test"), true);
+        var result = variableReader.ReadVariableValue(new DynamicValue("test"), true);
         Assert.Equal("testValue", result?.TextValue);
         Assert.Null(result?.ObjectValue);
         Assert.Null(result?.ListValue);
@@ -111,7 +111,7 @@ public class ContextVariableReaderTests
             } }.ToImmutableList()
         };
         var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
-        var result = variableReader.ReadVariableValue(new VariableValue("{{ test }}"));
+        var result = variableReader.ReadVariableValue(new DynamicValue("{{ test }}"));
         Assert.Null(result?.TextValue);
         Assert.Equal("testValue", result?.ObjectValue?["test"]?.TextValue);
         Assert.Null(result?.ListValue);
@@ -131,11 +131,11 @@ public class ContextVariableReaderTests
             new Variable
             {
                 Key = "test2",
-                Value = new VariableValue("test2value")
+                Value = new DynamicValue("test2value")
             } }.ToImmutableList()
         };
         var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
-        var result = variableReader.ReadVariableValue(new VariableValue("{{ test }}"));
+        var result = variableReader.ReadVariableValue(new DynamicValue("{{ test }}"));
         Assert.Null(result?.TextValue);
         Assert.Equal("test2value", result?.ObjectValue?["test"]?.TextValue);
         Assert.Null(result?.ListValue);
@@ -154,7 +154,7 @@ public class ContextVariableReaderTests
             } }.ToImmutableList()
         };
         var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
-        var result = variableReader.ReadVariableValue(new VariableValue("{{ test }}"));
+        var result = variableReader.ReadVariableValue(new DynamicValue("{{ test }}"));
         Assert.Null(result?.TextValue);
         Assert.Null(result?.ObjectValue);
         Assert.Equal("testValue", result?.ListValue?.FirstOrDefault()?["key"].TextValue);
@@ -172,7 +172,7 @@ public class ContextVariableReaderTests
             } }.ToImmutableList()
         };
         var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
-        var result = variableReader.ReadVariableValue(new VariableValue("{{ test.value }}"));
+        var result = variableReader.ReadVariableValue(new DynamicValue("{{ test.value }}"));
         Assert.Equal("innerText", result?.TextValue);
         Assert.Null(result?.ObjectValue);
         Assert.Null(result?.ListValue);
@@ -186,11 +186,11 @@ public class ContextVariableReaderTests
             BuiltIn = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue("{{ test }}")
+                Value = new DynamicValue("{{ test }}")
             } }.ToImmutableList()
         };
         var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
-        var result = variableReader.ReadVariableValue(new VariableValue("{{ test }}"));
+        var result = variableReader.ReadVariableValue(new DynamicValue("{{ test }}"));
         Assert.Equal("{{ test }}", result?.TextValue);
         Assert.Null(result?.ObjectValue);
         Assert.Null(result?.ListValue);
@@ -208,7 +208,7 @@ public class ContextVariableReaderTests
             } }.ToImmutableList()
         };
         var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
-        var result = variableReader.ReadVariableValue(new VariableValue("{{ test[value1] }}"));
+        var result = variableReader.ReadVariableValue(new DynamicValue("{{ test[value1] }}"));
         Assert.Null(result?.TextValue);
         Assert.Equal("value1", result?.ObjectValue?["key"]?.TextValue);
         Assert.Null(result?.ListValue);
@@ -222,11 +222,11 @@ public class ContextVariableReaderTests
             BuiltIn = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value1")).With("prop",new VariableValue("valueProp1"))).Add(new VariableValueObject().With("key",new VariableValue("value2")).With("prop",new VariableValue("valueProp2"))))
+                Value = new DynamicValue(new DynamicValueList().Add(new DynamicValueObject().With("key",new DynamicValue("value1")).With("prop",new DynamicValue("valueProp1"))).Add(new DynamicValueObject().With("key",new DynamicValue("value2")).With("prop",new DynamicValue("valueProp2"))))
             } }.ToImmutableList()
         };
         var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
-        var result = variableReader.ReadVariableValue(new VariableValue("{{ test[value2].prop }}"));
+        var result = variableReader.ReadVariableValue(new DynamicValue("{{ test[value2].prop }}"));
         Assert.Equal("valueProp2", result?.TextValue);
         Assert.Null(result?.ObjectValue);
         Assert.Null(result?.ListValue);
@@ -240,23 +240,23 @@ public class ContextVariableReaderTests
             BuiltIn = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value1")).With("prop",new VariableValue("valueProp1"))))
+                Value = new DynamicValue(new DynamicValueList().Add(new DynamicValueObject().With("key",new DynamicValue("value1")).With("prop",new DynamicValue("valueProp1"))))
             } }.ToImmutableList(),
             Local = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value2")).With("prop",new VariableValue("valueProp2"))))
+                Value = new DynamicValue(new DynamicValueList().Add(new DynamicValueObject().With("key",new DynamicValue("value2")).With("prop",new DynamicValue("valueProp2"))))
             } }.ToImmutableList(),
             Session = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value3")).With("prop",new VariableValue("valueProp3"))))
+                Value = new DynamicValue(new DynamicValueList().Add(new DynamicValueObject().With("key",new DynamicValue("value3")).With("prop",new DynamicValue("valueProp3"))))
             } }.ToImmutableList()
         };
         contextVariableStorage.Changes.Add(new Variable
         {
             Key = "test",
-            Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key", new VariableValue("value4")).With("prop", new VariableValue("valueProp4"))))
+            Value = new DynamicValue(new DynamicValueList().Add(new DynamicValueObject().With("key", new DynamicValue("value4")).With("prop", new DynamicValue("valueProp4"))))
         });
         var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
         var result = variableReader.ResolveSingleValue("test");
@@ -276,17 +276,17 @@ public class ContextVariableReaderTests
             BuiltIn = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value1")).With("prop",new VariableValue("valueProp1"))))
+                Value = new DynamicValue(new DynamicValueList().Add(new DynamicValueObject().With("key",new DynamicValue("value1")).With("prop",new DynamicValue("valueProp1"))))
             } }.ToImmutableList(),
             Local = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value2")).With("prop",new VariableValue("valueProp2"))))
+                Value = new DynamicValue(new DynamicValueList().Add(new DynamicValueObject().With("key",new DynamicValue("value2")).With("prop",new DynamicValue("valueProp2"))))
             } }.ToImmutableList(),
             Session = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value2")).With("prop",new VariableValue("newValue"))))
+                Value = new DynamicValue(new DynamicValueList().Add(new DynamicValueObject().With("key",new DynamicValue("value2")).With("prop",new DynamicValue("newValue"))))
             } }.ToImmutableList()
         };
         var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
@@ -305,17 +305,17 @@ public class ContextVariableReaderTests
             BuiltIn = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value1")).With("prop",new VariableValue("valueProp1"))))
+                Value = new DynamicValue(new DynamicValueList().Add(new DynamicValueObject().With("key",new DynamicValue("value1")).With("prop",new DynamicValue("valueProp1"))))
             } }.ToImmutableList(),
             Local = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value2")).With("prop",new VariableValue("valueProp2"))))
+                Value = new DynamicValue(new DynamicValueList().Add(new DynamicValueObject().With("key",new DynamicValue("value2")).With("prop",new DynamicValue("valueProp2"))))
             } }.ToImmutableList(),
             Session = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue(new VariableValueList().Add(new VariableValueObject().With("key",new VariableValue("value2")).With("prop",new VariableValue("newValue"))))
+                Value = new DynamicValue(new DynamicValueList().Add(new DynamicValueObject().With("key",new DynamicValue("value2")).With("prop",new DynamicValue("newValue"))))
             } }.ToImmutableList()
         };
         var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
@@ -333,12 +333,12 @@ public class ContextVariableReaderTests
             BuiltIn = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue("testValue")
+                Value = new DynamicValue("testValue")
             } }.ToImmutableList(),
             Local = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue("testValue2")
+                Value = new DynamicValue("testValue2")
             } }.ToImmutableList()
         };
         var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
@@ -356,17 +356,17 @@ public class ContextVariableReaderTests
             BuiltIn = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue("testValue")
+                Value = new DynamicValue("testValue")
             } }.ToImmutableList(),
             Local = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue("testValue2")
+                Value = new DynamicValue("testValue2")
             } }.ToImmutableList(),
             Session = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue("testValue3")
+                Value = new DynamicValue("testValue3")
             } }.ToImmutableList()
         };
         var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
@@ -384,20 +384,20 @@ public class ContextVariableReaderTests
             BuiltIn = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue("testValue")
+                Value = new DynamicValue("testValue")
             } }.ToImmutableList(),
             Local = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue("testValue2")
+                Value = new DynamicValue("testValue2")
             } }.ToImmutableList(),
             Session = new List<Variable> {
             new Variable {
                 Key = "test",
-                Value = new VariableValue("testValue3")
+                Value = new DynamicValue("testValue3")
             } }.ToImmutableList()
         };
-        contextVariableStorage.Changes.Add(new Variable { Key = "test", Value = new VariableValue("testValue4") });
+        contextVariableStorage.Changes.Add(new Variable { Key = "test", Value = new DynamicValue("testValue4") });
         var variableReader = new ContextVariableReader(Substitute.For<IContext>(), contextVariableStorage);
         var result = variableReader.ResolveSingleValue("test");
         Assert.Equal("testValue4", result?.TextValue);

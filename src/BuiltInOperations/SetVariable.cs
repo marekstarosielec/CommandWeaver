@@ -8,10 +8,10 @@ public class SetVariable: Operation
     public override string Name => nameof(SetVariable);
 
     //Add test - every Variable should be public, initialized, have getter and setter.
-    public Variable Key { get; set; } = new Variable { Key = "key", Description = "Key of variable to set value to." };
-    public Variable Value { get; set; } = new Variable { Key = "value", Description = "Value which should be set." };
-    public Variable Description { get; set; } = new Variable { Key = "description", Description = "Optional description for variable." };
-    public Variable Scope { get; set; } = new Variable { Key = "scope", Description = "Optional scope for variable." };
+    public OperationParameter Key { get; set; } = new OperationParameter { Key = "key", Description = "Key of variable to set value to." };
+    public OperationParameter Value { get; set; } = new OperationParameter { Key = "value", Description = "Value which should be set." };
+    public OperationParameter Description { get; set; } = new OperationParameter { Key = "description", Description = "Optional description for variable." };
+    public OperationParameter Scope { get; set; } = new OperationParameter { Key = "scope", Description = "Optional scope for variable." };
 
     public SetVariable()
     {
