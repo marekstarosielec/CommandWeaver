@@ -9,14 +9,12 @@ public class Output : Operation
 
     public override Dictionary<string, OperationParameter> Parameters { get; } = new Dictionary<string, OperationParameter>
     {
-        { "text", new OperationParameter { Description = "Text to output." } }
+        { "text", new OperationParameter { Description = "Text to output.", RequiredText = true } }
     };
   
     public override Task Run(IContext context, CancellationToken cancellationToken)
     {
-        var text = context.Variables.ReadVariableValue(Parameters["text"].Value);
-        if (!string.IsNullOrWhiteSpace(text?.TextValue))
-            context.Services.Output.Warning(text.TextValue);
+        context.Services.Output.Error(Parameters["text"].Value.TextValue!);
         return Task.CompletedTask;
     }
 }

@@ -9,4 +9,6 @@ public abstract class Operation
     public abstract Dictionary<string, OperationParameter> Parameters { get; }
 
     public abstract Task Run(IContext context, CancellationToken cancellationToken);
+
+    public OperationCondition Condition { get; } = new OperationCondition();
 }
