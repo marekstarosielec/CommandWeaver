@@ -8,8 +8,8 @@ internal static class BuiltInParameters
         new Variable 
         { 
             Key = "log-level", 
-            Description = "Controls the detail of logs output by the application.",
-            AllowedValues = ["trace", "debug", "information", "warning", "error"]
+            //Description = "Controls the detail of logs output by the application.",
+            //AllowedValues = ["trace", "debug", "information", "warning", "error"]
         }
     ];
 

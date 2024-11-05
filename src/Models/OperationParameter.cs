@@ -1,6 +1,4 @@
-﻿using Models;
-
-namespace Models;
+﻿namespace Models;
 
 public class OperationParameter
 {

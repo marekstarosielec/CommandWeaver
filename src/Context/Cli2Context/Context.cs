@@ -59,7 +59,7 @@ public class Context : IContext
         foreach (var parameter in command.Parameters)
         {
             arguments.TryGetValue(parameter.Key, out var parameterValue);
-            Variables.WriteVariableValue(VariableScope.Command, parameter.Key, new DynamicValue(parameterValue), parameter.Description);
+            Variables.WriteVariableValue(VariableScope.Command, parameter.Key, new DynamicValue(parameterValue));
         }
 
         //Fill variables for build in parameters (common for every command).
@@ -67,7 +67,7 @@ public class Context : IContext
         {
             //Those are optional. Need to set value only if provided. They might have fallback value.
             arguments.TryGetValue(parameter.Key, out var parameterValue);
-            Variables.WriteVariableValue(VariableScope.Command, parameter.Key, new DynamicValue(parameterValue), parameter.Description);
+            Variables.WriteVariableValue(VariableScope.Command, parameter.Key, new DynamicValue(parameterValue));
         }
 
         //Check if all required parameters have value
@@ -75,7 +75,7 @@ public class Context : IContext
         {
             //parameter is different variable - need to find variable with same name and read its value.
             var variable = Variables.FindVariable(parameter.Key);
-            var value = variable == null? null : Variables.ReadVariableValue(variable.Value);
+            var value = variable == null ? null : Variables.ReadVariableValue(variable.Value);
             if (parameter.Required && string.IsNullOrWhiteSpace(value?.TextValue))
             {
                 Terminate($"Parameter {parameter.Key} requires value.");

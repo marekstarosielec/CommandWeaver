@@ -17,5 +17,5 @@ public interface IContextVariables
     Variable? FindVariable(string variableName);
    
 
-    void WriteVariableValue(VariableScope scope, string path, DynamicValue value, string? description = null);
+    void WriteVariableValue(VariableScope scope, string path, DynamicValue value);
 }

@@ -38,12 +38,11 @@ public class ContextVariablesTests
             BuiltIn = ImmutableList<Variable>.Empty
         };
         var contextVariables = new ContextVariables(Substitute.For<IContext>(), contextVariableStorage);
-        contextVariables.WriteVariableValue(VariableScope.Command, "testVariable", new DynamicValue("variableText"), "testDescription");
+        contextVariables.WriteVariableValue(VariableScope.Command, "testVariable", new DynamicValue("variableText"));
         Assert.Single(contextVariableStorage.Changes);
         Assert.Equal(VariableScope.Command, contextVariableStorage.Changes.First().Scope);
         Assert.Equal("testVariable", contextVariableStorage.Changes.First().Key);
         Assert.Equal("variableText", contextVariableStorage.Changes.First().Value?.TextValue);
-        Assert.Equal("testDescription", contextVariableStorage.Changes.First().Description);
     }
 
     [Fact]
@@ -58,16 +57,14 @@ public class ContextVariablesTests
             } }.ToImmutableList()
         };
         var contextVariables = new ContextVariables(Substitute.For<IContext>(), contextVariableStorage);
-        contextVariables.WriteVariableValue(VariableScope.Command, "testVariable", new DynamicValue("variableText"), "testDescription");
+        contextVariables.WriteVariableValue(VariableScope.Command, "testVariable", new DynamicValue("variableText"));
         Assert.Equal("testVariable", contextVariableStorage.BuiltIn.First().Key);
         Assert.Equal("testValue", contextVariableStorage.BuiltIn.First().Value?.TextValue);
-        Assert.Null(contextVariableStorage.BuiltIn.First().Description);
 
         Assert.Single(contextVariableStorage.Changes);
         Assert.Equal(VariableScope.Command, contextVariableStorage.Changes.First().Scope);
         Assert.Equal("testVariable", contextVariableStorage.Changes.First().Key);
         Assert.Equal("variableText", contextVariableStorage.Changes.First().Value?.TextValue);
-        Assert.Equal("testDescription", contextVariableStorage.Changes.First().Description);
     }
 
     [Fact]
@@ -79,12 +76,11 @@ public class ContextVariablesTests
             BuiltIn = ImmutableList<Variable>.Empty
         };
         var contextVariables = new ContextVariables(Substitute.For<IContext>(), contextVariableStorage);
-        contextVariables.WriteVariableValue(VariableScope.Command, "testVariable", newVariableValue, "testDescription");
+        contextVariables.WriteVariableValue(VariableScope.Command, "testVariable", newVariableValue);
         Assert.Single(contextVariableStorage.Changes);
         Assert.Equal(VariableScope.Command, contextVariableStorage.Changes.First().Scope);
         Assert.Equal("testVariable", contextVariableStorage.Changes.First().Key);
         Assert.Equal("objectPropertyValue", contextVariableStorage.Changes.First().Value?.ObjectValue?["objectProperty"]?.TextValue);
-        Assert.Equal("testDescription", contextVariableStorage.Changes.First().Description);
     }
 
     [Fact]
@@ -100,12 +96,11 @@ public class ContextVariablesTests
             } }.ToImmutableList()
         };
         var contextVariables = new ContextVariables(Substitute.For<IContext>(), contextVariableStorage);
-        contextVariables.WriteVariableValue(VariableScope.Command, "testVariable", newVariableValue, "testDescription");
+        contextVariables.WriteVariableValue(VariableScope.Command, "testVariable", newVariableValue);
         Assert.Single(contextVariableStorage.Changes);
         Assert.Equal(VariableScope.Command, contextVariableStorage.Changes.First().Scope);
         Assert.Equal("testVariable", contextVariableStorage.Changes.First().Key);
         Assert.Equal("objectPropertyValue", contextVariableStorage.Changes.First().Value?.ObjectValue?["objectProperty"]?.TextValue);
-        Assert.Equal("testDescription", contextVariableStorage.Changes.First().Description);
     }
 
     [Fact]
@@ -117,13 +112,12 @@ public class ContextVariablesTests
             BuiltIn = ImmutableList<Variable>.Empty
         };
         var contextVariables = new ContextVariables(Substitute.For<IContext>(), contextVariableStorage);
-        contextVariables.WriteVariableValue(VariableScope.Command, "testVariable", newVariableValue, "testDescription");
+        contextVariables.WriteVariableValue(VariableScope.Command, "testVariable", newVariableValue);
         Assert.Single(contextVariableStorage.Changes);
         Assert.Equal(VariableScope.Command, contextVariableStorage.Changes.First().Scope);
         Assert.Equal("testVariable", contextVariableStorage.Changes.First().Key);
         Assert.Equal("propertyValue1", contextVariableStorage.Changes.First().Value?.ListValue?.FirstOrDefault()?["property"]?.TextValue);
         Assert.Equal("propertyValue2", contextVariableStorage.Changes.First().Value?.ListValue?.LastOrDefault()?["property"]?.TextValue);
-        Assert.Equal("testDescription", contextVariableStorage.Changes.First().Description);
     }
 
 }

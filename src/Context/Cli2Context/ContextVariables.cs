@@ -62,5 +62,5 @@ public class ContextVariables : IContextVariables
         }
     }
 
-    public void WriteVariableValue(VariableScope scope, string path, DynamicValue value, string? description = null) => _variableWriter.WriteVariableValue(scope, path, value, description);
+    public void WriteVariableValue(VariableScope scope, string path, DynamicValue value) => _variableWriter.WriteVariableValue(scope, path, value);
 }

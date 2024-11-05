@@ -13,9 +13,9 @@ public record Variable
     
     
     
-    public string? Description { get; init; }
+    //public string? Description { get; init; }
 
-    public List<string> AllowedValues { get; init; } = [];
+    //public List<string> AllowedValues { get; init; } = [];
     
-    public bool Required { get; set; }
+    //public bool Required { get; set; }
 }

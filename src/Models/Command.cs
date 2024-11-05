@@ -8,5 +8,5 @@ public class Command
     //
     public List<Operation> Operations { get; set; } = [];
 
-    public List<Variable> Parameters { get; set; } = [];
+    public List<CommandParameter> Parameters { get; set; } = [];
 }

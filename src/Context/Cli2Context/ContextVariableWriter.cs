@@ -5,12 +5,12 @@ namespace Cli2Context;
 
 internal class ContextVariableWriter(IContext context, ContextVariableStorage variableStorage)
 {
-    public void WriteVariableValue(VariableScope scope, string path, DynamicValue value, string? description = null)
+    public void WriteVariableValue(VariableScope scope, string path, DynamicValue value)
     {
 
         //Replacing whole variable.
         if (VariableValuePath.PathIsTopLevel(path))
-            WriteVariableValueOnTopLevelVariable(scope, path, value, description);
+            WriteVariableValueOnTopLevelVariable(scope, path, value);
         //Adding or replacing element in list.
         else if (VariableValuePath.PathIsTopLevelList(path))
             WriteVariableValueOnTopLevelList(scope, path, value);
@@ -18,7 +18,7 @@ internal class ContextVariableWriter(IContext context, ContextVariableStorage va
             context.Terminate("Writing to sub-property is not supported");
     }
 
-    internal void WriteVariableValueOnTopLevelVariable(VariableScope scope, string path, DynamicValue value, string? description)
+    internal void WriteVariableValueOnTopLevelVariable(VariableScope scope, string path, DynamicValue value)
     {
         //Find current values.
         var existingVariable =
@@ -28,8 +28,6 @@ internal class ContextVariableWriter(IContext context, ContextVariableStorage va
             ?? variableStorage.Changes.FirstOrDefault(v => v.Key == path && v.Scope == VariableScope.Application)
             ?? variableStorage.Local.FirstOrDefault(v => v.Key == path && v.Scope == VariableScope.Application)
             ?? variableStorage.BuiltIn.FirstOrDefault(v => v.Key == path && v.Scope == VariableScope.Application);
-        var resolvedDescription = description ?? existingVariable?.Description;
-        var allowedValues = existingVariable?.AllowedValues ?? new List<string>();
         var locationId = existingVariable?.LocationId;
 
         //Remove earlier changes.
@@ -43,7 +41,7 @@ internal class ContextVariableWriter(IContext context, ContextVariableStorage va
             //When setting value for application scope, all previous changes are removed.
             variableStorage.Changes.RemoveAll(v => v.Key == path);
 
-        variableStorage.Changes.Add(new Variable { Key = path, Value = value, Description = resolvedDescription, Scope = scope, LocationId = locationId, AllowedValues = allowedValues });
+        variableStorage.Changes.Add(new Variable { Key = path, Value = value, Scope = scope, LocationId = locationId });
     }
 
     internal void WriteVariableValueOnTopLevelList(VariableScope scope, string path, DynamicValue value)
