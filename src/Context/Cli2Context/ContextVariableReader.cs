@@ -15,8 +15,8 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
     /// <param name="variableValue">The variable value to resolve.</param>
     /// <param name="treatTextValueAsVariable">If true, treats text value as variable name for resolution.</param>
     /// <returns>The resolved <see cref="DynamicValue"/> or null if unresolved.</returns>
-    public DynamicValue? ReadVariableValue(DynamicValue? variableValue, bool treatTextValueAsVariable = false)
-        => ReadVariableValue(variableValue, treatTextValueAsVariable, 0);
+    public DynamicValue ReadVariableValue(DynamicValue? variableValue, bool treatTextValueAsVariable = false)
+        => ReadVariableValue(variableValue, treatTextValueAsVariable, 0) ?? new DynamicValue();
 
     /// <summary>
     /// Contains additional parameter for counting variables resolving depth. It allows to avoid StackOverflowException in case of self-referencing variable.

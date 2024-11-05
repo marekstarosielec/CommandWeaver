@@ -3,7 +3,6 @@ using Models.Interfaces.Context;
 using Repositories.Abstraction;
 using Repositories.Abstraction.Interfaces;
 using Serializer.Abstractions;
-using System.Reflection.Metadata;
 
 namespace Cli2Context;
 
@@ -82,6 +81,7 @@ public class Context : IContext
             Services.Output.Debug($"{operation.Name}: Starting");
             foreach (var parameterKey in operation.Parameters.Keys)
             {
+                //Evaluate all operation parametes.
                 operation.Parameters[parameterKey] = operation.Parameters[parameterKey] with { Value = Variables.ReadVariableValue(operation.Parameters[parameterKey].Value) ?? new DynamicValue() };
             }
             await operation.Run(this, cancellationToken);

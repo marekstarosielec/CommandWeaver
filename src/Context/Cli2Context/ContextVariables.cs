@@ -39,7 +39,7 @@ public class ContextVariables : IContextVariables
             ?? _variableStorage.Local.FirstOrDefault(v => v.Key == variableName)
             ?? _variableStorage.BuiltIn.FirstOrDefault(v => v.Key == variableName);
 
-    public DynamicValue? ReadVariableValue(DynamicValue? variableValue, bool treatTextValueAsVariable = false)
+    public DynamicValue ReadVariableValue(DynamicValue variableValue, bool treatTextValueAsVariable = false)
     => _variableReader.ReadVariableValue(variableValue, treatTextValueAsVariable);
 
     public void SetVariableList(RepositoryLocation repositoryLocation, List<Variable?> elementsWithContent, string locationId)
