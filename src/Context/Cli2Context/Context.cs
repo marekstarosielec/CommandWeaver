@@ -1,5 +1,4 @@
-﻿using CommandLine;
-using Models;
+﻿using Models;
 using Models.Interfaces.Context;
 using Repositories.Abstraction;
 using Repositories.Abstraction.Interfaces;
@@ -9,9 +8,9 @@ namespace Cli2Context;
 
 public class Context : IContext
 {
-    private readonly IRepository repository;
-    private readonly ISerializerFactory serializerFactory;
-
+    private readonly IRepository _repository;
+    private readonly ISerializerFactory _serializerFactory;
+   
     public IContextServices Services { get; }
 
     public IContextVariables Variables { get; }
@@ -20,28 +19,28 @@ public class Context : IContext
 
     public Context(IRepository repository, ISerializerFactory serializerFactory, IOutput output)
     {
-        this.repository = repository;
-        this.serializerFactory = serializerFactory;
+        _repository = repository;
+        _serializerFactory = serializerFactory;
         Services = new ContextServices(output);
         Variables = new ContextVariables(this);
     }
 
     public async Task Initialize(CancellationToken cancellationToken = default)
     {
-        var builtInElements = repository.GetList(RepositoryLocation.BuiltIn, null, cancellationToken);
+        var builtInElements = _repository.GetList(RepositoryLocation.BuiltIn, null, cancellationToken);
         await ProcessElements(RepositoryLocation.BuiltIn, null, builtInElements);
-        var localElements = repository.GetList(RepositoryLocation.Local, null, cancellationToken);
+        var localElements = _repository.GetList(RepositoryLocation.Local, null, cancellationToken);
         await ProcessElements(RepositoryLocation.Local, null, localElements);
         var currentSessionName = Variables.CurrentSessionName;
-        var sessionElements = repository.GetList(RepositoryLocation.Session, currentSessionName, cancellationToken);
+        var sessionElements = _repository.GetList(RepositoryLocation.Session, currentSessionName, cancellationToken);
         await ProcessElements(RepositoryLocation.Session, currentSessionName, sessionElements);
     }
 
     public async Task Run(string commmandName, Dictionary<string, string> arguments, CancellationToken cancellationToken = default)
     {
-        Variables.SetVariableValue(VariableScope.Command, "BuiltInPath", new VariableValue(repository.GetPath(RepositoryLocation.BuiltIn)));
-        Variables.SetVariableValue(VariableScope.Command, "LocalPath", new VariableValue(repository.GetPath(RepositoryLocation.Local)));
-        Variables.SetVariableValue(VariableScope.Command, "SessionPath", new VariableValue(repository.GetPath(RepositoryLocation.Session, Variables.CurrentSessionName)));
+        Variables.SetVariableValue(VariableScope.Command, "BuiltInPath", new VariableValue(_repository.GetPath(RepositoryLocation.BuiltIn)));
+        Variables.SetVariableValue(VariableScope.Command, "LocalPath", new VariableValue(_repository.GetPath(RepositoryLocation.Local)));
+        Variables.SetVariableValue(VariableScope.Command, "SessionPath", new VariableValue(_repository.GetPath(RepositoryLocation.Session, Variables.CurrentSessionName)));
 
         if (string.IsNullOrWhiteSpace(commmandName))
         {
@@ -59,6 +58,14 @@ public class Context : IContext
         //Fill variables from provided arguments.
         foreach (var parameter in command.Parameters)
         {
+            arguments.TryGetValue(parameter.Key, out var parameterValue);
+            Variables.SetVariableValue(VariableScope.Command, parameter.Key, new VariableValue(parameterValue), parameter.Description);
+        }
+
+        //Fill variables for build in parameters (common for every command).
+        foreach (var parameter in BuiltInParameters.List)
+        {
+            //Those are optional. Need to set value only if provided. They might have fallback value.
             arguments.TryGetValue(parameter.Key, out var parameterValue);
             Variables.SetVariableValue(VariableScope.Command, parameter.Key, new VariableValue(parameterValue), parameter.Description);
         }
@@ -106,7 +113,7 @@ public class Context : IContext
     private async Task<string?> ReadElementContent(RepositoryLocation repositoryLocation, string? sessionName,
         RepositoryElementInfo element)
     {
-        var content = await repository.GetContent(repositoryLocation, sessionName, element.Id);
+        var content = await _repository.GetContent(repositoryLocation, sessionName, element.Id);
         if (content.Content == null)
         {
             Services.Output.Warning($"Failed to load content of {element.Id}.");
@@ -129,7 +136,7 @@ public class Context : IContext
             Services.Output.Warning($"Failed to determine format of {element.Id}.");
             return null;
         }
-        var serializer = serializerFactory.GetSerializer(element.Format);
+        var serializer = _serializerFactory.GetSerializer(element.Format);
         if (serializer == null)
         {
             Services.Output.Warning($"Failed to deserialize {element.Id}. Unknown format {element.Format}");
