@@ -49,13 +49,13 @@ public class ContextVariables : IContextVariables
         switch (repositoryLocation)
         {
             case RepositoryLocation.BuiltIn:
-                _variableStorage.BuiltIn = elementsToImport.Select(element => element with { Scope = VariableScope.Application, LocationId = locationId }).ToImmutableList();
+                _variableStorage.BuiltIn = _variableStorage.BuiltIn.AddRange(elementsToImport.Select(element => element with { Scope = VariableScope.Application, LocationId = locationId }).ToImmutableList());
                 break;
             case RepositoryLocation.Local:
-                _variableStorage.Local = elementsToImport.Select(element => element with { Scope = VariableScope.Application, LocationId = locationId }).ToImmutableList();
+                _variableStorage.Local = _variableStorage.BuiltIn.AddRange(elementsToImport.Select(element => element with { Scope = VariableScope.Application, LocationId = locationId }).ToImmutableList());
                 break;
             case RepositoryLocation.Session:
-                _variableStorage.Session = elementsToImport.Select(element => element with { Scope = VariableScope.Session, LocationId = locationId }).ToImmutableList();
+                _variableStorage.Session = _variableStorage.BuiltIn.AddRange(elementsToImport.Select(element => element with { Scope = VariableScope.Session, LocationId = locationId }).ToImmutableList());
                 break;
             default:
                 throw new InvalidOperationException($"Unknown repository location: {repositoryLocation}");

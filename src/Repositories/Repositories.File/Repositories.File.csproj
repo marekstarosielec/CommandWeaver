@@ -30,6 +30,9 @@
       <None Update="BuiltIn\Commands\HelloWorld.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="BuiltIn\Variables\nag-core-environments.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
       <None Update="BuiltIn\Variables\variables.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>

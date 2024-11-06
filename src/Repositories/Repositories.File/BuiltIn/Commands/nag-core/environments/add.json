@@ -39,7 +39,8 @@
         "proxy": "{{proxy}}",
         "defaultPartner": "{{defaultPartner}}"
       },
-      "scope": "Application"
+      "scope": "Application",
+      "locationId": "Variables//nag-core-environments.json"
     },
     {
       "operation": "output",

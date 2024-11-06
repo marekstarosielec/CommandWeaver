@@ -65,7 +65,6 @@ public class Context : IContext
         //Check if all required parameters have value
         foreach (var parameter in command.Parameters)
         {
-            //parameter is different variable - need to find variable with same name and read its value.
             var variable = Variables.FindVariable(parameter.Key);
             var value = variable == null ? null : Variables.ReadVariableValue(variable.Value);
             if (parameter.Required && string.IsNullOrWhiteSpace(value?.TextValue))
@@ -123,8 +122,6 @@ public class Context : IContext
             }
 
             await operation.Run(this, cancellationToken);
-            if (cancellationToken.IsCancellationRequested) 
-                return;
         }
 
         //Save changes in variables
@@ -134,6 +131,7 @@ public class Context : IContext
     {
         if (!string.IsNullOrEmpty(message)) 
             Services.Output.Error(message);
+        //should save variables here?
         Environment.Exit(exitCode);
     }
 
@@ -212,8 +210,6 @@ public class Context : IContext
             Services.Output.Warning($"Failed to deserialize {element.Id}.");
             return;
         }
-        //TODO: Pass id to variable, so the changes can be written in the same file name (but in location/session folder)
-        
         Variables.SetVariableList(repositoryLocation, contentObject, element.Id);
     }
     

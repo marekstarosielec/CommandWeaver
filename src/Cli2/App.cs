@@ -22,14 +22,13 @@ public class App(IContext context, Parser parser)
             await context.Initialize(cancellationTokenSource.Token);
             await context.Run(command, arguments, cancellationTokenSource.Token);
         }
-        catch (OperationCanceledException e)
+        catch (OperationCanceledException)
         {
             Console.WriteLine("User abort...");
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
-            throw;
         }
         
     }

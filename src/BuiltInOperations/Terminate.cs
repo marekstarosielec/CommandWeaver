@@ -13,10 +13,9 @@ public class Terminate : Operation
         //TODO: Add exit code.
     }; 
 
-    public override async Task Run(IContext context, CancellationToken cancellationToken)
+    public override Task Run(IContext context, CancellationToken cancellationToken)
     {
-        await Task.Delay(10000, cancellationToken);
         context.Terminate(Parameters["message"].Value.TextValue);
-        //return Task.CompletedTask;
+        return Task.CompletedTask;
     }
 }

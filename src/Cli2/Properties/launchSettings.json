@@ -2,7 +2,7 @@
   "profiles": {
     "Cli2": {
       "commandName": "Project",
-      "commandLineArgs": "nag-core-environment-add -key mousedeer -host testHost -proxy \"testProxy\" --defaultPartner testDefaultPartner"
+      "commandLineArgs": "nag-core-environment-add -key mousedeer2 -host testHost -proxy \"testProxy\" --defaultPartner testDefaultPartner"
     }
   }
 }
