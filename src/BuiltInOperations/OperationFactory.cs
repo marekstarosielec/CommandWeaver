@@ -11,6 +11,7 @@ public class OperationFactory : IOperationFactory
         {
             "output" => new Output(),
             "setvariable" => new SetVariable(),
+            "terminate" => new Terminate(),
             _ => null
         };
 }

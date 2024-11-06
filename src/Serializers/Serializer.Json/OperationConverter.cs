@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Models;
@@ -42,10 +41,20 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
         var type = operationInstance.GetType();
         foreach (var property in rootElement.EnumerateObject())
         {
-            //Skip operation name. Read rest of properties.
+            //Skip operation name. 
             if (property.Name.Equals("operation", StringComparison.CurrentCultureIgnoreCase))
                 continue;
-            
+
+            //Skip condition.
+            if (property.Name.Equals("conditions", StringComparison.CurrentCultureIgnoreCase))
+            {
+                SetConditions(operationInstance, property.Value);
+                continue;
+            }
+            //Ignore properties starting with "_".
+            if (property.Name.StartsWith("_", StringComparison.CurrentCultureIgnoreCase))
+                continue;
+
             if (!operationInstance.Parameters.ContainsKey(property.Name))
             {
                 //Property defined in json is not defined in operation class.
@@ -57,6 +66,19 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
         }
     }
 
+    private void SetConditions(Operation operationInstance, JsonElement rootElement)
+    {
+        foreach (var property in rootElement.EnumerateObject())
+        {
+            //TODO: Add test if all OperationCondition properties are mapped here.
+            if (property.Name.Equals(nameof(OperationCondition.IsNull), StringComparison.InvariantCultureIgnoreCase))
+                operationInstance.Conditions.IsNull = ReadElement(property.Value);
+            else if (property.Name.Equals(nameof(OperationCondition.IsNotNull), StringComparison.InvariantCultureIgnoreCase))
+                operationInstance.Conditions.IsNotNull = ReadElement(property.Value);
+            else
+                context.Services.Output.Warning($"Unknown condition {property.Name}");
+        }
+    }
     private DynamicValue ReadElement(JsonElement element)
     {
         switch (element.ValueKind)

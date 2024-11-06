@@ -80,6 +80,28 @@ public class Context : IContext
         foreach (var operation in command.Operations)
         {
             Services.Output.Debug($"{operation.Name}: Starting");
+
+            //Evaluate conditions.
+            //TODO: Add test if all properties are called here.
+            if (operation.Conditions.IsNull != null)
+            {
+                operation.Conditions.IsNull = Variables.ReadVariableValue(operation.Conditions.IsNull);
+                if (!operation.Conditions.IsNull.IsNull)
+                {
+                    Services.Output.Trace($"Skipping operation {operation.Name} because of IsNull condition.");
+                    continue;
+                }
+            }
+            if (operation.Conditions.IsNotNull != null)
+            {
+                operation.Conditions.IsNotNull = Variables.ReadVariableValue(operation.Conditions.IsNotNull);
+                if (operation.Conditions.IsNotNull.IsNull)
+                {
+                    Services.Output.Trace($"Skipping operation {operation.Name} because of IsNotNull condition.");
+                    continue;
+                }
+            }
+
             foreach (var parameterKey in operation.Parameters.Keys)
             {
                 //Evaluate all operation parametes.
@@ -88,6 +110,7 @@ public class Context : IContext
                     Terminate($"Parameter {parameterKey} is required in operation {operation.Name}.");
                 if (operation.Parameters[parameterKey].RequiredText && string.IsNullOrWhiteSpace(operation.Parameters[parameterKey].Value.TextValue))
                     Terminate($"Parameter {parameterKey} requires text value in operation {operation.Name}.");
+
                 if (operation.Parameters[parameterKey].AllowedEnumValues != null)
                 {
                     if (!operation.Parameters[parameterKey].AllowedEnumValues!.IsEnum)
@@ -99,6 +122,7 @@ public class Context : IContext
            
                 }
             }
+
             await operation.Run(this, cancellationToken);
         }
 

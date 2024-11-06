@@ -10,5 +10,5 @@ public abstract class Operation
 
     public abstract Task Run(IContext context, CancellationToken cancellationToken);
 
-    public OperationCondition Condition { get; } = new OperationCondition();
+    public OperationCondition Conditions { get; } = new OperationCondition();
 }

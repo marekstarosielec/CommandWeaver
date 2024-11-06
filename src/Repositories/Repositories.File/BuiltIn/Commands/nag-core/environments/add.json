@@ -22,7 +22,16 @@
   ],
   "operations": [
     {
+      "operation": "terminate",
+      "_comment": "Do not allow to add environment with name that already exists.",
+      "message": "Environment {{key}} already exists",
+      "conditions": {
+        "isNotNull": "nag-core-environments[{{key}}]"
+      }
+    },
+    {
       "operation": "setVariable",
+      "_comment": "Add new environment in application scope.",
       "key": "nag-core-environments[{{key}}]",
       "value": {
         "key": "{{key}}",
