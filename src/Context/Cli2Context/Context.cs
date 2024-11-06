@@ -3,7 +3,6 @@ using Models.Interfaces.Context;
 using Repositories.Abstraction;
 using Repositories.Abstraction.Interfaces;
 using Serializer.Abstractions;
-using System.Reflection.Metadata;
 
 namespace Cli2Context;
 
@@ -124,6 +123,8 @@ public class Context : IContext
             }
 
             await operation.Run(this, cancellationToken);
+            if (cancellationToken.IsCancellationRequested) 
+                return;
         }
 
         //Save changes in variables
