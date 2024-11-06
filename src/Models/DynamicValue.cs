@@ -38,5 +38,5 @@ public record DynamicValue
     TextValue != null ? $"Text: {TextValue}" :
         ListValue != null ? $"List (Count: {ListValue.ToList().Count})" :
         ObjectValue != null ? $"Object: {ObjectValue[ObjectValue.Keys.First()]?.TextValue}" :
-        null;
+        "No values";
 }

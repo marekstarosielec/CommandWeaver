@@ -1,17 +1,10 @@
 [
   {
     "key": "currentSessionName",
-    "value": "session1",
-    "description": "Name of current sessions"
-  },
-  {
-    "key": "testInteger",
-    "value": 1,
-    "description": "Testing numeric values"
+    "value": "session1"
   },
   {
     "key": "nag-core-environments",
-    "description":  "Contains list of nag-core environments.",
     "value": [
       {
         "key": "local",

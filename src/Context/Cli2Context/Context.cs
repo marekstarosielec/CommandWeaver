@@ -85,8 +85,8 @@ public class Context : IContext
             //TODO: Add test if all properties are called here.
             if (operation.Conditions.IsNull != null)
             {
-                operation.Conditions.IsNull = Variables.ReadVariableValue(operation.Conditions.IsNull);
-                if (!operation.Conditions.IsNull.IsNull)
+                var result = Variables.ReadVariableValue(operation.Conditions.IsNull);
+                if (!result.IsNull)
                 {
                     Services.Output.Trace($"Skipping operation {operation.Name} because of IsNull condition.");
                     continue;
@@ -94,8 +94,8 @@ public class Context : IContext
             }
             if (operation.Conditions.IsNotNull != null)
             {
-                operation.Conditions.IsNotNull = Variables.ReadVariableValue(operation.Conditions.IsNotNull);
-                if (operation.Conditions.IsNotNull.IsNull)
+                var result = Variables.ReadVariableValue(operation.Conditions.IsNotNull);
+                if (result.IsNull)
                 {
                     Services.Output.Trace($"Skipping operation {operation.Name} because of IsNotNull condition.");
                     continue;

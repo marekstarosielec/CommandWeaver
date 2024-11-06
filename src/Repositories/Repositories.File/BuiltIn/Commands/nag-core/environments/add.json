@@ -26,7 +26,7 @@
       "_comment": "Do not allow to add environment with name that already exists.",
       "message": "Environment {{key}} already exists",
       "conditions": {
-        "isNotNull": "nag-core-environments[{{key}}]"
+        "isNotNull": "{{ nag-core-environments[{{key}}] }}"
       }
     },
     {

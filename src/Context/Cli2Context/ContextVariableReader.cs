@@ -61,28 +61,28 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
             return null;
 
         var resolvedKey = treatTextValueAsVariable ? VariableValuePath.GetWholePathAsVariable(key) : key;
-        var variableName = VariableValuePath.ExtractVariableBetweenDelimiters(resolvedKey);
+        var path = VariableValuePath.ExtractVariableBetweenDelimiters(resolvedKey);
 
-        if (variableName == null)
+        if (path == null)
             return new DynamicValue(key);
 
-        var resolvedVariable = ResolveSingleValue(variableName);
+        var resolvedVariable = ResolveSingleValue(path);
 
         if (resolvedVariable == null)
             return new DynamicValue();
 
-        if (VariableValuePath.WholePathIsSingleVariable(resolvedKey, variableName))
+        if (VariableValuePath.WholePathIsSingleVariable(resolvedKey, path))
             //If whole key is variable name, it can be replaced by any type.
             return ReadVariableValue(resolvedVariable, false, depth);
 
         if (resolvedVariable.TextValue != null)
         {
             //If variable name is just part of text, it can be replaced only by text.
-            resolvedKey = VariableValuePath.ReplaceVariableWithValue(resolvedKey, variableName, resolvedVariable.TextValue);
+            resolvedKey = VariableValuePath.ReplaceVariableWithValue(resolvedKey, path, resolvedVariable.TextValue);
             return ReadVariableValue(new DynamicValue(resolvedKey), false, depth);
         }
 
-        context.Terminate($"{{{{ {variableName} }}}} resolved to a non-text value, it cannot be part of text.");
+        context.Terminate($"{{{{ {path} }}}} resolved to a non-text value, it cannot be part of text.");
         return null;
     }
 
@@ -134,16 +134,16 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
     /// Resolves a single variable value by searching across repository locations in the order: 
     /// Changes, Session, Local, then BuiltIn.
     /// </summary>
-    /// <param name="variableName">The name of the variable to resolve.</param>
+    /// <param name="path">The name of the variable to resolve.</param>
     /// <returns>The resolved variable value, or null if the variable is not found.</returns>
-    internal DynamicValue? ResolveSingleValue(string variableName)
+    internal DynamicValue? ResolveSingleValue(string path)
     {
-        var builtIn = ResolveSingleValueFromSingleList(variableStorage.BuiltIn, variableName);
-        var local = ResolveSingleValueFromSingleList(variableStorage.Local, variableName);
-        var session = ResolveSingleValueFromSingleList(variableStorage.Session, variableName);
-        var changes = ResolveSingleValueFromSingleList(variableStorage.Changes, variableName);
+        var builtIn = ResolveSingleValueFromSingleList(variableStorage.BuiltIn, path);
+        var local = ResolveSingleValueFromSingleList(variableStorage.Local, path);
+        var session = ResolveSingleValueFromSingleList(variableStorage.Session, path);
+        var changes = ResolveSingleValueFromSingleList(variableStorage.Changes, path);
 
-        if (VariableValuePath.PathIsTopLevel(variableName) &&
+        if (VariableValuePath.PathIsTopLevel(path) &&
             (builtIn?.ListValue != null
             || local?.ListValue != null
             || session?.ListValue != null

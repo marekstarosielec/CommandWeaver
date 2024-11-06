@@ -60,7 +60,7 @@ public class ObjectToPureTypeConverter : JsonConverter<DynamicValue?>
 
     private DynamicValue ReadArray(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var list = new DynamicValueList();
+        var list = new List<DynamicValueObject>();
 
         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
         {
@@ -69,7 +69,7 @@ public class ObjectToPureTypeConverter : JsonConverter<DynamicValue?>
             dictionaryElement ??= new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key", element } });
             list.Add(dictionaryElement);
         }
-        return new DynamicValue(list);
+        return new DynamicValue(new DynamicValueList(list));
     }
 
     public override void Write(Utf8JsonWriter writer, DynamicValue? value, JsonSerializerOptions options)
