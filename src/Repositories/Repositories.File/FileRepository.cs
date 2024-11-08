@@ -21,7 +21,7 @@ public class FileRepository : IRepository
             //TODO: Hide it in some interfaces
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
-            var fileProvider = new PhysicalFileProvider(GetPath(location, sessionName));
+            var fileProvider = new PhysicalFileProvider(path);
             return GetFilesAsync(location, sessionName, fileProvider, cancellationToken);
         }
         catch
@@ -33,9 +33,25 @@ public class FileRepository : IRepository
 
     public void SaveList(RepositoryLocation location, string? locationId, string? sessionName, string content, CancellationToken cancellationToken)
     {
+        var path = GetPath(location, sessionName);
+        var fileProvider = new PhysicalFileProvider(path);
+        var fileInfo = fileProvider.GetFileInfo(locationId);
 
+        var directoryPath = Path.GetDirectoryName(Path.Combine(path, locationId.TrimStart('\\')));
+
+        if (directoryPath != null)
+            Directory.CreateDirectory(directoryPath);
+
+        using (var stream = new FileStream(Path.Combine(path, locationId.TrimStart('\\')), FileMode.Create, FileAccess.Write))
+        {
+            using (var writer = new StreamWriter(stream))
+            {
+                // Move the writer to the end if appending; otherwise, overwrite content
+                stream.Seek(0, SeekOrigin.End); // remove this line if you want to overwrite instead of append
+                writer.Write(content);
+            }
+        }
     }
-
     /// <inheritdoc />
     public Task<RepositoryElementContent> GetContent(RepositoryLocation location, string? sessionName, string id) =>
         GetContent(id, new PhysicalFileProvider(GetPath(location, sessionName)));

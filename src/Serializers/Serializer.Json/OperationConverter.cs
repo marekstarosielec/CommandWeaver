@@ -9,7 +9,7 @@ namespace Serializer.Json;
 
 public class OperationConverter(IContext context, IOperationFactory operationFactory) : JsonConverter<Operation>
 {
-    private readonly ObjectToPureTypeConverter _valueConverter = new();
+    private readonly DynamicValueConverter _dynamicValueConverter = new();
 
     public override Operation? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions? options)
     {
@@ -64,7 +64,7 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
                 continue;
             }
 
-            operationInstance.Parameters[property.Name] = operationInstance.Parameters[property.Name] with { Value = _valueConverter.ReadElement(property.Value) };
+            operationInstance.Parameters[property.Name] = operationInstance.Parameters[property.Name] with { Value = _dynamicValueConverter.ReadElement(property.Value) };
         }
     }
 
@@ -72,7 +72,7 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
     {
         foreach (var property in rootElement.EnumerateObject())
         {
-            var condition = _valueConverter.ReadElement(property.Value);
+            var condition = _dynamicValueConverter.ReadElement(property.Value);
             //TODO: Add test if all OperationCondition properties are mapped here.
             if (property.Name.Equals(nameof(OperationCondition.IsNull), StringComparison.InvariantCultureIgnoreCase))
                 operationInstance.Conditions.IsNull = condition;

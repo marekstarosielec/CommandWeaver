@@ -134,9 +134,9 @@ public class Context : IContext
             var originalFile = _originalRepositories.ContainsKey(RepositoryLocation.Local) && _originalRepositories[RepositoryLocation.Local].ContainsKey(resolvedLocationId)
                         ? _originalRepositories[RepositoryLocation.Local][resolvedLocationId] : null;
             if (originalFile != null)
-                originalFile.Variables = variables[resolvedLocationId];
+                originalFile.Variables = variables[resolvedLocationId].Select(v => new Variable { Key = v.Key, Value = v.Value }).ToList();
             else
-                originalFile = new RepositoryContent { Variables = variables[resolvedLocationId] };
+                originalFile = new RepositoryContent { Variables = variables[resolvedLocationId].Select(v =>new Variable { Key=v.Key, Value = v.Value}).ToList() };
 
             var serializer = _serializerFactory.GetSerializer("json");
             var content = serializer.Serialize(originalFile);

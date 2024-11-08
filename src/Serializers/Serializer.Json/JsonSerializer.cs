@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Serializer.Abstractions;
 
 namespace Serializer.Json;
@@ -16,7 +17,7 @@ public class JsonSerializer(OperationConverter operationConverter) : ISerializer
             return System.Text.Json.JsonSerializer.Deserialize<T>(content,
                 new JsonSerializerOptions
                 {
-                    PropertyNameCaseInsensitive = true, Converters = { new ObjectToPureTypeConverter(), operationConverter },
+                    PropertyNameCaseInsensitive = true, Converters = { new DynamicValueConverter(), operationConverter },
                     WriteIndented = true,
                 });
         }
@@ -31,8 +32,9 @@ public class JsonSerializer(OperationConverter operationConverter) : ISerializer
     {
         return System.Text.Json.JsonSerializer.Serialize(value, new JsonSerializerOptions
         {
-            PropertyNameCaseInsensitive = true,
-            Converters = { new ObjectToPureTypeConverter(), operationConverter },
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            Converters = { new DynamicValueConverter(), operationConverter },
             WriteIndented = true,
         });
     }

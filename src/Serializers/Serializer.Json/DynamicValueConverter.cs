@@ -1,16 +1,14 @@
 using Models;
 using System.Globalization;
-using System.Reflection.PortableExecutable;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Xml.Linq;
 
 namespace Serializer.Json;
 
 /// <summary>
 /// Converts object? to specific type. Without it, it is JsonElement.
 /// </summary>
-public class ObjectToPureTypeConverter : JsonConverter<DynamicValue?>
+public class DynamicValueConverter : JsonConverter<DynamicValue?>
 {
     public override DynamicValue? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) 
     {
@@ -78,6 +76,50 @@ public class ObjectToPureTypeConverter : JsonConverter<DynamicValue?>
 
     public override void Write(Utf8JsonWriter writer, DynamicValue? value, JsonSerializerOptions options)
     {
-        throw new NotImplementedException();
+        if (value == null)
+        {
+            writer.WriteNullValue();
+            return;
+        }
+
+        if (value.TextValue != null)
+        {
+            // Determine if the text is a boolean, number, or string
+            if (bool.TryParse(value.TextValue, out bool boolResult))
+                writer.WriteBooleanValue(boolResult);
+            else if (int.TryParse(value.TextValue, out int intResult))
+                writer.WriteNumberValue(intResult);
+            else if (long.TryParse(value.TextValue, out long longResult))
+                writer.WriteNumberValue(longResult);
+            else if (double.TryParse(value.TextValue, NumberStyles.Any, CultureInfo.InvariantCulture, out double doubleResult))
+                writer.WriteNumberValue(doubleResult);
+            else
+                writer.WriteStringValue(value.TextValue);
+        }
+        else if (value.ObjectValue != null)
+            WriteObject(writer, value.ObjectValue, options);
+        else if (value.ListValue != null)
+            WriteArray(writer, value.ListValue, options);
+        else
+            writer.WriteNullValue();
+    }
+
+    private void WriteObject(Utf8JsonWriter writer, DynamicValueObject? obj, JsonSerializerOptions options)
+    {
+        writer.WriteStartObject();
+        foreach (var property in obj?.Keys)
+        {
+            writer.WritePropertyName(property);
+            Write(writer, obj[property], options);
+        }
+        writer.WriteEndObject();
+    }
+
+    private void WriteArray(Utf8JsonWriter writer, DynamicValueList? array, JsonSerializerOptions options)
+    {
+        writer.WriteStartArray();
+        foreach (var element in array)
+            WriteObject(writer, element, options);
+        writer.WriteEndArray();
     }
 }
