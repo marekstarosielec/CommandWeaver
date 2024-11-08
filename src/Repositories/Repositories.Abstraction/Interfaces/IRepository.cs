@@ -24,4 +24,6 @@ public interface IRepository
     /// <param name="id">Id of element to read content.</param>
     /// <returns></returns>
     Task<RepositoryElementContent> GetContent(RepositoryLocation location, string? sessionName, string id);
+
+    void SaveList(RepositoryLocation location, string? locationId, string? sessionName, string content, CancellationToken cancellationToken);
 }

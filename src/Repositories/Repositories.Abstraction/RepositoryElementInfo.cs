@@ -1,3 +1,5 @@
+using Models;
+
 namespace Repositories.Abstraction;
 
 public class RepositoryElementInfo
@@ -8,5 +10,7 @@ public class RepositoryElementInfo
     
     public string? FriendlyName { get; init; }
     
+    public string? Content { get; init; }
+
     public Exception? Exception { get; init; } 
 }

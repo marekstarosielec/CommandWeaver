@@ -91,8 +91,17 @@ internal class ContextVariableWriter(IContext context, ContextVariableStorage va
             return;
         }
 
+        //Find current values.
+        var existingVariable =
+            variableStorage.Command.FirstOrDefault(v => v.Key == variableName)
+            ?? variableStorage.Session.FirstOrDefault(v => v.Key == variableName)
+            ?? variableStorage.Application.FirstOrDefault(v => v.Key == variableName)
+            ?? variableStorage.BuiltIn.FirstOrDefault(v => v.Key == variableName);
+        var resolvedLocationId = existingVariable?.LocationId ?? locationId;
+
+
         //When given list element was not yet edited.
-        var newVariable = new Variable { Key = variableName, Value = new DynamicValue(new DynamicValueList([value.ObjectValue])), LocationId = locationId };
+        var newVariable = new Variable { Key = variableName, Value = new DynamicValue(new DynamicValueList([value.ObjectValue])), LocationId = resolvedLocationId };
         if (scope == VariableScope.Command) variableStorage.Command.Add(newVariable);
         if (scope == VariableScope.Session) variableStorage.Session.Add(newVariable);
         if (scope == VariableScope.Application) variableStorage.Application.Add(newVariable);

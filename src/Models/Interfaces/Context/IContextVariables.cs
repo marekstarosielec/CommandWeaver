@@ -6,6 +6,8 @@ public interface IContextVariables
     string? CurrentlyProcessedElement { get; set; }
     void SetVariableList(RepositoryLocation repositoryLocation, List<Variable?> elementsWithContent, string locationId);
 
+    Dictionary<string, List<Variable>> GetVariableList(RepositoryLocation repositoryLocation);
+
     /// <summary>
     /// Resolves all the variable tags inside given value.
     /// </summary>

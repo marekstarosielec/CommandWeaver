@@ -17,6 +17,8 @@ public class Context : IContext
 
     public List<Command> Commands { get; } = [];
 
+    private Dictionary<RepositoryLocation, Dictionary<string, RepositoryContent>> _originalRepositories = new Dictionary<RepositoryLocation, Dictionary<string, RepositoryContent>>();   
+
     public Context(IRepository repository, ISerializerFactory serializerFactory, IOutput output)
     {
         _repository = repository;
@@ -125,6 +127,21 @@ public class Context : IContext
         }
 
         //Save changes in variables
+        var variables = Variables.GetVariableList(RepositoryLocation.Local);
+        foreach (var locationId in variables.Keys)
+        {
+            var resolvedLocationId = string.IsNullOrWhiteSpace(locationId) ? "variables.json" : locationId;
+            var originalFile = _originalRepositories.ContainsKey(RepositoryLocation.Local) && _originalRepositories[RepositoryLocation.Local].ContainsKey(resolvedLocationId)
+                        ? _originalRepositories[RepositoryLocation.Local][resolvedLocationId] : null;
+            if (originalFile != null)
+                originalFile.Variables = variables[resolvedLocationId];
+            else
+                originalFile = new RepositoryContent { Variables = variables[resolvedLocationId] };
+
+            var serializer = _serializerFactory.GetSerializer("json");
+            var content = serializer.Serialize(originalFile);
+            _repository.SaveList(RepositoryLocation.Local, resolvedLocationId, null, content, cancellationToken);
+        }
     }
 
     public void Terminate(string? message = null, int exitCode = 1)
@@ -150,17 +167,19 @@ public class Context : IContext
             var serializer = GetSerializer(repositoryLocation, sessionName, element);
             if (serializer == null)
                 return;
-            var content = await ReadElementContent(repositoryLocation, sessionName, element);
-            if (content == null)
-                return;
 
             //TODO: Deserialization should also return Exception if occurred.
-            var contentObject = serializer.Deserialize<RepositoryContent>(content);
+            var contentObject = serializer.Deserialize<RepositoryContent>(element.Content);
             if (contentObject == null)
             {
                 Services.Output.Warning($"Failed to deserialize {element.Id}.");
                 return;
             }
+
+            //TODO: if deserialization failed, we have to save this information. Otherwise changes will overwrite whole file.
+            if (!_originalRepositories.ContainsKey(repositoryLocation))
+                _originalRepositories[repositoryLocation] = new Dictionary<string, RepositoryContent>();
+            _originalRepositories[repositoryLocation][element.Id] = contentObject;
 
             if (contentObject.Variables != null)
                 Variables.SetVariableList(repositoryLocation, contentObject.Variables, element.Id);
@@ -169,25 +188,6 @@ public class Context : IContext
         }
 
         Variables.CurrentlyProcessedElement = null;
-    }
-
-    private async Task<string?> ReadElementContent(RepositoryLocation repositoryLocation, string? sessionName,
-        RepositoryElementInfo element)
-    {
-        var content = await _repository.GetContent(repositoryLocation, sessionName, element.Id);
-        if (content.Content == null)
-        {
-            Services.Output.Warning($"Failed to load content of {element.Id}.");
-            return null;
-        }
-
-        if (content.Exception != null)
-        {
-            Services.Output.Warning($"Failed to load content of {element.Id}.  Exception occurred: {content.Exception.Message}");
-            return null;
-        }
-
-        return content.Content;
     }
 
     private ISerializer? GetSerializer(RepositoryLocation repositoryLocation, string? sessionName, RepositoryElementInfo element)

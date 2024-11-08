@@ -16,4 +16,6 @@ public interface ISerializer
     /// The deserialized object of type <typeparamref name="T"/>, or <c>null</c> if deserialization fails.
     /// </returns>
     T? Deserialize<T>(string input) where T : class;
+
+    string Serialize<T>(T? value) where T : class;
 }

@@ -62,5 +62,12 @@ public class ContextVariables : IContextVariables
         }
     }
 
+    public Dictionary<string, List<Variable>> GetVariableList(RepositoryLocation repositoryLocation) => repositoryLocation switch
+    {
+        RepositoryLocation.Session => _variableStorage.Session.GroupBy(v => v?.LocationId ?? string.Empty).ToDictionary(g => g.Key, g => g.ToList()),
+        RepositoryLocation.Local => _variableStorage.Application.GroupBy(v => v?.LocationId ?? string.Empty).ToDictionary(g => g.Key, g => g.ToList()),
+        _ => throw new InvalidOperationException($"Cannot GetVariableList for RepositoryLocation=={repositoryLocation}")
+    };
+
     public void WriteVariableValue(VariableScope scope, string path, DynamicValue value) => _variableWriter.WriteVariableValue(scope, path, value, "");
 }

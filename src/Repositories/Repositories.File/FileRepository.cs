@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.FileProviders;
 using Models;
 using Repositories.Abstraction;
@@ -28,6 +29,11 @@ public class FileRepository : IRepository
             //TODO: do something when path cannot be read? Output?
             return AsyncEnumerable.Empty<RepositoryElementInfo>();
         }
+    }
+
+    public void SaveList(RepositoryLocation location, string? locationId, string? sessionName, string content, CancellationToken cancellationToken)
+    {
+
     }
 
     /// <inheritdoc />
@@ -113,10 +119,37 @@ public class FileRepository : IRepository
                     directoriesToProcess.Push(relativePath);
                     continue;
                 }
-                yield return new RepositoryElementInfo { Id = relativePath, Format = GetFormat(fileInfo.Name), FriendlyName = GetFriendlyName(rootPath, fileInfo.PhysicalPath)};
+                yield return new RepositoryElementInfo { Id = relativePath, Format = GetFormat(fileInfo.Name), FriendlyName = GetFriendlyName(rootPath, fileInfo.PhysicalPath), Content = await GetContent2(rootPath, relativePath) };
             }
             await Task.Yield(); // Allow other asynchronous operations to run
         }
+    }
+
+    private async Task<string> GetContent2(string rootPath, string relativePath)
+    {
+        //try
+        //{
+        //TODO: Add ability to replace fileProvider for testing.
+            var fileProvider = new PhysicalFileProvider(rootPath);
+            var fileInfo = fileProvider.GetFileInfo(relativePath);
+            await using var stream = fileInfo.CreateReadStream();
+            using var reader = new StreamReader(stream);
+        return await reader.ReadToEndAsync(); //TODO: Pass cancellationToken
+        //return new RepositoryElementContent
+        //{
+        //    Id = id,
+        //    Content = await reader.ReadToEndAsync()
+        //};
+        //TODO: When reading error, it should put exception in RepositoryElementInfo.
+        //}
+        //catch (Exception e)
+        //{
+        //    return new RepositoryElementContent
+        //    {
+        //        Id = id,
+        //        Exception = e
+        //    };
+        //}
     }
 
     private string GetRelativePath(string rootPath, string physicalPath) => physicalPath[rootPath.Length..];

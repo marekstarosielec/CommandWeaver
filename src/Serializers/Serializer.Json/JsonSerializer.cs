@@ -26,4 +26,14 @@ public class JsonSerializer(OperationConverter operationConverter) : ISerializer
             return null;
         }
     }
+
+    public string Serialize<T>(T? value) where T : class
+    {
+        return System.Text.Json.JsonSerializer.Serialize(value, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            Converters = { new ObjectToPureTypeConverter(), operationConverter },
+            WriteIndented = true,
+        });
+    }
 }
