@@ -1,7 +1,9 @@
 using Models;
 using System.Globalization;
+using System.Reflection.PortableExecutable;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Xml.Linq;
 
 namespace Serializer.Json;
 
@@ -10,64 +12,66 @@ namespace Serializer.Json;
 /// </summary>
 public class ObjectToPureTypeConverter : JsonConverter<DynamicValue?>
 {
-    public override DynamicValue? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
-        reader.TokenType switch
-        {
-            JsonTokenType.True => new DynamicValue("true"),
-            JsonTokenType.False => new DynamicValue("false"),
-            JsonTokenType.Number => ReadNumber(ref reader),
-            JsonTokenType.String => ReadString(ref reader),
-            JsonTokenType.StartObject => ReadObject(ref reader, typeToConvert, options),
-            JsonTokenType.StartArray => ReadArray(ref reader, typeToConvert, options),
-            JsonTokenType.Null => null,
-            _ => throw new JsonException($"Unsupported JsonTokenType {reader.TokenType}")
-        };
-
-    private DynamicValue ReadNumber(ref Utf8JsonReader reader)
+    public override DynamicValue? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) 
     {
-        // Attempt to get different numeric types
-        if (reader.TryGetInt32(out int intValue))
-            return new DynamicValue(intValue.ToString());
-        if (reader.TryGetInt64(out long longValue))
-            return new DynamicValue(longValue.ToString());
-        if (reader.TryGetDouble(out double doubleValue))
-            return new DynamicValue(doubleValue.ToString(CultureInfo.InvariantCulture));
-        // Default to decimal if no other numeric type fits
-        return new DynamicValue(reader.GetDecimal().ToString(CultureInfo.InvariantCulture));
+        using JsonDocument document = JsonDocument.ParseValue(ref reader);
+        JsonElement element = document.RootElement;
+        return ReadElement(element);
     }
 
-    private DynamicValue? ReadString(ref Utf8JsonReader reader)
+    public DynamicValue? ReadElement(JsonElement element)
+    {
+        return element.ValueKind switch
+        {
+            JsonValueKind.True => new DynamicValue("true"),
+            JsonValueKind.False => new DynamicValue("false"),
+            JsonValueKind.Number => ReadNumber(element),
+            JsonValueKind.String => ReadString(element),
+            JsonValueKind.Object => ReadObject(element),
+            JsonValueKind.Array => ReadArray(element),
+            JsonValueKind.Null => null,
+            _ => throw new JsonException($"Unsupported JsonValueKind {element.ValueKind}")
+        };
+    }
+
+    private DynamicValue ReadString(JsonElement element)
     {
         // Attempt to parse as DateTime, otherwise return as string
-        if (reader.TryGetDateTime(out DateTime dateTimeValue))
+        if (element.TryGetDateTime(out DateTime dateTimeValue))
             return new DynamicValue(dateTimeValue.ToString("o"));
-        return new DynamicValue(reader.GetString());
+        return new DynamicValue(element.GetString());
     }
 
-    private DynamicValue ReadObject(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    private DynamicValue ReadNumber(JsonElement element)
+    {
+        // Attempt to get different numeric types
+        if (element.TryGetInt32(out int intValue))
+            return new DynamicValue(intValue.ToString());
+        if (element.TryGetInt64(out long longValue))
+            return new DynamicValue(longValue.ToString());
+        if (element.TryGetDouble(out double doubleValue))
+            return new DynamicValue(doubleValue.ToString(CultureInfo.InvariantCulture));
+        // Default to decimal if no other numeric type fits
+        return new DynamicValue(element.GetDecimal().ToString(CultureInfo.InvariantCulture));
+    }
+
+    private DynamicValue ReadObject(JsonElement element)
     {
         var variable = new DynamicValueObject();
-       
-        while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
-        {
-            string propertyName = reader.GetString() ?? throw new JsonException("Property name cannot be null");
-            reader.Read();
-            variable = variable.With(propertyName, Read(ref reader, typeToConvert, options));
-        }
+        foreach (var property in element.EnumerateObject())
+            variable = variable.With(property.Name, ReadElement(property.Value));
 
         return new DynamicValue(variable);
     }
-
-    private DynamicValue ReadArray(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    private DynamicValue ReadArray(JsonElement element)
     {
         var list = new List<DynamicValueObject>();
-
-        while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+        foreach (var arrayElement in element.EnumerateArray())
         {
-            var element = Read(ref reader, typeToConvert, options);
-            var dictionaryElement = element?.ObjectValue;
-            dictionaryElement ??= new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key", element } });
-            list.Add(dictionaryElement);
+            var arrayElementContents = ReadElement(arrayElement);
+            var dictionary = arrayElementContents?.ObjectValue;
+            dictionary ??= new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key", arrayElementContents } });// new VariableValueObject("key", arrayElementContents);
+            list.Add(dictionary);
         }
         return new DynamicValue(new DynamicValueList(list));
     }

@@ -9,6 +9,8 @@ namespace Serializer.Json;
 
 public class OperationConverter(IContext context, IOperationFactory operationFactory) : JsonConverter<Operation>
 {
+    private readonly ObjectToPureTypeConverter _valueConverter = new();
+
     public override Operation? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions? options)
     {
         using var document = JsonDocument.ParseValue(ref reader);
@@ -62,7 +64,7 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
                 continue;
             }
 
-            operationInstance.Parameters[property.Name] = operationInstance.Parameters[property.Name] with { Value = ReadElement(property.Value) };
+            operationInstance.Parameters[property.Name] = operationInstance.Parameters[property.Name] with { Value = _valueConverter.ReadElement(property.Value) };
         }
     }
 
@@ -70,77 +72,14 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
     {
         foreach (var property in rootElement.EnumerateObject())
         {
+            var condition = _valueConverter.ReadElement(property.Value);
             //TODO: Add test if all OperationCondition properties are mapped here.
             if (property.Name.Equals(nameof(OperationCondition.IsNull), StringComparison.InvariantCultureIgnoreCase))
-                operationInstance.Conditions.IsNull = ReadElement(property.Value);
+                operationInstance.Conditions.IsNull = condition;
             else if (property.Name.Equals(nameof(OperationCondition.IsNotNull), StringComparison.InvariantCultureIgnoreCase))
-                operationInstance.Conditions.IsNotNull = ReadElement(property.Value);
+                operationInstance.Conditions.IsNotNull = condition;
             else
                 context.Services.Output.Warning($"Unknown condition {property.Name}");
         }
     }
-    private DynamicValue ReadElement(JsonElement element)
-    {
-        switch (element.ValueKind)
-        {
-            case JsonValueKind.String:
-                return ReadString(element);
-            case JsonValueKind.Number:
-                return ReadNumber(element);
-            case JsonValueKind.True:
-                return new DynamicValue("true");
-            case JsonValueKind.False:
-                return new DynamicValue("false");
-            case JsonValueKind.Object:
-                return ReadObject(element);
-            case JsonValueKind.Array:
-                return ReadArray(element);
-            case JsonValueKind.Null:
-                return new DynamicValue(); 
-            default:
-                throw new JsonException("Unexpected JSON value kind");
-        }
-    }
-    private DynamicValue ReadString(JsonElement element)
-    {
-        // Attempt to parse as DateTime, otherwise return as string
-        if (element.TryGetDateTime(out DateTime dateTimeValue))
-            return new DynamicValue(dateTimeValue.ToString("o"));
-        return new DynamicValue(element.GetString());
-    }
-    
-    private DynamicValue ReadNumber(JsonElement element)
-    {
-        // Attempt to get different numeric types
-        if (element.TryGetInt32(out int intValue))
-            return new DynamicValue(intValue.ToString());
-        if (element.TryGetInt64(out long longValue))
-            return new DynamicValue(longValue.ToString());
-        if (element.TryGetDouble(out double doubleValue))
-            return new DynamicValue(doubleValue.ToString(CultureInfo.InvariantCulture));
-        // Default to decimal if no other numeric type fits
-        return new DynamicValue(element.GetDecimal().ToString(CultureInfo.InvariantCulture));
-    }
-    
-    private DynamicValue ReadObject(JsonElement element)
-    {
-        var variable = new DynamicValueObject();
-        foreach (var property in element.EnumerateObject())
-            variable = variable.With(property.Name, ReadElement(property.Value));
-        
-        return new DynamicValue(variable);
-    }
-    private DynamicValue ReadArray(JsonElement element)
-    {
-        var list = new DynamicValueList();
-        foreach (var arrayElement in element.EnumerateArray())
-        {
-            var arrayElementContents = ReadElement(arrayElement);
-            var dictionary = arrayElementContents?.ObjectValue;
-            dictionary ??= new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key", arrayElementContents } });// new VariableValueObject("key", arrayElementContents);
-            list.Add(dictionary);
-        }
-        return new DynamicValue(list);
-    }
-    
 }
