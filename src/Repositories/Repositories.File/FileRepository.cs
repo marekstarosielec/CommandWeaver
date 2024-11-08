@@ -113,7 +113,7 @@ public class FileRepository : IRepository
                     directoriesToProcess.Push(relativePath);
                     continue;
                 }
-                yield return new RepositoryElementInfo { Id = relativePath, Type = GetType(rootPath, fileInfo.PhysicalPath), Format = GetFormat(fileInfo.Name), FriendlyName = GetFriendlyName(rootPath, fileInfo.PhysicalPath)};
+                yield return new RepositoryElementInfo { Id = relativePath, Format = GetFormat(fileInfo.Name), FriendlyName = GetFriendlyName(rootPath, fileInfo.PhysicalPath)};
             }
             await Task.Yield(); // Allow other asynchronous operations to run
         }
@@ -121,8 +121,6 @@ public class FileRepository : IRepository
 
     private string GetRelativePath(string rootPath, string physicalPath) => physicalPath[rootPath.Length..];
 
-    private string? GetType(string rootPath, string physicalPath) => GetRelativePath(rootPath, physicalPath).TrimStart('/').Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-    
     private string? GetFormat(string fileName) => Path.GetExtension(fileName).TrimStart('.');
 
     private string? GetFriendlyName(string rootPath, string physicalPath) => GetRelativePath(rootPath, physicalPath).TrimStart('/');

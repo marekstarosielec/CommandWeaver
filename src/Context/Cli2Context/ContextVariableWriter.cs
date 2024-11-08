@@ -22,26 +22,21 @@ internal class ContextVariableWriter(IContext context, ContextVariableStorage va
     {
         //Find current values.
         var existingVariable =
-            variableStorage.Changes.FirstOrDefault(v => v.Key == path && v.Scope == VariableScope.Command)
-            ?? variableStorage.Changes.FirstOrDefault(v => v.Key == path && v.Scope == VariableScope.Session)
-            ?? variableStorage.Session.FirstOrDefault(v => v.Key == path && v.Scope == VariableScope.Session)
-            ?? variableStorage.Changes.FirstOrDefault(v => v.Key == path && v.Scope == VariableScope.Application)
-            ?? variableStorage.Local.FirstOrDefault(v => v.Key == path && v.Scope == VariableScope.Application)
-            ?? variableStorage.BuiltIn.FirstOrDefault(v => v.Key == path && v.Scope == VariableScope.Application);
+            variableStorage.Command.FirstOrDefault(v => v.Key == path)
+            ?? variableStorage.Session.FirstOrDefault(v => v.Key == path)
+            ?? variableStorage.Application.FirstOrDefault(v => v.Key == path)
+            ?? variableStorage.BuiltIn.FirstOrDefault(v => v.Key == path);
         var resolvedLocationId = existingVariable?.LocationId ?? locationId;
 
         //Remove earlier changes.
-        if (scope == VariableScope.Command)
-            //When setting value for command scope, only previous command scoped values are removed.
-            variableStorage.Changes.RemoveAll(v => v.Key == path && v.Scope == VariableScope.Command);
-        else if (scope == VariableScope.Session)
-            //When setting value for session scope, only application level changes remain.
-            variableStorage.Changes.RemoveAll(v => v.Key == path && v.Scope is VariableScope.Command or VariableScope.Session);
-        else if (scope == VariableScope.Application)
-            //When setting value for application scope, all previous changes are removed.
-            variableStorage.Changes.RemoveAll(v => v.Key == path);
+        variableStorage.Command.RemoveAll(v => v.Key == path);
+        if (scope == VariableScope.Session) variableStorage.Session.RemoveAll(v => v.Key == path);
+        if (scope == VariableScope.Application) variableStorage.Application.RemoveAll(v => v.Key == path);
 
-        variableStorage.Changes.Add(new Variable { Key = path, Value = value, Scope = scope, LocationId = resolvedLocationId });
+        var variableToInsert = new Variable { Key = path, Value = value, LocationId = resolvedLocationId };
+        if (scope == VariableScope.Command) variableStorage.Command.Add(variableToInsert);
+        if (scope == VariableScope.Session) variableStorage.Session.Add(variableToInsert);
+        if (scope == VariableScope.Application) variableStorage.Application.Add(variableToInsert);
     }
 
     internal void WriteVariableValueOnTopLevelList(VariableScope scope, string path, DynamicValue value, string? locationId)
@@ -68,20 +63,20 @@ internal class ContextVariableWriter(IContext context, ContextVariableStorage va
         //Remove earlier changes of given key in list.
         if (scope == VariableScope.Command)
             //When setting value for command scope, previous command scoped values are removed.
-            existingChange = variableStorage.Changes.FirstOrDefault(v => v.Key == variableName && v.Scope == VariableScope.Command);
+            existingChange = variableStorage.Command.FirstOrDefault(v => v.Key == variableName);
         else if (scope == VariableScope.Session)
         {
             //When setting value for session scope, previous command scoped values are removed.
-            variableStorage.Changes.RemoveAll(v => v.Key == variableName && v.Scope == VariableScope.Command);
-            existingChange = variableStorage.Changes.FirstOrDefault(v => v.Key == variableName && v.Scope == VariableScope.Session);
+            variableStorage.Command.RemoveAll(v => v.Key == variableName);
+            existingChange = variableStorage.Session.FirstOrDefault(v => v.Key == variableName);
         }
         else
         {
             //When setting value for application scope, previous command and session scoped values are removed.
-            variableStorage.Changes.RemoveAll(v => v.Key == variableName && v.Scope is VariableScope.Command or VariableScope.Session);
-            existingChange = variableStorage.Changes.FirstOrDefault(v => v.Key == variableName && v.Scope == VariableScope.Application);
+            variableStorage.Command.RemoveAll(v => v.Key == variableName);
+            variableStorage.Session.RemoveAll(v => v.Key == variableName);
+            existingChange = variableStorage.Application.FirstOrDefault(v => v.Key == variableName);
         }
-
 
         if (existingChange != null)
         {
@@ -93,11 +88,13 @@ internal class ContextVariableWriter(IContext context, ContextVariableStorage va
                 ObjectValue = null,
                 TextValue = null,
             };
+            return;
         }
-        else
-            //When given list element was not yet edited.
-            variableStorage.Changes.Add(new Variable { Scope = scope, Key = variableName, Value = new DynamicValue(new DynamicValueList([value.ObjectValue])), LocationId = locationId });
 
+        //When given list element was not yet edited.
+        var newVariable = new Variable { Key = variableName, Value = new DynamicValue(new DynamicValueList([value.ObjectValue])), LocationId = locationId };
+        if (scope == VariableScope.Command) variableStorage.Command.Add(newVariable);
+        if (scope == VariableScope.Session) variableStorage.Session.Add(newVariable);
+        if (scope == VariableScope.Application) variableStorage.Application.Add(newVariable);
     }
-
 }

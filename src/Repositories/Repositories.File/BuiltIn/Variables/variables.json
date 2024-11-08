@@ -1,6 +1,8 @@
-[
-  {
-    "key": "currentSessionName",
-    "value": "session1"
-  }
-]
+{
+  "variables": [
+    {
+      "key": "currentSessionName",
+      "value": "session1"
+    }
+  ]
+}

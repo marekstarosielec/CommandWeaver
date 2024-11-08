@@ -1,17 +1,21 @@
 {
-  "name": "paths",
-  "operations": [
+  "commands": [
     {
-      "operation": "output",
-      "text": "Built-in path: {{ BuiltInPath }}"
-    },
-    {
-      "operation": "output",
-      "text": "Local path: {{ LocalPath }}"
-    },
-    {
-      "operation": "output",
-      "text": "Current session path: {{ SessionPath }}"
+      "name": "paths",
+      "operations": [
+        {
+          "operation": "output",
+          "text": "Built-in path: {{ BuiltInPath }}"
+        },
+        {
+          "operation": "output",
+          "text": "Local path: {{ LocalPath }}"
+        },
+        {
+          "operation": "output",
+          "text": "Current session path: {{ SessionPath }}"
+        }
+      ]
     }
   ]
 }

@@ -139,21 +139,21 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
     internal DynamicValue? ResolveSingleValue(string path)
     {
         var builtIn = ResolveSingleValueFromSingleList(variableStorage.BuiltIn, path);
-        var local = ResolveSingleValueFromSingleList(variableStorage.Local, path);
+        var local = ResolveSingleValueFromSingleList(variableStorage.Application, path);
         var session = ResolveSingleValueFromSingleList(variableStorage.Session, path);
-        var changes = ResolveSingleValueFromSingleList(variableStorage.Changes, path);
+        var temporary = ResolveSingleValueFromSingleList(variableStorage.Command, path);
 
         if (VariableValuePath.PathIsTopLevel(path) &&
             (builtIn?.ListValue != null
             || local?.ListValue != null
             || session?.ListValue != null
-            || changes?.ListValue != null))
+            || temporary?.ListValue != null))
         {
             // If the whole variable value is requested and it is a list, values from all locations will be combined.
             var result = new List<DynamicValueObject>();
 
-            if (changes?.ListValue != null)
-                foreach (var item in changes.ListValue)
+            if (temporary?.ListValue != null)
+                foreach (var item in temporary.ListValue)
                     result.Add(item);
 
             if (session?.ListValue != null)
@@ -174,7 +174,7 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
             return new DynamicValue { ListValue = new DynamicValueList(result) };
         }
 
-        return changes ?? session ?? local ?? builtIn;
+        return temporary ?? session ?? local ?? builtIn;
     }
 
     /// <summary>

@@ -6,7 +6,7 @@ public record Variable
 
     public DynamicValue Value { get; set; } = new DynamicValue();
     
-    public VariableScope Scope { get; init; } = VariableScope.Command;
+    //public VariableScope Scope { get; init; } = VariableScope.Command;
 
     public string? LocationId { get; set; }
 

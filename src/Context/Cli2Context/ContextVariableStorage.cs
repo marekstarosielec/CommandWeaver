@@ -4,30 +4,27 @@ using System.Collections.Immutable;
 namespace Cli2Context;
 
 /// <summary>
-/// Manages storage for context variables across different repository locations, 
-/// providing immutable lists for BuiltIn, Local, and Session repository locations, 
-/// and a mutable list for Changes.
+/// Manages storage for context variables across different repository locations.
 /// </summary>
 internal class ContextVariableStorage
 {
     /// <summary>
-    /// Immutable list of built-in variables from the <see cref="RepositoryLocation.BuiltIn"/> repository location.
-     /// </summary>
+    /// Immutable list of built-in application scoped variables from the <see cref="RepositoryLocation.BuiltIn"/> repository location.
+    /// </summary>
     public ImmutableList<Variable> BuiltIn { get; set; } = ImmutableList<Variable>.Empty;
 
     /// <summary>
-    /// Immutable list of local variables from the <see cref="RepositoryLocation.Local"/> repository location.
-   /// </summary>
-    public ImmutableList<Variable> Local { get; set; } = ImmutableList<Variable>.Empty;
-
-    /// <summary>
-    /// Immutable list of session variables from the <see cref="RepositoryLocation.Session"/> repository location.
-     /// </summary>
-    public ImmutableList<Variable> Session { get; set; } = ImmutableList<Variable>.Empty;
-
-    /// <summary>
-    /// Mutable list of changes, which can be directly modified and typically holds variables
-    /// that are updated or pending to be saved across repository locations.
+    /// List of application scoped variables from the <see cref="RepositoryLocation.Application"/> repository location.
     /// </summary>
-    public List<Variable> Changes { get; } = new List<Variable>();
+    public List<Variable> Application { get; set; } = new List<Variable>();
+
+    /// <summary>
+    /// List of session scoped variables from the <see cref="RepositoryLocation.Session"/> repository location.
+    /// </summary>
+    public List<Variable> Session { get; set; } = new List<Variable>();
+
+    /// <summary>
+    /// List of command scoped variables.
+    /// </summary>
+    public List<Variable> Command { get; } = new List<Variable>();
 }

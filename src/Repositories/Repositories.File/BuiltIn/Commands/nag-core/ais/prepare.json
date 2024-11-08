@@ -1,9 +1,13 @@
 {
-  "name": "nag-core-prepare",
-  "operations": [
+  "commands": [
     {
-      "operation": "output",
-      "property1": "value"
+      "name": "nag-core-prepare",
+      "operations": [
+        {
+          "operation": "output",
+          "property1": "value"
+        }
+      ]
     }
   ]
 }

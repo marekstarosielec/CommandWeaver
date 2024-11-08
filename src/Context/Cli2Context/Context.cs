@@ -146,13 +146,26 @@ public class Context : IContext
                 Services.Output.Warning($"Failed to load {element.Id}. Exception occurred: {element.Exception.Message}");
                 continue;
             }
-            
-            if (element.Type?.Equals("commands", StringComparison.InvariantCultureIgnoreCase) == true)
-                await ReadCommands(repositoryLocation, sessionName, element);
-            else if (element.Type?.Equals("variables", StringComparison.InvariantCultureIgnoreCase) == true)
-                await ReadVariables(repositoryLocation, sessionName, element);
-            else
-                Services.Output.Warning($"Failed to load {element.Id}. Unknown type {element.Type}.");
+
+            var serializer = GetSerializer(repositoryLocation, sessionName, element);
+            if (serializer == null)
+                return;
+            var content = await ReadElementContent(repositoryLocation, sessionName, element);
+            if (content == null)
+                return;
+
+            //TODO: Deserialization should also return Exception if occurred.
+            var contentObject = serializer.Deserialize<RepositoryContent>(content);
+            if (contentObject == null)
+            {
+                Services.Output.Warning($"Failed to deserialize {element.Id}.");
+                return;
+            }
+
+            if (contentObject.Variables != null)
+                Variables.SetVariableList(repositoryLocation, contentObject.Variables, element.Id);
+            if (contentObject.Commands != null)
+                Commands.AddRange(contentObject.Commands.Where(c => c != null)!);
         }
 
         Variables.CurrentlyProcessedElement = null;
@@ -192,45 +205,5 @@ public class Context : IContext
         }
         
         return serializer;
-    }
-    
-    private async Task ReadVariables(RepositoryLocation repositoryLocation, string? sessionName, RepositoryElementInfo element)
-    {
-        var serializer = GetSerializer(repositoryLocation, sessionName, element);
-        if (serializer == null)
-            return;
-        var content = await ReadElementContent(repositoryLocation, sessionName, element);
-        if (content == null)
-            return;
-
-        //TODO: Deserialization should also return Exception if occurred.
-        var contentObject = serializer.Deserialize<List<Variable?>>(content);
-        if (contentObject == null)
-        {
-            Services.Output.Warning($"Failed to deserialize {element.Id}.");
-            return;
-        }
-        Variables.SetVariableList(repositoryLocation, contentObject, element.Id);
-    }
-    
-    private async Task ReadCommands(RepositoryLocation repositoryLocation, string? sessionName, RepositoryElementInfo element)
-    {
-        var content = await ReadElementContent(repositoryLocation, sessionName, element);
-        if (content == null)
-            return;
-
-        var serializer = GetSerializer(repositoryLocation, sessionName, element);
-        if (serializer == null)
-            return;
-
-        //TODO: Deserialization should also return Exception if occurred.
-        var command = serializer.Deserialize<Command>(content);
-        if (command == null)
-        {
-            Services.Output.Warning($"Failed to deserialize {element.Id}.");
-            return;
-        }
-        
-        Commands.Add(command);
     }
 }
