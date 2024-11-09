@@ -127,7 +127,7 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
             result.Add(new DynamicValueObject(resolvedElement));
         }
 
-        return new DynamicValue(new DynamicValueList(result));
+        return new DynamicValue(result);
     }
 
     /// <summary>

@@ -101,7 +101,7 @@ internal class ContextVariableWriter(IContext context, ContextVariableStorage va
 
 
         //When given list element was not yet edited.
-        var newVariable = new Variable { Key = variableName, Value = new DynamicValue(new DynamicValueList([value.ObjectValue])), LocationId = resolvedLocationId };
+        var newVariable = new Variable { Key = variableName, Value = new DynamicValue([value.ObjectValue]), LocationId = resolvedLocationId };
         if (scope == VariableScope.Command) variableStorage.Command.Add(newVariable);
         if (scope == VariableScope.Session) variableStorage.Session.Add(newVariable);
         if (scope == VariableScope.Application) variableStorage.Application.Add(newVariable);
