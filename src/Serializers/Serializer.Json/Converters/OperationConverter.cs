@@ -56,7 +56,7 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
     /// <param name="value">The <see cref="Operation"/> instance to write.</param>
     /// <param name="options">Options for JSON serialization.</param>
     public override void Write(Utf8JsonWriter writer, Operation value, JsonSerializerOptions options) =>
-        System.Text.Json.JsonSerializer.Serialize(writer, value, value.GetType(), options);
+        throw new InvalidOperationException($"Serializing {nameof(Operation)} is not supported");
 
     /// <summary>
     /// Sets the properties of an <see cref="Operation"/> instance based on JSON data.
