@@ -5,24 +5,16 @@ using Models;
 using Models.Interfaces;
 using Models.Interfaces.Context;
 
-/// <summary>
-/// A JSON converter that converts JSON data to an <see cref="Operation"/> instance using a specified context and factory.
-/// </summary>
-public class OperationConverter(IContext context, IOperationFactory operationFactory) : JsonConverter<Operation>
+/// <inheritdoc />
+public class OperationConverter(IContext context, IOperationFactory operationFactory) : IOperationConverter
 {
     /// <summary>
     /// A converter for dynamic values within JSON data.
     /// </summary>
-    internal readonly DynamicValueConverter _dynamicValueConverter = new();
+    internal readonly IDynamicValueConverter _dynamicValueConverter = new DynamicValueConverter();
 
-    /// <summary>
-    /// Reads and converts JSON data into an <see cref="Operation"/> instance.
-    /// </summary>
-    /// <param name="reader">The reader to read JSON data from.</param>
-    /// <param name="typeToConvert">The type to convert, expected to be <see cref="Operation"/>.</param>
-    /// <param name="options">Options for JSON serialization.</param>
-    /// <returns>The <see cref="Operation"/> instance representing the JSON data, or <c>null</c> if conversion fails.</returns>
-    public override Operation? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions? options)
+    /// <inheritdoc />
+    public Operation? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions? options)
     {
         using var document = JsonDocument.ParseValue(ref reader);
         var rootElement = document.RootElement;
@@ -53,7 +45,7 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
     /// <param name="writer">The writer to which JSON data is written.</param>
     /// <param name="value">The <see cref="Operation"/> instance to write.</param>
     /// <param name="options">Options for JSON serialization.</param>
-    public override void Write(Utf8JsonWriter writer, Operation value, JsonSerializerOptions options) =>
+    public void Write(Utf8JsonWriter writer, Operation value, JsonSerializerOptions options) =>
         throw new InvalidOperationException($"Serializing {nameof(Operation)} is not supported");
 
     /// <summary>

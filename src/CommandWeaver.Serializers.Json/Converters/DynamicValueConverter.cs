@@ -2,30 +2,18 @@ using Models;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-/// <summary>
-/// Converts a JSON value to a <see cref="DynamicValue"/> instance and vice versa.
-/// </summary>
-public class DynamicValueConverter : JsonConverter<DynamicValue?>
+/// <inheritdoc />
+public class DynamicValueConverter : IDynamicValueConverter
 {
-    /// <summary>
-    /// Reads JSON data and converts it to a <see cref="DynamicValue"/> instance.
-    /// </summary>
-    /// <param name="reader">The reader to read JSON data from.</param>
-    /// <param name="typeToConvert">The type to convert, which should be <see cref="DynamicValue"/>.</param>
-    /// <param name="options">Serialization options.</param>
-    /// <returns>A <see cref="DynamicValue"/> instance representing the JSON data.</returns>
-    public override DynamicValue? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    /// <inheritdoc />
+    public DynamicValue? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         using JsonDocument document = JsonDocument.ParseValue(ref reader);
         JsonElement element = document.RootElement;
         return ReadElement(element);
     }
 
-    /// <summary>
-    /// Reads a <see cref="JsonElement"/> and converts it to a <see cref="DynamicValue"/>.
-    /// </summary>
-    /// <param name="element">The JSON element to read.</param>
-    /// <returns>A <see cref="DynamicValue"/> instance representing the element data.</returns>
+    /// <inheritdoc />
     public DynamicValue? ReadElement(JsonElement element) => element.ValueKind switch
     {
         JsonValueKind.True => new DynamicValue(true),
@@ -101,7 +89,7 @@ public class DynamicValueConverter : JsonConverter<DynamicValue?>
     /// <param name="writer">The writer to which JSON data is written.</param>
     /// <param name="value">The <see cref="DynamicValue"/> instance to write.</param>
     /// <param name="options">Serialization options.</param>
-    public override void Write(Utf8JsonWriter writer, DynamicValue? value, JsonSerializerOptions options)
+    public void Write(Utf8JsonWriter writer, DynamicValue? value, JsonSerializerOptions options)
     {
         if (value == null)
         {

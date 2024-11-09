@@ -51,11 +51,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{FFD3D2C2
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuiltInOperations.Tests", "BuiltInOperations.Tests\BuiltInOperations.Tests.csproj", "{D0DDF9E8-73C3-42BA-8B4D-7A9CABEC19D4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver.Serializers.Json", "CommandWeaver.Serializers.Json\CommandWeaver.Serializers.Json.csproj", "{63EB57DA-D03E-48AF-A74A-84C82208E259}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommandWeaver.Serializers.Json", "CommandWeaver.Serializers.Json\CommandWeaver.Serializers.Json.csproj", "{63EB57DA-D03E-48AF-A74A-84C82208E259}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver.Serializers.Abstraction", "CommandWeaver.Serializers.Abstraction\CommandWeaver.Serializers.Abstraction.csproj", "{2AFEC745-9FFF-42E0-BBB0-AC173AF03ACC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommandWeaver.Serializers.Abstraction", "CommandWeaver.Serializers.Abstraction\CommandWeaver.Serializers.Abstraction.csproj", "{2AFEC745-9FFF-42E0-BBB0-AC173AF03ACC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver.Serializers.Json.Tests", "Tests\CommandWeaver.Serializers.Json.Tests\CommandWeaver.Serializers.Json.Tests.csproj", "{FD6F331C-FB8C-4534-AB3D-322FAEF2AAB8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommandWeaver.Serializers.Json.Tests", "Tests\CommandWeaver.Serializers.Json.Tests\CommandWeaver.Serializers.Json.Tests.csproj", "{FD6F331C-FB8C-4534-AB3D-322FAEF2AAB8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver.Serializers.Default", "CommandWeaver.Serializers.Default\CommandWeaver.Serializers.Default.csproj", "{D1722A13-1A18-4BC3-9847-64BA4151A15C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -123,6 +125,10 @@ Global
 		{FD6F331C-FB8C-4534-AB3D-322FAEF2AAB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD6F331C-FB8C-4534-AB3D-322FAEF2AAB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD6F331C-FB8C-4534-AB3D-322FAEF2AAB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1722A13-1A18-4BC3-9847-64BA4151A15C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1722A13-1A18-4BC3-9847-64BA4151A15C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1722A13-1A18-4BC3-9847-64BA4151A15C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1722A13-1A18-4BC3-9847-64BA4151A15C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -148,6 +154,7 @@ Global
 		{63EB57DA-D03E-48AF-A74A-84C82208E259} = {9A139D79-2CD5-4943-ABA9-C817480D782B}
 		{2AFEC745-9FFF-42E0-BBB0-AC173AF03ACC} = {9A139D79-2CD5-4943-ABA9-C817480D782B}
 		{FD6F331C-FB8C-4534-AB3D-322FAEF2AAB8} = {5385F8E7-7015-49F2-B480-CA49048A741F}
+		{D1722A13-1A18-4BC3-9847-64BA4151A15C} = {9A139D79-2CD5-4943-ABA9-C817480D782B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9B522DBE-B32A-492B-9F23-430E5CBF100B}

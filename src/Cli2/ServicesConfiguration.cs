@@ -14,9 +14,8 @@ internal static class ServicesConfiguration
 {
     internal static void Install(IServiceCollection services)
     {
-        services.AddCommandWeaverJsonSerializer();
+        services.AddCommandWeaverSerialization();
         // Register services
-        services.AddTransient<ISerializerFactory, SerializerFactory>();
         services.AddTransient<IRepository, FileRepository>();
         services.AddTransient<IOutput, SpectreConsoleOutput>();
         services.AddSingleton<IContext, Context>(); //Only one context in all app.

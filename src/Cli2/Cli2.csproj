@@ -10,7 +10,7 @@
     <ItemGroup>
       <ProjectReference Include="..\BuiltInOperations\BuiltInOperations.csproj" />
       <ProjectReference Include="..\CommandLine\CommandLine.csproj" />
-      <ProjectReference Include="..\CommandWeaver.Serializers.Json\CommandWeaver.Serializers.Json.csproj" />
+      <ProjectReference Include="..\CommandWeaver.Serializers.Default\CommandWeaver.Serializers.Default.csproj" />
       <ProjectReference Include="..\Context\Cli2Context\Cli2Context.csproj" />
       <ProjectReference Include="..\Models\Models.csproj" />
       <ProjectReference Include="..\Outputs\SpectreConsole\SpectreConsole.csproj" />

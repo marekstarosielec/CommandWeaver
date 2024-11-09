@@ -11,7 +11,7 @@ public class DynamicValueConverterTests
     {
         _options = new JsonSerializerOptions
         {
-            Converters = { new DynamicValueConverter() }
+            Converters = { new ConverterWrapper<DynamicValue?>(new DynamicValueConverter()) }
         };
         _converter = new DynamicValueConverter();
     }

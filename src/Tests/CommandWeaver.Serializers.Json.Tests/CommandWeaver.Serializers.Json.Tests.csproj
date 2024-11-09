@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\CommandWeaver.Serializers.Json\CommandWeaver.Serializers.Json.csproj" />
+    <ProjectReference Include="..\..\Context\Cli2Context\Cli2Context.csproj" />
   </ItemGroup>
 
   <ItemGroup>

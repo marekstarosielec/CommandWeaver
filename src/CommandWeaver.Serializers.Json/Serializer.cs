@@ -1,8 +1,9 @@
+using Models;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 /// <inheritdoc />
-public class Serializer(OperationConverter operationConverter, DynamicValueConverter dynamicValueConverter) : ISerializer
+public class Serializer(IOperationConverter operationConverter, IDynamicValueConverter dynamicValueConverter) : ISerializer
 {
     /// <inheritdoc />
     public bool TryDeserialize<T>(string content, out T? result, out Exception? exception) where T : class
@@ -13,7 +14,7 @@ public class Serializer(OperationConverter operationConverter, DynamicValueConve
                 new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true,
-                    Converters = { dynamicValueConverter, operationConverter }
+                    Converters = { new ConverterWrapper<DynamicValue?>(dynamicValueConverter), new ConverterWrapper<Operation>(operationConverter) }
                 });
             exception = null;
             return true;
@@ -36,7 +37,7 @@ public class Serializer(OperationConverter operationConverter, DynamicValueConve
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                    Converters = { dynamicValueConverter },
+                    Converters = { new ConverterWrapper<DynamicValue?>(dynamicValueConverter) },
                     WriteIndented = true,
                 });
             exception = null;

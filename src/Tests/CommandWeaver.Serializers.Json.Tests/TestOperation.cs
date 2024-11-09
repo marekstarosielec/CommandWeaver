@@ -1,9 +1,9 @@
 ﻿using Models;
 using Models.Interfaces.Context;
 
-public class TestOperation : Operation
+public class TestOperation(string name = "testOperation") : Operation
 {
-    public override string Name { get; } = "testOperation";
+    public override string Name { get; } = name;
 
     // Make Parameters writable by using a backing field.
     private readonly Dictionary<string, OperationParameter> _parameters = new();

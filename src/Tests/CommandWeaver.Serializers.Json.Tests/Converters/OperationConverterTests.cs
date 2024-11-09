@@ -19,7 +19,7 @@ public class OperationConverterTests
 
         _options = new JsonSerializerOptions
         {
-            Converters = { new OperationConverter(_mockContext, _mockFactory) }
+            Converters = { new ConverterWrapper<Operation>(new OperationConverter(_mockContext, _mockFactory)) }
         };
     }
 
