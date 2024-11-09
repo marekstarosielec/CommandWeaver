@@ -28,7 +28,7 @@ public class OperationConverterTests
     {
         string json = "{\"parameter1\": \"value1\"}";
 
-        var result = System.Text.Json.JsonSerializer.Deserialize<Operation>(json, _options);
+        var result = JsonSerializer.Deserialize<Operation>(json, _options);
 
         Assert.Null(result);
         _mockContext.Services.Output.Received(1).Warning(Arg.Is<string>(msg => msg.Contains("TestElement")));
@@ -41,7 +41,7 @@ public class OperationConverterTests
 
         _mockFactory.GetOperation("invalidOperation").Returns((Operation)null);
 
-        var result = System.Text.Json.JsonSerializer.Deserialize<Operation>(json, _options);
+        var result = JsonSerializer.Deserialize<Operation>(json, _options);
 
         Assert.Null(result);
         _mockContext.Services.Output.Received(1).Warning(
@@ -59,7 +59,7 @@ public class OperationConverterTests
 
         _mockFactory.GetOperation("testOperation").Returns(testOperation);
 
-        var result = System.Text.Json.JsonSerializer.Deserialize<Operation>(json, _options);
+        var result = JsonSerializer.Deserialize<Operation>(json, _options);
 
         Assert.NotNull(result);
         Assert.Equal("value1", result.Parameters["parameter1"]?.Value.TextValue);
@@ -75,7 +75,7 @@ public class OperationConverterTests
 
         _mockFactory.GetOperation("testOperation").Returns(testOperation);
 
-        var result = System.Text.Json.JsonSerializer.Deserialize<Operation>(json, _options);
+        var result = JsonSerializer.Deserialize<Operation>(json, _options);
 
         Assert.NotNull(result);
         _mockContext.Services.Output.Received(1).Warning(
@@ -91,7 +91,7 @@ public class OperationConverterTests
 
         _mockFactory.GetOperation("testOperation").Returns(testOperation);
 
-        var result = System.Text.Json.JsonSerializer.Deserialize<Operation>(json, _options);
+        var result = JsonSerializer.Deserialize<Operation>(json, _options);
 
         Assert.NotNull(result);
         Assert.True(result.Conditions.IsNull?.BoolValue);

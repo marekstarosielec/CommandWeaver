@@ -138,8 +138,8 @@ public class Context : IContext
                 originalFile = new RepositoryContent { Variables = variables[resolvedLocationId].Select(v =>new Variable { Key=v.Key, Value = v.Value}).ToList() };
 
             var serializer = _serializerFactory.GetSerializer("json");
-            var content = serializer.Serialize(originalFile);
-            _repository.SaveList(RepositoryLocation.Local, resolvedLocationId, null, content, cancellationToken);
+            if (serializer.TrySerialize(originalFile, out var content, out var exception))
+                _repository.SaveList(RepositoryLocation.Local, resolvedLocationId, null, content, cancellationToken);
         }
     }
 
@@ -168,7 +168,7 @@ public class Context : IContext
                 return;
 
             //TODO: Deserialization should also return Exception if occurred.
-            var contentObject = serializer.Deserialize<RepositoryContent>(element.Content);
+            serializer.TryDeserialize(element.Content, out RepositoryContent? contentObject, out var exception);
             if (contentObject == null)
             {
                 Services.Output.Warning($"Failed to deserialize {element.Id}.");

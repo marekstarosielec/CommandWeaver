@@ -14,15 +14,14 @@ internal static class ServicesConfiguration
 {
     internal static void Install(IServiceCollection services)
     {
+        services.AddCommandWeaverJsonSerializer();
         // Register services
-        services.AddTransient<JsonSerializer>();
         services.AddTransient<ISerializerFactory, SerializerFactory>();
         services.AddTransient<IRepository, FileRepository>();
         services.AddTransient<IOutput, SpectreConsoleOutput>();
         services.AddSingleton<IContext, Context>(); //Only one context in all app.
         services.AddTransient<IOperationFactory, OperationFactory>();
-        services.AddTransient<OperationConverter>();
-        services.AddTransient<Parser>();
+         services.AddTransient<Parser>();
         // Register the main application entry point
         services.AddTransient<App>();
     }

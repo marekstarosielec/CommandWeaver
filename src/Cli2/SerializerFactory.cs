@@ -22,7 +22,7 @@ public class SerializerFactory : ISerializerFactory
     public ISerializer? GetSerializer(string format) =>
         format.ToLower() switch
         {
-            "json" => _serviceProvider.GetRequiredService<JsonSerializer>(),
+            "json" => _serviceProvider.GetRequiredService<Serializer>(),
             _ => default
         };
 }
