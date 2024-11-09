@@ -1,7 +1,3 @@
-// ReSharper disable CheckNamespace
-
-namespace Serializer.Abstractions;
-
 /// <summary>
 /// Interface for serialization operations.
 /// </summary>

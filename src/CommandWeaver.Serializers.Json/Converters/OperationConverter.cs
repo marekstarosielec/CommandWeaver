@@ -5,8 +5,6 @@ using Models;
 using Models.Interfaces;
 using Models.Interfaces.Context;
 
-namespace Serializer.Json;
-
 /// <summary>
 /// A JSON converter that converts JSON data to an <see cref="Operation"/> instance using a specified context and factory.
 /// </summary>

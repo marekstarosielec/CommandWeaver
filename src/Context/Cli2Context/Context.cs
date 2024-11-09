@@ -2,7 +2,6 @@
 using Models.Interfaces.Context;
 using Repositories.Abstraction;
 using Repositories.Abstraction.Interfaces;
-using Serializer.Abstractions;
 
 namespace Cli2Context;
 

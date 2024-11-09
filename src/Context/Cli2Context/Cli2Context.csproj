@@ -7,9 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\CommandWeaver.Serializers.Abstraction\CommandWeaver.Serializers.Abstraction.csproj" />
       <ProjectReference Include="..\..\Models\Models.csproj" />
       <ProjectReference Include="..\..\Repositories\Repositories.Abstraction\Repositories.Abstraction.csproj" />
-      <ProjectReference Include="..\..\Serializers\Serializer.Abstractions\Serializer.Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>

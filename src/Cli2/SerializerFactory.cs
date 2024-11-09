@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Serializer.Abstractions;
-using Serializer.Json;
 
 namespace Cli2;
 

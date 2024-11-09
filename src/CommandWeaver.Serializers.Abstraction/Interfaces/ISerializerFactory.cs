@@ -1,7 +1,3 @@
-// ReSharper disable CheckNamespace
-
-namespace Serializer.Abstractions;
-
 /// <summary>
 /// Factory interface to obtain the appropriate serializer based on format.
 /// </summary>

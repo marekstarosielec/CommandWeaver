@@ -2,8 +2,6 @@ using Models;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Serializer.Json;
-
 /// <summary>
 /// Converts a JSON value to a <see cref="DynamicValue"/> instance and vice versa.
 /// </summary>
