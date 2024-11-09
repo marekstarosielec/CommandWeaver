@@ -2,9 +2,6 @@
 using Cli2Context;
 using CommandLine;
 using Microsoft.Extensions.DependencyInjection;
-using Models.Interfaces.Context;
-using Models.Interfaces;
-using Repositories.Abstraction.Interfaces;
 using Repositories.File;
 using SpectreConsole;
 

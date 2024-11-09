@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommandLine", "CommandLine\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommandLine.Tests", "CommandLine.Tests\CommandLine.Tests.csproj", "{BD96A0B2-7001-4B41-8823-5AD0C0097639}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Models", "Models\Models.csproj", "{CD58103D-73D0-4610-AB90-C2CC6DC9627F}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Context", "Context", "{9701E3AA-03E2-4921-8D30-8715D4765360}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Serializers", "Serializers", "{9A139D79-2CD5-4943-ABA9-C817480D782B}"
@@ -37,8 +35,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Outputs", "Outputs", "{1737
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpectreConsole", "Outputs\SpectreConsole\SpectreConsole.csproj", "{EB63F384-AACA-4E5D-B8EF-CA6ABA128C65}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Abstractions", "Abstractions", "{AEECEA0E-66D6-4C87-B67B-A1254344B3C7}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Operations", "Operations", "{30E00C50-5B5D-4D80-8BC9-BB5E16EEEDE4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuiltInOperations", "BuiltInOperations\BuiltInOperations.csproj", "{7299A385-4DD3-49DC-A565-38C5E5E24807}"
@@ -57,15 +53,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommandWeaver.Serializers.A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommandWeaver.Serializers.Json.Tests", "Tests\CommandWeaver.Serializers.Json.Tests\CommandWeaver.Serializers.Json.Tests.csproj", "{FD6F331C-FB8C-4534-AB3D-322FAEF2AAB8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver.Serializers.Default", "CommandWeaver.Serializers.Default\CommandWeaver.Serializers.Default.csproj", "{D1722A13-1A18-4BC3-9847-64BA4151A15C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommandWeaver.Serializers.Default", "CommandWeaver.Serializers.Default\CommandWeaver.Serializers.Default.csproj", "{D1722A13-1A18-4BC3-9847-64BA4151A15C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CommandWeaver", "CommandWeaver", "{BCA91B36-E5CD-48B8-810A-0F3245D89B7E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver.Abstractions", "CommandWeaver.Abstractions\CommandWeaver.Abstractions.csproj", "{EDD3383E-7A74-455F-8872-69C5CC8E2115}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommandWeaver.Abstractions", "CommandWeaver.Abstractions\CommandWeaver.Abstractions.csproj", "{EDD3383E-7A74-455F-8872-69C5CC8E2115}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{F9AD6CE4-D9C4-49AB-BFB1-4CB6BCFC0191}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver.Abstractions.Tests", "Tests\CommandWeaver.Abstractions.Tests\CommandWeaver.Abstractions.Tests.csproj", "{0630C798-AC13-458E-A5D7-B7D9B6C4487F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommandWeaver.Abstractions.Tests", "Tests\CommandWeaver.Abstractions.Tests\CommandWeaver.Abstractions.Tests.csproj", "{0630C798-AC13-458E-A5D7-B7D9B6C4487F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -85,10 +81,6 @@ Global
 		{BD96A0B2-7001-4B41-8823-5AD0C0097639}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD96A0B2-7001-4B41-8823-5AD0C0097639}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD96A0B2-7001-4B41-8823-5AD0C0097639}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CD58103D-73D0-4610-AB90-C2CC6DC9627F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CD58103D-73D0-4610-AB90-C2CC6DC9627F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CD58103D-73D0-4610-AB90-C2CC6DC9627F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CD58103D-73D0-4610-AB90-C2CC6DC9627F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FDC9B9F3-CC3D-434F-A806-934E0C28430E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FDC9B9F3-CC3D-434F-A806-934E0C28430E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FDC9B9F3-CC3D-434F-A806-934E0C28430E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -153,7 +145,6 @@ Global
 		{8EAF6F48-46DE-49E8-8546-60CD2183ECB7} = {02D71694-7079-44A6-A416-FDF128C63C23}
 		{038ED714-CFF9-40F6-A772-96D84489756F} = {02D71694-7079-44A6-A416-FDF128C63C23}
 		{BD96A0B2-7001-4B41-8823-5AD0C0097639} = {FEFFDE2B-19EC-4FDD-9449-BAD03D92F701}
-		{CD58103D-73D0-4610-AB90-C2CC6DC9627F} = {AEECEA0E-66D6-4C87-B67B-A1254344B3C7}
 		{5385F8E7-7015-49F2-B480-CA49048A741F} = {9A139D79-2CD5-4943-ABA9-C817480D782B}
 		{A5B51863-E83F-4090-80FA-B68E6E7C6647} = {9701E3AA-03E2-4921-8D30-8715D4765360}
 		{98C88FCE-BDEF-4235-BE70-860BE6881813} = {269CB40E-400F-4C18-9B53-E25C83E0E203}

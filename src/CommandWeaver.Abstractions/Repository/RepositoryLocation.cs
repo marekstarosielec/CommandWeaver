@@ -1,5 +1,3 @@
-namespace Models;
-
 public enum RepositoryLocation
 {
     BuiltIn = 0,

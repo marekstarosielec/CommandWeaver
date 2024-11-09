@@ -1,6 +1,4 @@
-﻿namespace Models;
-
-public record OperationParameter
+﻿public record OperationParameter
 {
 
     public DynamicValue Value { get; set; } = new DynamicValue();

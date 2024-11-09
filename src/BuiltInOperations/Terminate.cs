@@ -1,7 +1,4 @@
-﻿using Models;
-using Models.Interfaces.Context;
-
-namespace BuiltInOperations;
+﻿namespace BuiltInOperations;
 
 public class Terminate : Operation
 {

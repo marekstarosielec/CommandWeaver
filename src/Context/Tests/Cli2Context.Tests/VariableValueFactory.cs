@@ -1,7 +1,4 @@
-﻿using Models;
-using System.Collections;
-
-namespace Cli2Context.Tests;
+﻿namespace Cli2Context.Tests;
 
 internal class VariableValueFactory
 {

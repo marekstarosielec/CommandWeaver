@@ -1,5 +1,3 @@
-namespace Models;
-
 public class Command
 {
     public required string Name { get; init; }

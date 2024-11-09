@@ -1,6 +1,3 @@
- using Models;
-using Models.Interfaces.Context;
-
 namespace BuiltInOperations;
 
 public class SetVariable : Operation

@@ -1,7 +1,4 @@
-﻿using Models;
-using Models.Interfaces.Context;
-
-namespace Cli2Context;
+﻿namespace Cli2Context;
 
 internal class ContextVariableWriter(IContext context, ContextVariableStorage variableStorage)
 {

@@ -1,5 +1,4 @@
 using CommandLine;
-using Models.Interfaces.Context;
 
 namespace Cli2;
 

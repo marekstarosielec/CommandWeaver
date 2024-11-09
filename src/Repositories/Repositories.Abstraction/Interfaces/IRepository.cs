@@ -1,6 +1,4 @@
-using Models;
-
-namespace Repositories.Abstraction.Interfaces;
+using Repositories.Abstraction;
 
 public interface IRepository
 {

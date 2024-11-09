@@ -1,6 +1,4 @@
-﻿namespace Models;
-
-public record CommandParameter
+﻿public record CommandParameter
 {
     public required string Key { get; init; }
     public string? Description { get; set; }

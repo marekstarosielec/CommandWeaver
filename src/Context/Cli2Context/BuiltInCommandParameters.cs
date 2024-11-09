@@ -1,6 +1,4 @@
-﻿using Models;
-
-namespace Cli2Context;
+﻿namespace Cli2Context;
 
 internal static class BuiltInCommandParameters
 {

@@ -1,5 +1,3 @@
-namespace Models.Interfaces.Context;
-
 public interface IContextVariables
 {
     string CurrentSessionName { get; set; }

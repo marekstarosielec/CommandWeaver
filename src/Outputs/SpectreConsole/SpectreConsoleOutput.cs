@@ -1,5 +1,4 @@
-﻿using Models.Interfaces.Context;
-using Spectre.Console;
+﻿using Spectre.Console;
 
 namespace SpectreConsole;
 

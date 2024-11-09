@@ -1,7 +1,4 @@
-﻿using Models;
-using Models.Interfaces.Context;
-
-namespace Cli2Context;
+﻿namespace Cli2Context;
 
 /// <summary>
 /// Reads context variables value from different repository locations, using the provided

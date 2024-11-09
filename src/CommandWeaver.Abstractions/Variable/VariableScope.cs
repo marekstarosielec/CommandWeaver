@@ -1,5 +1,3 @@
-namespace Models;
-
 public enum VariableScope
 {
     Command = 0,

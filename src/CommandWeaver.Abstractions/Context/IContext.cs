@@ -1,5 +1,3 @@
-namespace Models.Interfaces.Context;
-
 public interface IContext
 {
     IContextServices Services { get; }

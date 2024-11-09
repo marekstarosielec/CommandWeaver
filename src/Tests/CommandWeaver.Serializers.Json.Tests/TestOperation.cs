@@ -1,7 +1,4 @@
-﻿using Models;
-using Models.Interfaces.Context;
-
-public class TestOperation(string name = "testOperation") : Operation
+﻿public class TestOperation(string name = "testOperation") : Operation
 {
     public override string Name { get; } = name;
 

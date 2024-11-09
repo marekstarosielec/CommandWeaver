@@ -12,7 +12,6 @@
       <ProjectReference Include="..\CommandLine\CommandLine.csproj" />
       <ProjectReference Include="..\CommandWeaver.Serializers.Default\CommandWeaver.Serializers.Default.csproj" />
       <ProjectReference Include="..\Context\Cli2Context\Cli2Context.csproj" />
-      <ProjectReference Include="..\Models\Models.csproj" />
       <ProjectReference Include="..\Outputs\SpectreConsole\SpectreConsole.csproj" />
       <ProjectReference Include="..\Repositories\Repositories.Abstraction\Repositories.Abstraction.csproj" />
       <ProjectReference Include="..\Repositories\Repositories.File\Repositories.File.csproj" />

@@ -1,7 +1,4 @@
-﻿using Models;
-using Models.Interfaces.Context;
-using Repositories.Abstraction;
-using Repositories.Abstraction.Interfaces;
+﻿using Repositories.Abstraction;
 
 namespace Cli2Context;
 

@@ -1,6 +1,4 @@
-﻿namespace Models;
-
-public record RepositoryContent
+﻿public record RepositoryContent
 {
     public List<Command?>? Commands { get; set; }
 

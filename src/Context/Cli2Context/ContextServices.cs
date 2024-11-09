@@ -1,5 +1,3 @@
-using Models.Interfaces.Context;
-
 namespace Cli2Context;
 
 public class ContextServices(IOutput output) : IContextServices
