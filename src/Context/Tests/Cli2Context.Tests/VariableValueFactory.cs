@@ -1,10 +1,11 @@
 ﻿using Models;
+using System.Collections;
 
 namespace Cli2Context.Tests;
 
 internal class VariableValueFactory
 {
-    public DynamicValue SingleTextValue(string value) => new DynamicValue { TextValue = value };
+    public DynamicValue SingleTextValue(string value) => new DynamicValue(value);
 
     public VariableValueFactoryObject Object() => new VariableValueFactoryObject();
 
@@ -17,16 +18,16 @@ internal class VariableValueFactoryObject
 
     public VariableValueFactoryObject AddTextProperty(string name, string value)
     {
-        _properties[name] = new DynamicValue { TextValue = value };
+        _properties[name] = new DynamicValue(value);
         return this;
     }
 
     public DynamicValue Build()
     {
-        var objectValue = new DynamicValueObject();
+        var objectValue = new Dictionary<string, DynamicValue?>();
         foreach (var property in _properties)
-            objectValue = objectValue.With(property.Key, property.Value);
-        return new DynamicValue { ObjectValue = objectValue };
+            objectValue[property.Key] = property.Value;
+        return new DynamicValue(objectValue);
     }
 }
 
@@ -36,7 +37,7 @@ internal class VariableValueFactoryList
 
     public VariableValueFactoryList AddElementWithTextProperty(string key, string propertyName, string propertyValue)
     {
-        _list[key] = new Dictionary<string, DynamicValue?> { { propertyName, new DynamicValue { TextValue = propertyValue } } };
+        _list[key] = new Dictionary<string, DynamicValue?> { { propertyName, new DynamicValue(propertyValue) } };
         return this;
     }
 
@@ -45,10 +46,11 @@ internal class VariableValueFactoryList
         var listValue = new List<DynamicValueObject>();
         foreach (var element in _list)
         {
-            var objectValue = new DynamicValueObject();
+            var objectValue = new Dictionary<string, DynamicValue?>();
+            objectValue["key"] = new DynamicValue(element.Key);
             foreach (var property in element.Value)
-                objectValue = objectValue.With(property.Key, property.Value);
-            listValue.Add(objectValue.With("key", new DynamicValue { TextValue = element.Key }));
+                objectValue[property.Key] = property.Value;
+            listValue.Add(new DynamicValueObject(objectValue));
         }
         return new DynamicValue(listValue);
     }

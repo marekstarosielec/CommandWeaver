@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics;
 
-namespace Models;
-
 /// <summary>
 /// Represents a dynamic value that can store various types, including text, date-time, boolean, numeric, precision,
 /// object, or list values.
@@ -72,32 +70,32 @@ public record DynamicValue
     /// <summary>
     /// Gets or sets the text value of the dynamic value.
     /// </summary>
-    public string? TextValue { get; set; }
+    public string? TextValue { get; }
 
     /// <summary>
     /// Gets or sets the date-time value of the dynamic value.
     /// </summary>
-    public DateTimeOffset? DateTimeValue { get; set; }
+    public DateTimeOffset? DateTimeValue { get; }
 
     /// <summary>
     /// Gets or sets the boolean value of the dynamic value.
     /// </summary>
-    public bool? BoolValue { get; set; }
+    public bool? BoolValue { get; }
 
     /// <summary>
     /// Gets or sets the numeric value of the dynamic value.
     /// </summary>
-    public long? NumericValue { get; set; }
+    public long? NumericValue { get; }
 
     /// <summary>
     /// Gets or sets the precision value of the dynamic value.
     /// </summary>
-    public double? PrecisionValue { get; set; }
+    public double? PrecisionValue { get; }
 
     /// <summary>
     /// Gets or sets the object value of the dynamic value.
     /// </summary>
-    public DynamicValueObject? ObjectValue { get; set; }
+    public DynamicValueObject? ObjectValue { get; }
 
     /// <summary>
     /// Gets or sets the list value of the dynamic value.
@@ -122,9 +120,19 @@ public record DynamicValue
     /// <summary>
     /// Provides a debug string representation of the dynamic value for debugging purposes.
     /// </summary>
-    private string? DebuggerDisplay =>
-        TextValue != null ? $"Text: {TextValue}" :
-            ListValue != null ? $"List (Count: {ListValue.ToList().Count})" :
-            ObjectValue != null ? $"Object: {ObjectValue[ObjectValue.Keys.First()]?.TextValue}" :
-            "No values";
+    internal string? DebuggerDisplay
+    {
+        get
+        {
+            if (TextValue != null) return $"Text: \"{TextValue}\"";
+            if (DateTimeValue != null) return $"DateTime: {DateTimeValue}";
+            if (BoolValue != null) return $"Bool: {BoolValue}";
+            if (NumericValue != null) return $"Numeric: {NumericValue}";
+            if (PrecisionValue != null) return $"Precision: {PrecisionValue}";
+            if (ObjectValue != null) return $"Object: {ObjectValue}";
+            if (ListValue != null) return $"List (Count: {ListValue.ToList().Count})";
+
+            return "No values";
+        }
+    }
 }
