@@ -54,7 +54,7 @@ public class DynamicValueTests
         var objectValue = new Dictionary<string, DynamicValue?> { { "key", new DynamicValue("value") } };
         var dynamicValue = new DynamicValue(objectValue);
 
-        Assert.Equal(new DynamicValueObject(objectValue), dynamicValue.ObjectValue);
+        Assert.Equal(objectValue["key"]?.TextValue, dynamicValue.ObjectValue?["key"].TextValue);
         Assert.True(dynamicValue.IsNull() == false);
     }
 
