@@ -51,8 +51,8 @@ public class OperationConverterTests
         string json = "{\"operation\": \"testOperation\", \"parameter1\": \"value1\", \"parameter2\": 42}";
 
         var testOperation = new TestOperation();
-        testOperation.Parameters["parameter1"] = new OperationParameter();
-        testOperation.Parameters["parameter2"] = new OperationParameter();
+        testOperation.Parameters["parameter1"] = new OperationParameter { Description = "description" };
+        testOperation.Parameters["parameter2"] = new OperationParameter { Description = "description" };
 
         _mockFactory.GetOperation("testOperation").Returns(testOperation);
 

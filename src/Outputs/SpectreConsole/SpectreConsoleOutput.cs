@@ -14,7 +14,7 @@ public class SpectreConsoleOutput : IOutput
         AnsiConsole.MarkupLineInterpolated($"[grey]{message}[/]");
     }
 
-    public void Error(string message, int exitCode = 1)
+    public void Error(string message)
     {
         AnsiConsole.MarkupLineInterpolated($"[red]{message}[/]");
     }

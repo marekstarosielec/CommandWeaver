@@ -27,8 +27,8 @@ public class Context : IContext
     {
         var builtInElements = _repository.GetList(RepositoryLocation.BuiltIn, null, cancellationToken);
         await ProcessElements(RepositoryLocation.BuiltIn, null, builtInElements);
-        var localElements = _repository.GetList(RepositoryLocation.Local, null, cancellationToken);
-        await ProcessElements(RepositoryLocation.Local, null, localElements);
+        var localElements = _repository.GetList(RepositoryLocation.Application, null, cancellationToken);
+        await ProcessElements(RepositoryLocation.Application, null, localElements);
         var currentSessionName = Variables.CurrentSessionName;
         var sessionElements = _repository.GetList(RepositoryLocation.Session, currentSessionName, cancellationToken);
         await ProcessElements(RepositoryLocation.Session, currentSessionName, sessionElements);
@@ -37,7 +37,7 @@ public class Context : IContext
     public async Task Run(string commmandName, Dictionary<string, string> arguments, CancellationToken cancellationToken = default)
     {
         Variables.WriteVariableValue(VariableScope.Command, "BuiltInPath", new DynamicValue(_repository.GetPath(RepositoryLocation.BuiltIn)));
-        Variables.WriteVariableValue(VariableScope.Command, "LocalPath", new DynamicValue(_repository.GetPath(RepositoryLocation.Local)));
+        Variables.WriteVariableValue(VariableScope.Command, "LocalPath", new DynamicValue(_repository.GetPath(RepositoryLocation.Application)));
         Variables.WriteVariableValue(VariableScope.Command, "SessionPath", new DynamicValue(_repository.GetPath(RepositoryLocation.Session, Variables.CurrentSessionName)));
 
         if (string.IsNullOrWhiteSpace(commmandName))
@@ -123,12 +123,12 @@ public class Context : IContext
         }
 
         //Save changes in variables
-        var variables = Variables.GetVariableList(RepositoryLocation.Local);
+        var variables = Variables.GetVariableList(RepositoryLocation.Application);
         foreach (var locationId in variables.Keys)
         {
             var resolvedLocationId = string.IsNullOrWhiteSpace(locationId) ? "variables.json" : locationId;
-            var originalFile = _originalRepositories.ContainsKey(RepositoryLocation.Local) && _originalRepositories[RepositoryLocation.Local].ContainsKey(resolvedLocationId)
-                        ? _originalRepositories[RepositoryLocation.Local][resolvedLocationId] : null;
+            var originalFile = _originalRepositories.ContainsKey(RepositoryLocation.Application) && _originalRepositories[RepositoryLocation.Application].ContainsKey(resolvedLocationId)
+                        ? _originalRepositories[RepositoryLocation.Application][resolvedLocationId] : null;
             if (originalFile != null)
                 originalFile.Variables = variables[resolvedLocationId].Select(v => new Variable { Key = v.Key, Value = v.Value }).ToList();
             else
@@ -136,7 +136,7 @@ public class Context : IContext
 
             var serializer = _serializerFactory.GetSerializer("json");
             if (serializer.TrySerialize(originalFile, out var content, out var exception))
-                _repository.SaveList(RepositoryLocation.Local, resolvedLocationId, null, content, cancellationToken);
+                _repository.SaveList(RepositoryLocation.Application, resolvedLocationId, null, content, cancellationToken);
         }
     }
 

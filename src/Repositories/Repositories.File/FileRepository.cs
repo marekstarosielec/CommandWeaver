@@ -178,7 +178,7 @@ public class FileRepository : IRepository
         location switch
         {
             RepositoryLocation.BuiltIn => BuiltInFolder,
-            RepositoryLocation.Local => LocalFolder,
+            RepositoryLocation.Application => LocalFolder,
             RepositoryLocation.Session when !string.IsNullOrWhiteSpace(sessionName) => Path.Combine(LocalFolder, "Sessions", sessionName),
             RepositoryLocation.Session => throw new ArgumentException("SessionName not provided"),
             _ => throw new ArgumentException("Unsupported location")

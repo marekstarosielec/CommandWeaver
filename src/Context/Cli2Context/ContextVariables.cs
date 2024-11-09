@@ -49,7 +49,7 @@ public class ContextVariables : IContextVariables
             case RepositoryLocation.BuiltIn:
                 _variableStorage.BuiltIn = _variableStorage.BuiltIn.AddRange(elementsToImport.Select(element => element with { LocationId = locationId }).ToImmutableList());
                 break;
-            case RepositoryLocation.Local:
+            case RepositoryLocation.Application:
                 _variableStorage.Application.AddRange(elementsToImport.Select(element => element with { LocationId = locationId }).ToList());
                 break;
             case RepositoryLocation.Session:
@@ -63,7 +63,7 @@ public class ContextVariables : IContextVariables
     public Dictionary<string, List<Variable>> GetVariableList(RepositoryLocation repositoryLocation) => repositoryLocation switch
     {
         RepositoryLocation.Session => _variableStorage.Session.GroupBy(v => v?.LocationId ?? string.Empty).ToDictionary(g => g.Key, g => g.ToList()),
-        RepositoryLocation.Local => _variableStorage.Application.GroupBy(v => v?.LocationId ?? string.Empty).ToDictionary(g => g.Key, g => g.ToList()),
+        RepositoryLocation.Application => _variableStorage.Application.GroupBy(v => v?.LocationId ?? string.Empty).ToDictionary(g => g.Key, g => g.ToList()),
         _ => throw new InvalidOperationException($"Cannot GetVariableList for RepositoryLocation=={repositoryLocation}")
     };
 
