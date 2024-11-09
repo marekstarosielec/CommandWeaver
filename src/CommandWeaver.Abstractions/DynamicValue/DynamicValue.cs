@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Globalization;
 
 /// <summary>
 /// Represents a dynamic value that can store various types, including text, date-time, boolean, numeric, precision,
@@ -128,8 +129,11 @@ public record DynamicValue
             if (DateTimeValue != null) return $"DateTime: {DateTimeValue}";
             if (BoolValue != null) return $"Bool: {BoolValue}";
             if (NumericValue != null) return $"Numeric: {NumericValue}";
-            if (PrecisionValue != null) return $"Precision: {PrecisionValue}";
-            if (ObjectValue != null) return $"Object: {ObjectValue}";
+            if (PrecisionValue != null) return $"Precision: {PrecisionValue.Value.ToString(CultureInfo.InvariantCulture)}";
+            if (ObjectValue != null) {
+                var value = ObjectValue.Keys.FirstOrDefault("key") != null ? ObjectValue["key"].TextValue : "no key";
+                return $"Object: {value}";
+            }
             if (ListValue != null) return $"List (Count: {ListValue.ToList().Count})";
 
             return "No values";

@@ -63,6 +63,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CommandWeaver", "CommandWea
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver.Abstractions", "CommandWeaver.Abstractions\CommandWeaver.Abstractions.csproj", "{EDD3383E-7A74-455F-8872-69C5CC8E2115}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{F9AD6CE4-D9C4-49AB-BFB1-4CB6BCFC0191}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver.Abstractions.Tests", "Tests\CommandWeaver.Abstractions.Tests\CommandWeaver.Abstractions.Tests.csproj", "{0630C798-AC13-458E-A5D7-B7D9B6C4487F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -137,6 +141,10 @@ Global
 		{EDD3383E-7A74-455F-8872-69C5CC8E2115}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EDD3383E-7A74-455F-8872-69C5CC8E2115}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EDD3383E-7A74-455F-8872-69C5CC8E2115}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0630C798-AC13-458E-A5D7-B7D9B6C4487F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0630C798-AC13-458E-A5D7-B7D9B6C4487F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0630C798-AC13-458E-A5D7-B7D9B6C4487F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0630C798-AC13-458E-A5D7-B7D9B6C4487F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -164,6 +172,8 @@ Global
 		{FD6F331C-FB8C-4534-AB3D-322FAEF2AAB8} = {5385F8E7-7015-49F2-B480-CA49048A741F}
 		{D1722A13-1A18-4BC3-9847-64BA4151A15C} = {9A139D79-2CD5-4943-ABA9-C817480D782B}
 		{EDD3383E-7A74-455F-8872-69C5CC8E2115} = {BCA91B36-E5CD-48B8-810A-0F3245D89B7E}
+		{F9AD6CE4-D9C4-49AB-BFB1-4CB6BCFC0191} = {BCA91B36-E5CD-48B8-810A-0F3245D89B7E}
+		{0630C798-AC13-458E-A5D7-B7D9B6C4487F} = {F9AD6CE4-D9C4-49AB-BFB1-4CB6BCFC0191}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9B522DBE-B32A-492B-9F23-430E5CBF100B}
