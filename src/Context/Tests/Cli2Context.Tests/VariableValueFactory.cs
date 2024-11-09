@@ -42,14 +42,14 @@ internal class VariableValueFactoryList
 
     public DynamicValue Build()
     {
-        var listValue = new DynamicValueList();
+        var listValue = new List<DynamicValueObject>();
         foreach (var element in _list)
         {
             var objectValue = new DynamicValueObject();
             foreach (var property in element.Value)
                 objectValue = objectValue.With(property.Key, property.Value);
-            listValue = listValue.Add(objectValue.With("key", new DynamicValue { TextValue = element.Key }));
+            listValue.Add(objectValue.With("key", new DynamicValue { TextValue = element.Key }));
         }
-        return new DynamicValue { ListValue = listValue };
+        return new DynamicValue(listValue);
     }
 }

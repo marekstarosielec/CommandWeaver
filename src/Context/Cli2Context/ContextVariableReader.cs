@@ -171,7 +171,7 @@ internal class ContextVariableReader(IContext context, ContextVariableStorage va
                     if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
                         result.Add(item);
 
-            return new DynamicValue { ListValue = new DynamicValueList(result) };
+            return new DynamicValue(result);
         }
 
         return temporary ?? session ?? local ?? builtIn;

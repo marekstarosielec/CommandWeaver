@@ -63,6 +63,13 @@ public record DynamicValue
     public DynamicValue(List<DynamicValueObject> listValue) => ListValue = new DynamicValueList(listValue);
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="DynamicValue"/> class with a <see cref="DynamicValueList"/> value.
+    /// </summary>
+    /// <param name="listValue">The <see cref="DynamicValueList"/> value to be assigned.</param>
+    public DynamicValue(DynamicValueList listValue) => ListValue = listValue;
+
+
+    /// <summary>
     /// Gets or sets the text value of the dynamic value.
     /// </summary>
     public string? TextValue { get; set; }
@@ -95,12 +102,12 @@ public record DynamicValue
     /// <summary>
     /// Gets or sets the list value of the dynamic value.
     /// </summary>
-    public DynamicValueList? ListValue { get; set; }
+    public DynamicValueList? ListValue { get; }
 
     /// <summary>
     /// Gets a value indicating whether the dynamic value is null (i.e., all properties are unassigned).
     /// </summary>
-    public bool IsNull => TextValue == null && DateTimeValue == null && BoolValue == null && NumericValue == null && PrecisionValue == null && ObjectValue == null && ListValue == null;
+    public bool IsNull() => TextValue == null && DateTimeValue == null && BoolValue == null && NumericValue == null && PrecisionValue == null && ObjectValue == null && ListValue == null;
 
     /// <summary>
     /// Attempts to retrieve an enum value from the stored text value if it matches the specified enum type.

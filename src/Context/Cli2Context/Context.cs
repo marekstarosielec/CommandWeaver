@@ -86,7 +86,7 @@ public class Context : IContext
             if (operation.Conditions.IsNull != null)
             {
                 var result = Variables.ReadVariableValue(operation.Conditions.IsNull);
-                if (!result.IsNull)
+                if (!result.IsNull())
                 {
                     Services.Output.Trace($"Skipping operation {operation.Name} because of IsNull condition.");
                     continue;
@@ -95,7 +95,7 @@ public class Context : IContext
             if (operation.Conditions.IsNotNull != null)
             {
                 var result = Variables.ReadVariableValue(operation.Conditions.IsNotNull);
-                if (result.IsNull)
+                if (result.IsNull())
                 {
                     Services.Output.Trace($"Skipping operation {operation.Name} because of IsNotNull condition.");
                     continue;
@@ -106,7 +106,7 @@ public class Context : IContext
             {
                 //Evaluate all operation parametes.
                 operation.Parameters[parameterKey] = operation.Parameters[parameterKey] with { Value = Variables.ReadVariableValue(operation.Parameters[parameterKey].Value) ?? new DynamicValue() };
-                if (operation.Parameters[parameterKey].Required && operation.Parameters[parameterKey].Value.IsNull)
+                if (operation.Parameters[parameterKey].Required && operation.Parameters[parameterKey].Value.IsNull())
                     Terminate($"Parameter {parameterKey} is required in operation {operation.Name}.");
                 if (operation.Parameters[parameterKey].RequiredText && string.IsNullOrWhiteSpace(operation.Parameters[parameterKey].Value.TextValue))
                     Terminate($"Parameter {parameterKey} requires text value in operation {operation.Name}.");

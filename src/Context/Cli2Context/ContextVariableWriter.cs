@@ -81,13 +81,9 @@ internal class ContextVariableWriter(IContext context, ContextVariableStorage va
         if (existingChange != null)
         {
             //When given list element was already edited - remove previous value and add new one.
-            existingChange.Value = existingChange.Value with
-            {
-                ListValue = (existingChange.Value.ListValue?.RemoveAll(v => v["key"].TextValue == key) ?? new DynamicValueList())
-                    .Add(value.ObjectValue),
-                ObjectValue = null,
-                TextValue = null,
-            };
+            var newList = (existingChange.Value.ListValue?.RemoveAll(v => v["key"].TextValue == key) ?? new DynamicValueList()).Add(value.ObjectValue);
+            existingChange.Value = new DynamicValue(newList);
+                    
             return;
         }
 
@@ -99,9 +95,8 @@ internal class ContextVariableWriter(IContext context, ContextVariableStorage va
             ?? variableStorage.BuiltIn.FirstOrDefault(v => v.Key == variableName);
         var resolvedLocationId = existingVariable?.LocationId ?? locationId;
 
-
         //When given list element was not yet edited.
-        var newVariable = new Variable { Key = variableName, Value = new DynamicValue([value.ObjectValue]), LocationId = resolvedLocationId };
+        var newVariable = new Variable { Key = variableName, Value = new DynamicValue(new DynamicValueList([value.ObjectValue])), LocationId = resolvedLocationId };
         if (scope == VariableScope.Command) variableStorage.Command.Add(newVariable);
         if (scope == VariableScope.Session) variableStorage.Session.Add(newVariable);
         if (scope == VariableScope.Application) variableStorage.Application.Add(newVariable);
