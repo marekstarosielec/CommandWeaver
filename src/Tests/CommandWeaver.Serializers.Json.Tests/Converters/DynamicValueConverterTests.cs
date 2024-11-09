@@ -20,7 +20,7 @@ public class DynamicValueConverterTests
     [InlineData("false", false)]
     public void Read_BooleanValue_ShouldReturnCorrectDynamicValue(string json, bool expected)
     {
-        var dynamicValue = System.Text.Json.JsonSerializer.Deserialize<DynamicValue>(json, _options);
+        var dynamicValue = JsonSerializer.Deserialize<DynamicValue>(json, _options);
         Assert.NotNull(dynamicValue);
         Assert.Equal(expected, dynamicValue?.BoolValue);
     }
@@ -30,7 +30,7 @@ public class DynamicValueConverterTests
     [InlineData("-987654321", -987654321L)]
     public void Read_NumberValue_Long_ShouldReturnCorrectDynamicValue(string json, long expected)
     {
-        var dynamicValue = System.Text.Json.JsonSerializer.Deserialize<DynamicValue>(json, _options);
+        var dynamicValue = JsonSerializer.Deserialize<DynamicValue>(json, _options);
         Assert.NotNull(dynamicValue);
         Assert.Equal(expected, dynamicValue?.NumericValue);
     }
@@ -40,7 +40,7 @@ public class DynamicValueConverterTests
     [InlineData("-98765.4321", -98765.4321)]
     public void Read_NumberValue_Double_ShouldReturnCorrectDynamicValue(string json, double expected)
     {
-        var dynamicValue = System.Text.Json.JsonSerializer.Deserialize<DynamicValue>(json, _options);
+        var dynamicValue = JsonSerializer.Deserialize<DynamicValue>(json, _options);
         Assert.NotNull(dynamicValue);
         Assert.Equal(expected, dynamicValue?.PrecisionValue);
     }
@@ -51,7 +51,7 @@ public class DynamicValueConverterTests
     public void Read_StringValue_DateTime_ShouldReturnCorrectDynamicValue(string json, string dateTimeString)
     {
         var expected = DateTimeOffset.Parse(dateTimeString);
-        var dynamicValue = System.Text.Json.JsonSerializer.Deserialize<DynamicValue>(json, _options);
+        var dynamicValue = JsonSerializer.Deserialize<DynamicValue>(json, _options);
         Assert.NotNull(dynamicValue);
         Assert.Equal(expected, dynamicValue?.DateTimeValue);
     }
@@ -60,7 +60,7 @@ public class DynamicValueConverterTests
     public void Read_ObjectValue_ShouldReturnCorrectDynamicValue()
     {
         string json = "{\"key1\": \"value1\", \"key2\": 123}";
-        var dynamicValue = System.Text.Json.JsonSerializer.Deserialize<DynamicValue>(json, _options);
+        var dynamicValue = JsonSerializer.Deserialize<DynamicValue>(json, _options);
         Assert.NotNull(dynamicValue);
         Assert.NotNull(dynamicValue?.ObjectValue);
         Assert.Equal("value1", dynamicValue?.ObjectValue?["key1"]?.TextValue);
@@ -71,7 +71,7 @@ public class DynamicValueConverterTests
     public void Read_ArrayValue_ShouldReturnCorrectDynamicValue()
     {
         string json = "[\"value1\", 123, true]";
-        var dynamicValue = System.Text.Json.JsonSerializer.Deserialize<DynamicValue>(json, _options);
+        var dynamicValue = JsonSerializer.Deserialize<DynamicValue>(json, _options);
         Assert.NotNull(dynamicValue);
         Assert.NotNull(dynamicValue?.ListValue);
         Assert.Equal("value1", dynamicValue?.ListValue?[0]["key"]?.TextValue);
@@ -91,7 +91,7 @@ public class DynamicValueConverterTests
             { "dateTimeValue", new DynamicValue(DateTimeOffset.UtcNow) }
         });
 
-        string json = System.Text.Json.JsonSerializer.Serialize(dynamicValue, _options);
+        string json = JsonSerializer.Serialize(dynamicValue, _options);
 
         Assert.Contains("\"stringValue\":\"test\"", json);
         Assert.Contains("\"boolValue\":true", json);
@@ -110,7 +110,7 @@ public class DynamicValueConverterTests
             new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key", new DynamicValue(true) } })
         };
         var dynamicValue = new DynamicValue(list);
-        string json = System.Text.Json.JsonSerializer.Serialize(dynamicValue, _options);
+        string json = JsonSerializer.Serialize(dynamicValue, _options);
 
         Assert.Contains("\"key\":\"value1\"", json);
         Assert.Contains("\"key\":123", json);

@@ -49,10 +49,7 @@ public class FileRepository : IRepository
             }
         }
     }
-    /// <inheritdoc />
-    public Task<RepositoryElementContent> GetContent(RepositoryLocation location, string? sessionName, string id) =>
-        GetContent(id, new PhysicalFileProvider(GetPath(location, sessionName)));
-    
+  
     internal async IAsyncEnumerable<RepositoryElementInfo> GetFilesAsync(RepositoryLocation location, string? sessionName, IFileProvider fileProvider,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -62,29 +59,6 @@ public class FileRepository : IRepository
            yield return file;
     }
 
-    internal async Task<RepositoryElementContent> GetContent(string id, IFileProvider fileProvider)
-    {
-        try
-        {
-            var fileInfo = fileProvider.GetFileInfo(id);
-            await using var stream = fileInfo.CreateReadStream();
-            using var reader = new StreamReader(stream);
-            return new RepositoryElementContent
-            {
-                Id = id,
-                Content = await reader.ReadToEndAsync()
-            };
-        }
-        catch (Exception e)
-        {
-            return new RepositoryElementContent
-            {
-                Id = id,
-                Exception = e
-            };
-        }
-    }
-    
     /// <summary>
     /// Iteratively enumerates files and directories using a stack to avoid recursion issues.
     /// Errors encountered are logged to the result's error collection.

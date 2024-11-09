@@ -63,6 +63,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{F9AD6CE4
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommandWeaver.Abstractions.Tests", "Tests\CommandWeaver.Abstractions.Tests\CommandWeaver.Abstractions.Tests.csproj", "{0630C798-AC13-458E-A5D7-B7D9B6C4487F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver", "CommandWeaver\CommandWeaver.csproj", "{9502AA74-93E0-48A9-9651-D09005E0EDC3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -137,6 +139,10 @@ Global
 		{0630C798-AC13-458E-A5D7-B7D9B6C4487F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0630C798-AC13-458E-A5D7-B7D9B6C4487F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0630C798-AC13-458E-A5D7-B7D9B6C4487F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9502AA74-93E0-48A9-9651-D09005E0EDC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9502AA74-93E0-48A9-9651-D09005E0EDC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9502AA74-93E0-48A9-9651-D09005E0EDC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9502AA74-93E0-48A9-9651-D09005E0EDC3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -165,6 +171,7 @@ Global
 		{EDD3383E-7A74-455F-8872-69C5CC8E2115} = {BCA91B36-E5CD-48B8-810A-0F3245D89B7E}
 		{F9AD6CE4-D9C4-49AB-BFB1-4CB6BCFC0191} = {BCA91B36-E5CD-48B8-810A-0F3245D89B7E}
 		{0630C798-AC13-458E-A5D7-B7D9B6C4487F} = {F9AD6CE4-D9C4-49AB-BFB1-4CB6BCFC0191}
+		{9502AA74-93E0-48A9-9651-D09005E0EDC3} = {BCA91B36-E5CD-48B8-810A-0F3245D89B7E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9B522DBE-B32A-492B-9F23-430E5CBF100B}
