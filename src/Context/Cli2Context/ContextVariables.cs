@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 
 namespace Cli2Context;
 
-public class ContextVariables : IContextVariables
+public class ContextVariables : IVariables
 {
     private readonly IContext _context;
     private readonly ContextVariableStorage _variableStorage;

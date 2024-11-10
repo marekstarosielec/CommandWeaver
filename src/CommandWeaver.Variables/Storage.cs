@@ -1,11 +1,9 @@
 ﻿using System.Collections.Immutable;
 
-namespace Cli2Context;
-
 /// <summary>
 /// Manages storage for context variables across different repository locations.
 /// </summary>
-internal class ContextVariableStorage
+public class Storage
 {
     /// <summary>
     /// Immutable list of built-in application scoped variables from the <see cref="RepositoryLocation.BuiltIn"/> repository location.

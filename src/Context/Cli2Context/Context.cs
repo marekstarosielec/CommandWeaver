@@ -9,19 +9,19 @@ public class Context : IContext
    
     public IContextServices Services { get; }
 
-    public IContextVariables Variables { get; }
+    public IVariables Variables { get; }
 
     public List<Command> Commands { get; } = [];
 
-    private Dictionary<RepositoryLocation, Dictionary<string, RepositoryContent>> _originalRepositories = new Dictionary<RepositoryLocation, Dictionary<string, RepositoryContent>>();   
+    private Dictionary<RepositoryLocation, Dictionary<string, RepositoryContent>> _originalRepositories = new Dictionary<RepositoryLocation, Dictionary<string, RepositoryContent>>();
 
-    public Context(IRepository repository, ISerializerFactory serializerFactory, IOutput output)
+    public Context(IVariables variables, IRepository repository, ISerializerFactory serializerFactory, IOutput output)
     {
         _repository = repository;
         _serializerFactory = serializerFactory;
         Services = new ContextServices(output);
-        Variables = new ContextVariables(this);
-    }
+        Variables = variables;
+    } 
 
     public async Task Initialize(CancellationToken cancellationToken = default)
     {

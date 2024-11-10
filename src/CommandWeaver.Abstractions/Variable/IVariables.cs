@@ -1,7 +1,7 @@
 /// <summary>
 /// Defines a service for managing context-specific variables, including setting, retrieving, and resolving variable values.
 /// </summary>
-public interface IContextVariables
+public interface IVariables
 {
     /// <summary>
     /// Gets or sets the name of the current session.

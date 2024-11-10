@@ -10,7 +10,7 @@ public class App(IContext context, Parser parser)
         var cancellationTokenSource = new CancellationTokenSource();
         cancellationTokenSource.Token.ThrowIfCancellationRequested();
 
-        Console.CancelKeyPress += (sender, args) => {
+        Console.CancelKeyPress += (_, args) => {
             args.Cancel = true; // Prevent default termination
             cancellationTokenSource.Cancel();       // Trigger cancellation
         };

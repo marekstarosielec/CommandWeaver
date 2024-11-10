@@ -13,7 +13,7 @@ public interface IContext
     /// Gets the context variables available within this context.
     /// </summary>
     /// <remarks>Provides access to variables that can be set, retrieved, and resolved within the context.</remarks>
-    IContextVariables Variables { get; }
+    IVariables Variables { get; }
 
     /// <summary>
     /// Initializes the context asynchronously.

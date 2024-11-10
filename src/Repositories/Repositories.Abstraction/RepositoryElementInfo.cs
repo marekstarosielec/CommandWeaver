@@ -1,6 +1,6 @@
 namespace Repositories.Abstraction;
 
-public class RepositoryElementInfo
+public record RepositoryElementInfo
 {
     public required string Id { get; init; }
     

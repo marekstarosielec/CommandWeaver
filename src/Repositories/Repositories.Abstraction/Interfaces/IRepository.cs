@@ -12,7 +12,7 @@ public interface IRepository
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     IAsyncEnumerable<RepositoryElementInfo> GetList(RepositoryLocation location, string? sessionName,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     void SaveList(RepositoryLocation location, string? locationId, string? sessionName, string content, CancellationToken cancellationToken);
 }
