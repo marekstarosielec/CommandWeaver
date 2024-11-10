@@ -67,9 +67,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{3F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommandWeaver.Services.Flow", "CommandWeaver.Services.Flow\CommandWeaver.Services.Flow.csproj", "{5B411166-21A5-49F0-B3E6-A6FFF657247A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver.Repositories.Abstraction", "CommandWeaver.Repositories.Abstraction\CommandWeaver.Repositories.Abstraction.csproj", "{9A9C8952-042B-4540-9472-73C284542060}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommandWeaver.Repositories.Abstraction", "CommandWeaver.Repositories.Abstraction\CommandWeaver.Repositories.Abstraction.csproj", "{9A9C8952-042B-4540-9472-73C284542060}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver.Repositories.File", "CommandWeaver.Repositories.File\CommandWeaver.Repositories.File.csproj", "{8FCBA14A-81A8-423D-A103-F163E3225D47}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommandWeaver.Repositories.File", "CommandWeaver.Repositories.File\CommandWeaver.Repositories.File.csproj", "{8FCBA14A-81A8-423D-A103-F163E3225D47}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver.Repositories.Embedded", "CommandWeaver.Repositories.Embedded\CommandWeaver.Repositories.Embedded.csproj", "{562F3A2E-7EF7-439E-991D-BEF11E61A271}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -157,6 +159,10 @@ Global
 		{8FCBA14A-81A8-423D-A103-F163E3225D47}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8FCBA14A-81A8-423D-A103-F163E3225D47}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8FCBA14A-81A8-423D-A103-F163E3225D47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{562F3A2E-7EF7-439E-991D-BEF11E61A271}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{562F3A2E-7EF7-439E-991D-BEF11E61A271}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{562F3A2E-7EF7-439E-991D-BEF11E61A271}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{562F3A2E-7EF7-439E-991D-BEF11E61A271}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -188,6 +194,7 @@ Global
 		{5B411166-21A5-49F0-B3E6-A6FFF657247A} = {3FBB3760-7299-4FE5-9B8D-848E56B8E294}
 		{9A9C8952-042B-4540-9472-73C284542060} = {269CB40E-400F-4C18-9B53-E25C83E0E203}
 		{8FCBA14A-81A8-423D-A103-F163E3225D47} = {269CB40E-400F-4C18-9B53-E25C83E0E203}
+		{562F3A2E-7EF7-439E-991D-BEF11E61A271} = {269CB40E-400F-4C18-9B53-E25C83E0E203}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9B522DBE-B32A-492B-9F23-430E5CBF100B}

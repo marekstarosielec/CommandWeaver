@@ -1,0 +1,54 @@
+{
+  "commands": [
+    {
+      "name": "nag-core-environment-add",
+      "parameters": [
+        {
+          "key": "key",
+          "description": "Name of nag-core environment. Must be unique",
+          "required": true
+        },
+        {
+          "key": "host",
+          "description": "Nag-core host",
+          "required": true
+        },
+        {
+          "key": "proxy",
+          "description": "Optional proxy url"
+        },
+        {
+          "key": "defaultPartner",
+          "description": "Optional partner id"
+        }
+      ],
+      "operations": [
+        {
+          "operation": "terminate",
+          "_comment": "Do not allow to add environment with name that already exists.",
+          "message": "Environment {{key}} already exists",
+          "conditions": {
+            "isNotNull": "{{ nag-core-environments[{{key}}] }}"
+          }
+        },
+        {
+          "operation": "setVariable",
+          "_comment": "Add new environment in application scope.",
+          "key": "nag-core-environments[{{key}}]",
+          "value": {
+            "key": "{{key}}",
+            "url": "{{host}}",
+            "proxy": "{{proxy}}",
+            "defaultPartner": "{{defaultPartner}}"
+          },
+          "scope": "Application",
+          "locationId": "Variables//nag-core-environments.json"
+        },
+        {
+          "operation": "output",
+          "text": "{{ nag-core-environments[{{key}}].url }}"
+        }
+      ]
+    }
+  ]
+}

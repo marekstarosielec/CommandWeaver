@@ -1,9 +1,9 @@
 ﻿
 namespace Cli2Context;
 
-public class Context(IVariables variables, IFlow flow, IRepository repository, ISerializerFactory serializerFactory, IOutput output) : IContext
+public class Context(IVariables variables, IFlow flow, IEmbeddedRepository embeddedRepository, ISerializerFactory serializerFactory, IOutput output) : IContext
 {
-    private readonly IRepository _repository = repository;
+    private readonly IEmbeddedRepository _embeddedRepository = embeddedRepository;
     private readonly ISerializerFactory _serializerFactory = serializerFactory;
 
     private List<Command> Commands = [];
@@ -11,20 +11,20 @@ public class Context(IVariables variables, IFlow flow, IRepository repository, I
 
     public async Task Initialize(CancellationToken cancellationToken = default)
     {
-        var builtInElements = _repository.GetList(RepositoryLocation.BuiltIn, null, cancellationToken);
+        var builtInElements = _embeddedRepository.GetList(cancellationToken);
         await ProcessElements(RepositoryLocation.BuiltIn, null, builtInElements);
-        var localElements = _repository.GetList(RepositoryLocation.Application, null, cancellationToken);
-        await ProcessElements(RepositoryLocation.Application, null, localElements);
-        var currentSessionName = variables.CurrentSessionName;
-        var sessionElements = _repository.GetList(RepositoryLocation.Session, currentSessionName, cancellationToken);
-        await ProcessElements(RepositoryLocation.Session, currentSessionName, sessionElements);
+        //var localElements = _embeddedRepository.GetList(RepositoryLocation.Application, null, cancellationToken);
+        //await ProcessElements(RepositoryLocation.Application, null, localElements);
+        //var currentSessionName = variables.CurrentSessionName;
+        //var sessionElements = _embeddedRepository.GetList(RepositoryLocation.Session, currentSessionName, cancellationToken);
+        //await ProcessElements(RepositoryLocation.Session, currentSessionName, sessionElements);
     }
 
     public async Task Run(string commmandName, Dictionary<string, string> arguments, CancellationToken cancellationToken = default)
     {
-        variables.WriteVariableValue(VariableScope.Command, "BuiltInPath", new DynamicValue(_repository.GetPath(RepositoryLocation.BuiltIn)));
-        variables.WriteVariableValue(VariableScope.Command, "LocalPath", new DynamicValue(_repository.GetPath(RepositoryLocation.Application)));
-        variables.WriteVariableValue(VariableScope.Command, "SessionPath", new DynamicValue(_repository.GetPath(RepositoryLocation.Session, variables.CurrentSessionName)));
+        //variables.WriteVariableValue(VariableScope.Command, "BuiltInPath", new DynamicValue(_repository.GetPath(RepositoryLocation.BuiltIn)));
+        //variables.WriteVariableValue(VariableScope.Command, "LocalPath", new DynamicValue(_repository.GetPath(RepositoryLocation.Application)));
+        //variables.WriteVariableValue(VariableScope.Command, "SessionPath", new DynamicValue(_repository.GetPath(RepositoryLocation.Session, variables.CurrentSessionName)));
 
         if (string.IsNullOrWhiteSpace(commmandName))
         {
@@ -108,22 +108,22 @@ public class Context(IVariables variables, IFlow flow, IRepository repository, I
             await operation.Run(cancellationToken);
         }
 
-        //Save changes in variables
-        var variableList = variables.GetVariableList(RepositoryLocation.Application);
-        foreach (var locationId in variableList.Keys)
-        {
-            var resolvedLocationId = string.IsNullOrWhiteSpace(locationId) ? "variables.json" : locationId;
-            var originalFile = _originalRepositories.ContainsKey(RepositoryLocation.Application) && _originalRepositories[RepositoryLocation.Application].ContainsKey(resolvedLocationId)
-                        ? _originalRepositories[RepositoryLocation.Application][resolvedLocationId] : null;
-            if (originalFile != null)
-                originalFile.Variables = variableList[resolvedLocationId].Select(v => new Variable { Key = v.Key, Value = v.Value }).ToList();
-            else
-                originalFile = new RepositoryContent { Variables = variableList[resolvedLocationId].Select(v =>new Variable { Key=v.Key, Value = v.Value}).ToList() };
+        ////Save changes in variables
+        //var variableList = variables.GetVariableList(RepositoryLocation.Application);
+        //foreach (var locationId in variableList.Keys)
+        //{
+        //    var resolvedLocationId = string.IsNullOrWhiteSpace(locationId) ? "variables.json" : locationId;
+        //    var originalFile = _originalRepositories.ContainsKey(RepositoryLocation.Application) && _originalRepositories[RepositoryLocation.Application].ContainsKey(resolvedLocationId)
+        //                ? _originalRepositories[RepositoryLocation.Application][resolvedLocationId] : null;
+        //    if (originalFile != null)
+        //        originalFile.Variables = variableList[resolvedLocationId].Select(v => new Variable { Key = v.Key, Value = v.Value }).ToList();
+        //    else
+        //        originalFile = new RepositoryContent { Variables = variableList[resolvedLocationId].Select(v =>new Variable { Key=v.Key, Value = v.Value}).ToList() };
 
-            var serializer = _serializerFactory.GetSerializer("json");
-            if (serializer.TrySerialize(originalFile, out var content, out var exception))
-                _repository.SaveList(RepositoryLocation.Application, resolvedLocationId, null, content, cancellationToken);
-        }
+        //    var serializer = _serializerFactory.GetSerializer("json");
+        //    if (serializer.TrySerialize(originalFile, out var content, out var exception))
+        //        _embeddedRepository.SaveList(RepositoryLocation.Application, resolvedLocationId, null, content, cancellationToken);
+        //}
     }
 
 

@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="BuiltIn\Commands\HelloWorld.json" />
+    <None Remove="BuiltIn\Commands\nag-core\ais\prepare.json" />
+    <None Remove="BuiltIn\Commands\nag-core\environments\add.json" />
+    <None Remove="BuiltIn\Commands\system\paths.json" />
+    <None Remove="BuiltIn\Variables\nag-core-environments.json" />
+    <None Remove="BuiltIn\Variables\variables.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="BuiltIn\Commands\HelloWorld.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BuiltIn\Commands\nag-core\ais\prepare.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BuiltIn\Commands\nag-core\environments\add.json" />
+    <EmbeddedResource Include="BuiltIn\Commands\system\paths.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BuiltIn\Variables\nag-core-environments.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BuiltIn\Variables\variables.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CommandWeaver.Repositories.Abstraction\CommandWeaver.Repositories.Abstraction.csproj" />
+  </ItemGroup>
+
+</Project>

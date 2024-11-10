@@ -55,28 +55,6 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider) : IRepos
     /// </summary>
     private async IAsyncEnumerable<RepositoryElementInfo> EnumerateFilesIterativelyAsync(string rootPath, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        //TODO: This cannot be in this project, maybe new repository should be created. 
-        //But how to use 2 implementations of IRespository?
-
-        //var assembly = Assembly.GetExecutingAssembly();
-        //var baseName = assembly.GetName().Name ?? string.Empty;
-        //var resourceNames = assembly.GetManifestResourceNames();
-
-        //foreach (var resourceName in resourceNames)
-        //{
-        //    using var stream = assembly.GetManifestResourceStream(resourceName);
-        //    if (stream == null)
-        //        continue;
-        //    using var reader = new StreamReader(stream);
-        //    var content = reader.ReadToEnd();
-        //    var format = resourceName.LastIndexOf('.') is var pos && pos >= 0 ? resourceName[(pos + 1)..] : string.Empty;
-        //    var friendlyName = resourceName.Length > baseName.Length + format.Length + 1 
-        //        ? resourceName[(baseName.Length + 1)..^(format.Length + 1)].Replace('.','/')
-        //        : resourceName;
-
-        //    yield return new RepositoryElementInfo { Id = resourceName, Format = format, FriendlyName = friendlyName, Content = content };
-        //}
-
         var basePath = physicalFileProvider.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         foreach (var file in physicalFileProvider.GetFiles(rootPath))
         {
@@ -101,7 +79,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider) : IRepos
     /// <summary>
     /// Gets the path based on the specified repository location and session name.
     /// </summary>
-    public string GetPath(RepositoryLocation location, string? sessionName = null) =>
+    private string GetPath(RepositoryLocation location, string? sessionName = null) =>
         location switch
         {
             RepositoryLocation.BuiltIn => BuiltInFolder,

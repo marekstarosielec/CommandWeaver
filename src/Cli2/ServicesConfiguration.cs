@@ -15,7 +15,8 @@ internal static class ServicesConfiguration
         services.AddCommandWeaverSerialization();
         services.AddCommandWeaverFlowService();
         services.AddCommandWeaverVariables();
-        services.AddCommandWeaverFileRepository();
+        //services.AddCommandWeaverFileRepository();
+        services.AddCommandWeaverEmbeddedRepository();
 
         services.AddTransient<IOutput, SpectreConsoleOutput>();
         services.AddSingleton<IContext, Context>(); //Only one context in all app.
