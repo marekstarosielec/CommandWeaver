@@ -19,12 +19,11 @@ public abstract class Operation
     public abstract Dictionary<string, OperationParameter> Parameters { get; }
 
     /// <summary>
-    /// Executes the operation within the provided context and supports cancellation.
+    /// Executes the operation.
     /// </summary>
-    /// <param name="context">The context in which the operation is executed, providing necessary services and data.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the operation's execution.</param>
     /// <returns>A task representing the asynchronous execution of the operation.</returns>
-    public abstract Task Run(IContext context, CancellationToken cancellationToken);
+    public abstract Task Run(CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets the conditions that determine whether this operation should execute.

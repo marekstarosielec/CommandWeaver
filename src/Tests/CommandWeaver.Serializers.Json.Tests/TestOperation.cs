@@ -10,5 +10,5 @@
     // This will allow setting individual properties on the existing Conditions instance.
 
     // Provide a no-op Run method, as we don’t need actual functionality in tests.
-    public override Task Run(IContext context, CancellationToken cancellationToken) => Task.CompletedTask;
+    public override Task Run(CancellationToken cancellationToken) => Task.CompletedTask;
 }

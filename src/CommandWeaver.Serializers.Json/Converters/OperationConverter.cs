@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 
 /// <inheritdoc />
-public class OperationConverter(IContext context, IOperationFactory operationFactory) : IOperationConverter
+public class OperationConverter(IOutput output, IVariables variables, IOperationFactory operationFactory) : IOperationConverter
 {
     /// <summary>
     /// A converter for dynamic values within JSON data.
@@ -18,8 +18,8 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
         if (!rootElement.TryGetProperty("operation", out var operationElement) || operationElement.GetString() is not { } operationName)
         {
             // Operation name is not defined.
-            context.Services.Output.Warning(
-                $"Operation without name is listed in {context.Variables.CurrentlyProcessedElement}");
+            output.Warning(
+                $"Operation without name is listed in {variables.CurrentlyProcessedElement}");
             return null;
         }
 
@@ -27,7 +27,7 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
         if (operationInstance == null)
         {
             // There is no operation with given name.
-            context.Services.Output.Warning($"Operation {operationName} is not valid in {context.Variables.CurrentlyProcessedElement}");
+            output.Warning($"Operation {operationName} is not valid in {variables.CurrentlyProcessedElement}");
             return null;
         }
 
@@ -73,7 +73,7 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
             if (!operationInstance.Parameters.ContainsKey(property.Name))
             {
                 // Property defined in JSON is not defined in operation class.
-                context.Services.Output.Warning($"Property {property.Name} is invalid in operation {operationName} in {context.Variables.CurrentlyProcessedElement}");
+                output.Warning($"Property {property.Name} is invalid in operation {operationName} in {variables.CurrentlyProcessedElement}");
                 continue;
             }
 
@@ -93,7 +93,7 @@ public class OperationConverter(IContext context, IOperationFactory operationFac
             if (_conditionProperties.TryGetValue(property.Name, out var conditionProperty))
                 conditionProperty.SetValue(operationInstance.Conditions, _dynamicValueConverter.ReadElement(property.Value) ?? new DynamicValue());
             else
-                context.Services.Output.Warning($"Unknown condition {property.Name} in operation {operationName} in {context.Variables.CurrentlyProcessedElement}");
+                output.Warning($"Unknown condition {property.Name} in operation {operationName} in {variables.CurrentlyProcessedElement}");
     }
 
     /// <summary>

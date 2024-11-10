@@ -3,20 +3,21 @@ using NSubstitute;
 
 public class OperationConverterTests
 {
-    private readonly IContext _mockContext;
+    private readonly IOutput _mockOutput;
+    private readonly IVariables _variables;
     private readonly IOperationFactory _mockFactory;
     private readonly JsonSerializerOptions _options;
 
     public OperationConverterTests()
     {
-        _mockContext = Substitute.For<IContext>();
+        _mockOutput = Substitute.For<IOutput>();
         _mockFactory = Substitute.For<IOperationFactory>();
-
-        _mockContext.Variables.CurrentlyProcessedElement.Returns("TestElement");
+        _variables = Substitute.For<IVariables>();
+        _variables.CurrentlyProcessedElement.Returns("TestElement");
 
         _options = new JsonSerializerOptions
         {
-            Converters = { new ConverterWrapper<Operation>(new OperationConverter(_mockContext, _mockFactory)) }
+            Converters = { new ConverterWrapper<Operation>(new OperationConverter(_mockOutput, _variables,  _mockFactory)) }
         };
     }
 
@@ -28,7 +29,7 @@ public class OperationConverterTests
         var result = JsonSerializer.Deserialize<Operation>(json, _options);
 
         Assert.Null(result);
-        _mockContext.Services.Output.Received(1).Warning(Arg.Is<string>(msg => msg.Contains("TestElement")));
+        _mockOutput.Received(1).Warning(Arg.Is<string>(msg => msg.Contains("TestElement")));
     }
 
     [Fact]
@@ -41,7 +42,7 @@ public class OperationConverterTests
         var result = JsonSerializer.Deserialize<Operation>(json, _options);
 
         Assert.Null(result);
-        _mockContext.Services.Output.Received(1).Warning(
+        _mockOutput.Received(1).Warning(
             Arg.Is<string>(msg => msg.Contains("invalidOperation") && msg.Contains("TestElement")));
     }
 
@@ -75,7 +76,7 @@ public class OperationConverterTests
         var result = JsonSerializer.Deserialize<Operation>(json, _options);
 
         Assert.NotNull(result);
-        _mockContext.Services.Output.Received(1).Warning(
+        _mockOutput.Received(1).Warning(
             Arg.Is<string>(msg => msg.Contains("invalidParameter") && msg.Contains("testOperation") && msg.Contains("TestElement")));
     }
 

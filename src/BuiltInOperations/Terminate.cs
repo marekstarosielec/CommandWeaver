@@ -1,6 +1,6 @@
 ﻿namespace BuiltInOperations;
 
-public class Terminate : Operation
+public class Terminate(IFlow flow) : Operation
 {
     public override string Name => nameof(Terminate);
 
@@ -10,9 +10,9 @@ public class Terminate : Operation
         //TODO: Add exit code.
     }; 
 
-    public override Task Run(IContext context, CancellationToken cancellationToken)
+    public override Task Run(CancellationToken cancellationToken)
     {
-        context.Terminate(Parameters["message"].Value.TextValue);
+        flow.Terminate(Parameters["message"].Value.TextValue);
         return Task.CompletedTask;
     }
 }

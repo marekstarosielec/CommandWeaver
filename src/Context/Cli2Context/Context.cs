@@ -7,20 +7,23 @@ public class Context : IContext
     private readonly IRepository _repository;
     private readonly ISerializerFactory _serializerFactory;
    
-    public IContextServices Services { get; }
+    //public IContextServices Services { get; }
 
     public IVariables Variables { get; }
-
+    private IFlow _flow;
+    private IOutput _output;
     public List<Command> Commands { get; } = [];
 
     private Dictionary<RepositoryLocation, Dictionary<string, RepositoryContent>> _originalRepositories = new Dictionary<RepositoryLocation, Dictionary<string, RepositoryContent>>();
 
-    public Context(IVariables variables, IRepository repository, ISerializerFactory serializerFactory, IOutput output)
+    public Context(IVariables variables, IFlow flow, IRepository repository, ISerializerFactory serializerFactory, IOutput output)
     {
         _repository = repository;
         _serializerFactory = serializerFactory;
-        Services = new ContextServices(output);
+        //Services = new ContextServices(output);
         Variables = variables;
+        _flow = flow;
+        _output = output;
     } 
 
     public async Task Initialize(CancellationToken cancellationToken = default)
@@ -75,7 +78,7 @@ public class Context : IContext
         //Run operations for selected command.
         foreach (var operation in command.Operations)
         {
-            Services.Output.Debug($"{operation.Name}: Starting");
+            _output.Debug($"{operation.Name}: Starting");
 
             //Evaluate conditions.
             //TODO: Add test if all properties are called here.
@@ -84,7 +87,7 @@ public class Context : IContext
                 var result = Variables.ReadVariableValue(operation.Conditions.IsNull);
                 if (!result.IsNull())
                 {
-                    Services.Output.Trace($"Skipping operation {operation.Name} because of IsNull condition.");
+                    _output.Trace($"Skipping operation {operation.Name} because of IsNull condition.");
                     continue;
                 }
             }
@@ -93,7 +96,7 @@ public class Context : IContext
                 var result = Variables.ReadVariableValue(operation.Conditions.IsNotNull);
                 if (result.IsNull())
                 {
-                    Services.Output.Trace($"Skipping operation {operation.Name} because of IsNotNull condition.");
+                    _output.Trace($"Skipping operation {operation.Name} because of IsNotNull condition.");
                     continue;
                 }
             }
@@ -119,7 +122,7 @@ public class Context : IContext
                 }
             }
 
-            await operation.Run(this, cancellationToken);
+            await operation.Run(cancellationToken);
         }
 
         //Save changes in variables
@@ -142,8 +145,8 @@ public class Context : IContext
 
     public void Terminate(string? message = null, int exitCode = 1)
     {
-        if (!string.IsNullOrEmpty(message)) 
-            Services.Output.Error(message);
+        if (!string.IsNullOrEmpty(message))
+            _output.Error(message);
         //should save variables here?
         Environment.Exit(exitCode);
     }
@@ -153,10 +156,10 @@ public class Context : IContext
         await foreach (var element in elements)
         {
             Variables.CurrentlyProcessedElement = element.FriendlyName;
-            Services.Output.Debug($"Processing {repositoryLocation.ToString()} element {element.FriendlyName}");
+            _output.Debug($"Processing {repositoryLocation.ToString()} element {element.FriendlyName}");
             if (element.Exception != null)
             {
-                Services.Output.Warning($"Failed to load {element.Id}. Exception occurred: {element.Exception.Message}");
+                _output.Warning($"Failed to load {element.Id}. Exception occurred: {element.Exception.Message}");
                 continue;
             }
 
@@ -168,7 +171,7 @@ public class Context : IContext
             serializer.TryDeserialize(element.Content, out RepositoryContent? contentObject, out var exception);
             if (contentObject == null)
             {
-                Services.Output.Warning($"Failed to deserialize {element.Id}.");
+                _output.Warning($"Failed to deserialize {element.Id}.");
                 return;
             }
 
@@ -190,13 +193,13 @@ public class Context : IContext
     {
         if (element.Format == null)
         {
-            Services.Output.Warning($"Failed to determine format of {element.Id}.");
+            _output.Warning($"Failed to determine format of {element.Id}.");
             return null;
         }
         var serializer = _serializerFactory.GetSerializer(element.Format);
         if (serializer == null)
         {
-            Services.Output.Warning($"Failed to deserialize {element.Id}. Unknown format {element.Format}");
+            _output.Warning($"Failed to deserialize {element.Id}. Unknown format {element.Format}");
             return null;
         }
         

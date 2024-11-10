@@ -1,6 +1,6 @@
 namespace BuiltInOperations;
 
-public class SetVariable : Operation
+public class SetVariable(IVariables variables) : Operation
 {
     public override string Name => nameof(SetVariable);
 
@@ -13,9 +13,9 @@ public class SetVariable : Operation
     };
 
 
-    public override Task Run(IContext context, CancellationToken cancellationToken)
+    public override Task Run(CancellationToken cancellationToken)
     {
-        context.Variables.WriteVariableValue(Parameters["scope"].Value.GetEnumValue<VariableScope>() ?? VariableScope.Command, Parameters["key"].Value.TextValue!, Parameters["value"].Value);
+        variables.WriteVariableValue(Parameters["scope"].Value.GetEnumValue<VariableScope>() ?? VariableScope.Command, Parameters["key"].Value.TextValue!, Parameters["value"].Value);
         return Task.CompletedTask;
     }
 }

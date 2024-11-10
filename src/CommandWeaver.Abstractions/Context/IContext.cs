@@ -7,7 +7,7 @@ public interface IContext
     /// Gets the context services available within this context.
     /// </summary>
     /// <remarks>This includes services for outputting messages, logging, and other context-specific functionalities.</remarks>
-    IContextServices Services { get; }
+   // IContextServices Services { get; }
 
     /// <summary>
     /// Gets the context variables available within this context.
