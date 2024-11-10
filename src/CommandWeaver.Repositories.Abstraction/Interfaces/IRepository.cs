@@ -1,5 +1,3 @@
-using Repositories.Abstraction;
-
 public interface IRepository
 {
     string GetPath(RepositoryLocation location, string? sessionName = null);

@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\CommandWeaver.Repositories.File\CommandWeaver.Repositories.File.csproj" />
       <ProjectReference Include="..\..\CommandWeaver.Serializers.Abstraction\CommandWeaver.Serializers.Abstraction.csproj" />
       <ProjectReference Include="..\..\CommandWeaver.Variables\CommandWeaver.Variables.csproj" />
       <ProjectReference Include="..\..\Repositories\Repositories.Abstraction\Repositories.Abstraction.csproj" />

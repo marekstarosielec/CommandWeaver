@@ -10,6 +10,7 @@
     <ItemGroup>
       <ProjectReference Include="..\BuiltInOperations\BuiltInOperations.csproj" />
       <ProjectReference Include="..\CommandLine\CommandLine.csproj" />
+      <ProjectReference Include="..\CommandWeaver.Repositories.File\CommandWeaver.Repositories.File.csproj" />
       <ProjectReference Include="..\CommandWeaver.Serializers.Default\CommandWeaver.Serializers.Default.csproj" />
       <ProjectReference Include="..\CommandWeaver.Services.Flow\CommandWeaver.Services.Flow.csproj" />
       <ProjectReference Include="..\CommandWeaver.Variables\CommandWeaver.Variables.csproj" />
