@@ -38,7 +38,7 @@ public class Context(IVariables variables, IFlow flow, IEmbeddedRepository embed
             return;
         }
 
-        //Conver command parameters (both defined by command and built-in) to variables with values from arguments.
+        //Convert command parameters (both defined by command and built-in) to variables with values from arguments.
         foreach (var parameter in command.Parameters.Union(BuiltInCommandParameters.List))
         {
             arguments.TryGetValue(parameter.Key, out var argumentValue);

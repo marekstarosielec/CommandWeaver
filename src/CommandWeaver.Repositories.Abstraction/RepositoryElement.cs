@@ -4,7 +4,7 @@
 public record RepositoryElement
 {
     /// <summary>
-    /// Identifier, it should be unique among all repositories.
+    /// Identifier, it should be unique among repository.
     /// </summary>
     public required string Id { get; init; }
     

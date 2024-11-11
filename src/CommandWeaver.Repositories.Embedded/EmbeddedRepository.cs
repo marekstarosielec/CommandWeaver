@@ -48,10 +48,8 @@ public class EmbeddedRepository : IEmbeddedRepository
     /// <param name="baseName"></param>
     /// <param name="format"></param>
     /// <returns></returns>
-    private static string GetFriendlyName(string resourceName, string baseName, string format)
-    {
-        return resourceName.Length > baseName.Length + format.Length + 1
-            ? resourceName[(baseName.Length + 1)..^(format.Length + 1)].Replace('.', '/')
+    private static string GetFriendlyName(string resourceName, string baseName, string format) => 
+        resourceName.Length > baseName.Length
+            ? resourceName[(baseName.Length + 1)..]
             : resourceName;
-    }
 }

@@ -42,7 +42,7 @@
             "defaultPartner": "{{defaultPartner}}"
           },
           "scope": "Application",
-          "locationId": "Variables//nag-core-environments.json"
+          "id": "Variables//nag-core-environments.json"
         },
         {
           "operation": "output",

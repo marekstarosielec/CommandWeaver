@@ -26,8 +26,8 @@ public interface IVariables
     /// </summary>
     /// <param name="repositoryLocation">The location of the repository where variables will be stored.</param>
     /// <param name="variables">The list of variables to store in the repository location.</param>
-    /// <param name="locationId">The identifier for the specific location within the repository.</param>
-    void Add(RepositoryLocation repositoryLocation, IEnumerable<Variable> variables, string locationId);
+    /// <param name="repositoryElementId">The identifier for the specific location within the repository.</param>
+    void Add(RepositoryLocation repositoryLocation, IEnumerable<Variable> variables, string repositoryElementId);
 
     /// <summary>
     /// Retrieves a dictionary of variables stored in a specified repository location.
@@ -59,5 +59,5 @@ public interface IVariables
     /// <param name="scope">The scope within which the variable is stored (e.g., command, session, application).</param>
     /// <param name="path">The path where the variable value will be written.</param>
     /// <param name="value">The value to assign to the variable at the specified path.</param>
-    void WriteVariableValue(VariableScope scope, string path, DynamicValue value);
+    void WriteVariableValue(VariableScope scope, string path, DynamicValue value); //TODO: Rename to Set and reorder arguments
 }

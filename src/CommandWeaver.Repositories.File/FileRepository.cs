@@ -4,30 +4,30 @@ using System.Runtime.CompilerServices;
 public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutput output) : IRepository
 {
     /// <inheritdoc />
-    public IAsyncEnumerable<RepositoryElement> GetList(RepositoryLocation location, string? sessionName, CancellationToken cancellationToken)
+    public IAsyncEnumerable<RepositoryElement> GetList(RepositoryLocation repositoryLocation, string? sessionName, CancellationToken cancellationToken)
     {
         try
         {
-            var path = GetPath(location, sessionName);
+            var path = GetPath(repositoryLocation, sessionName);
             physicalFileProvider.CreateDirectoryIfItDoesNotExist(path);
-            return GetFilesAsync(location, sessionName, cancellationToken);
+            return GetFilesAsync(repositoryLocation, sessionName, cancellationToken);
         }
         catch
         {
-            //TODO: do something when path cannot be read? Output?
+            output.Warning($"Failed to list location {repositoryLocation.ToString()}");
             return AsyncEnumerable.Empty<RepositoryElement>();
         }
     }
 
-    public void SaveList(RepositoryLocation location, string? locationId, string? sessionName, string content, CancellationToken cancellationToken)
+    public void SaveList(RepositoryLocation location, string? repositoryElementId, string? sessionName, string content, CancellationToken cancellationToken)
     {
         var path = GetPath(location, sessionName);
-        var directoryPath = Path.GetDirectoryName(Path.Combine(path, locationId.TrimStart('\\')));
+        var directoryPath = Path.GetDirectoryName(Path.Combine(path, repositoryElementId.TrimStart('\\')));
 
         if (directoryPath != null)
             Directory.CreateDirectory(directoryPath);
 
-        using var stream = new FileStream(Path.Combine(path, locationId.TrimStart('\\')), FileMode.Create, FileAccess.Write);
+        using var stream = new FileStream(Path.Combine(path, repositoryElementId.TrimStart('\\')), FileMode.Create, FileAccess.Write);
         using var writer = new StreamWriter(stream);
         writer.Write(content);
     }
@@ -45,13 +45,12 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutput 
     /// </summary>
     private async IAsyncEnumerable<RepositoryElement> EnumerateFilesIterativelyAsync(string rootPath, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var basePath = physicalFileProvider.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         foreach (var file in physicalFileProvider.GetFiles(rootPath))
         {
             if (cancellationToken.IsCancellationRequested)
                 yield break;
 
-            var result = await TryGetRepositoryElementInfoAsync(file, basePath, cancellationToken);
+            var result = await TryGetRepositoryElementInfoAsync(rootPath, file, cancellationToken);
             if (result != null)
                 yield return result;
         }
@@ -66,7 +65,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutput 
     /// <param name="basePath"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    private async Task<RepositoryElement?> TryGetRepositoryElementInfoAsync(string file, string basePath, CancellationToken cancellationToken)
+    private async Task<RepositoryElement?> TryGetRepositoryElementInfoAsync(string rootPath, string file, CancellationToken cancellationToken)
     {
         try
         {
@@ -77,8 +76,8 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutput 
                 return null;
 
             var format = file.LastIndexOf('.') is var pos && pos >= 0 ? file[(pos + 1)..] : string.Empty;
-            var friendlyName = file.Length > basePath.Length + format.Length + 1
-                ? file[(basePath.Length + 1)..^(format.Length + 1)].Replace('.', '/')
+            var friendlyName = file.Length > rootPath.Length
+                ? file[(rootPath.Length + 1)..]
                 : file;
 
             var content = await physicalFileProvider.GetFileContent(file, cancellationToken);

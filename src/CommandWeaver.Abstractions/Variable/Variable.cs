@@ -16,11 +16,12 @@ public record Variable
     public DynamicValue Value { get; set; } = new DynamicValue();
 
     /// <summary>
-    /// Gets or sets an optional location identifier for this variable.
+    /// Gets or sets an optional repository element identifier for this variable.
+    /// It will allow to save changes back to same location.
     /// </summary>
     /// <remarks>
     /// This ID indicates the specific location context for the variable, allowing it to be scoped 
     /// or associated with a particular repository location.
     /// </remarks>
-    public string? LocationId { get; set; }
+    public string? RepositoryElementId { get; set; }
 }

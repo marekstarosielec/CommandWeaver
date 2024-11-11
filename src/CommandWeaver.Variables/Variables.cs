@@ -29,9 +29,10 @@ public class Variables(IReader reader, IWriter writer, Storage storage) : IVaria
     public DynamicValue ReadVariableValue(DynamicValue variableValue, bool treatTextValueAsVariable = false)
     => reader.ReadVariableValue(variableValue, treatTextValueAsVariable);
 
-    public void Add(RepositoryLocation repositoryLocation, IEnumerable<Variable> variables, string locationId)
+    public void Add(RepositoryLocation repositoryLocation, IEnumerable<Variable> variables, string repositoryElementId)
     {
-        var elementsToImport = variables.Select(v => v with { LocationId = locationId });
+        //Add repository element id, it will be useful to save changes back.
+        var elementsToImport = variables.Select(v => v with { RepositoryElementId = repositoryElementId });
 
         switch (repositoryLocation)
         {
@@ -51,8 +52,8 @@ public class Variables(IReader reader, IWriter writer, Storage storage) : IVaria
 
     public Dictionary<string, List<Variable>> GetVariableList(RepositoryLocation repositoryLocation) => repositoryLocation switch
     {
-        RepositoryLocation.Session => storage.Session.GroupBy(v => v?.LocationId ?? string.Empty).ToDictionary(g => g.Key, g => g.ToList()),
-        RepositoryLocation.Application => storage.Application.GroupBy(v => v?.LocationId ?? string.Empty).ToDictionary(g => g.Key, g => g.ToList()),
+        RepositoryLocation.Session => storage.Session.GroupBy(v => v?.RepositoryElementId ?? string.Empty).ToDictionary(g => g.Key, g => g.ToList()),
+        RepositoryLocation.Application => storage.Application.GroupBy(v => v?.RepositoryElementId ?? string.Empty).ToDictionary(g => g.Key, g => g.ToList()),
         _ => throw new InvalidOperationException($"Cannot GetVariableList for RepositoryLocation=={repositoryLocation}")
     };
 

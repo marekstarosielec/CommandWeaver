@@ -5,11 +5,12 @@
 
 public class Loader(
     IVariables variables, 
-    IEmbeddedRepository 
-    embeddedRepository, 
+    IEmbeddedRepository embeddedRepository, 
+    IRepository repository,
     IOutput output, 
     ICommands commands,
-    ISerializerFactory serializerFactory) : ILoader
+    ISerializerFactory serializerFactory,
+    IRepositoryStorage repositoryStorage) : ILoader
 {
     public Task Execute(CancellationToken cancellationToken)
     {
@@ -24,9 +25,14 @@ public class Loader(
     private async Task LoadRepositories(CancellationToken cancellationToken)
     {
         variables.CurrentlyLoadRepository = "built-in";
-        var builtInElements = embeddedRepository.GetList(cancellationToken);
-        await LoadRepositoryElements(RepositoryLocation.BuiltIn, null, builtInElements);
-
+        var elements = embeddedRepository.GetList(cancellationToken);
+        await LoadRepositoryElements(RepositoryLocation.BuiltIn, null, elements);
+        variables.CurrentlyLoadRepository = "application";
+        elements = repository.GetList(RepositoryLocation.Application, null, cancellationToken);
+        await LoadRepositoryElements(RepositoryLocation.Application, null, elements);
+        variables.CurrentlyLoadRepository = "session";
+        elements = repository.GetList(RepositoryLocation.Application, null, cancellationToken);
+        await LoadRepositoryElements(RepositoryLocation.Session, variables.CurrentSessionName, elements);
         variables.CurrentlyLoadRepository = null;
     }
 
@@ -54,21 +60,21 @@ public class Loader(
             if (serializer == null)
                 continue;
 
-            if (!serializer.TryDeserialize(repositoryElement.Content, out RepositoryElementContent? contentObject, out var exception) || contentObject == null)
+            if (!serializer.TryDeserialize(repositoryElement.Content, out RepositoryElementContent? repositoryContent, out var exception) || repositoryContent == null)
             {
+                //Still save information about repository, to avoid overriding it with partial conent.
+                repositoryStorage.Add(new Repository(repositoryLocation, repositoryElement.Id, repositoryContent));
+
                 output.Warning($"Element {variables.CurrentlyLoadRepositoryElement} failed to deserialize");
                 continue;
             }
 
-            ////TODO: if deserialization failed, we have to save this information. Otherwise changes will overwrite whole file.
-            //if (!_originalRepositories.ContainsKey(repositoryLocation))
-            //    _originalRepositories[repositoryLocation] = new Dictionary<string, RepositoryContent>();
-            //_originalRepositories[repositoryLocation][element.Id] = contentObject;
+            repositoryStorage.Add(new Repository(repositoryLocation, repositoryElement.Id, repositoryContent));
 
-            if (contentObject.Variables != null)
-                variables.Add(repositoryLocation, contentObject.Variables, repositoryElement.Id);
-            if (contentObject.Commands != null)
-                commands.Add(contentObject.Commands.Where(c => c != null)!);
+            if (repositoryContent.Variables != null)
+                variables.Add(repositoryLocation, repositoryContent.Variables, repositoryElement.Id);
+            if (repositoryContent.Commands != null)
+                commands.Add(repositoryContent.Commands.Where(c => c != null)!);
         }
 
         variables.CurrentlyLoadRepositoryElement = null;
