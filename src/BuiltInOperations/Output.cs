@@ -11,7 +11,7 @@ public class Output(IOutput output) : Operation
   
     public override Task Run(CancellationToken cancellationToken)
     {
-        output.Error(Parameters["text"].Value.TextValue!);
+        output.Result(Parameters["text"].Value.TextValue!);
         return Task.CompletedTask;
     }
 }

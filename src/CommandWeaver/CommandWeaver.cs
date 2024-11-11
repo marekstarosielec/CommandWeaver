@@ -10,10 +10,6 @@ public class CommandWeaver(ILoader loader, ICommands commands, IFlow flow, IVari
             return;
         }
 
-        //variables.WriteVariableValue(VariableScope.Command, "BuiltInPath", new DynamicValue(_repository.GetPath(RepositoryLocation.BuiltIn)));
-        //variables.WriteVariableValue(VariableScope.Command, "LocalPath", new DynamicValue(_repository.GetPath(RepositoryLocation.Application)));
-        //variables.WriteVariableValue(VariableScope.Command, "SessionPath", new DynamicValue(_repository.GetPath(RepositoryLocation.Session, variables.CurrentSessionName)));
-
         await loader.Execute(cancellationToken);
         commands.Validate();
         
@@ -42,7 +38,6 @@ public class CommandWeaver(ILoader loader, ICommands commands, IFlow flow, IVari
         //    if (serializer.TrySerialize(originalFile, out var content, out var exception))
         //        repository.SaveList(RepositoryLocation.Application, resolvedLocationId, null, content, cancellationToken);
         //}
-
     }
 
     

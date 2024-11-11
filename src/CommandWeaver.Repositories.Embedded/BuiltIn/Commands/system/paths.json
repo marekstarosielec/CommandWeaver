@@ -5,10 +5,6 @@
       "operations": [
         {
           "operation": "output",
-          "text": "Built-in path: {{ BuiltInPath }}"
-        },
-        {
-          "operation": "output",
           "text": "Local path: {{ LocalPath }}"
         },
         {

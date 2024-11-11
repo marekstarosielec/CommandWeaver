@@ -32,4 +32,10 @@ public interface IOutput
     /// Error messages indicate serious issues that may halt program execution
     /// </remarks>
     void Error(string message);
+
+    /// <summary>
+    /// Outputs result information, which is always visible, no matter log-level.
+    /// </summary>
+    /// <param name="message"></param>
+    void Result(string message);
 }

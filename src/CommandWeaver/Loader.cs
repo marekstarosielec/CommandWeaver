@@ -27,13 +27,18 @@ public class Loader(
         variables.CurrentlyLoadRepository = "built-in";
         var elements = embeddedRepository.GetList(cancellationToken);
         await LoadRepositoryElements(RepositoryLocation.BuiltIn, null, elements);
+
         variables.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Application, null);
         elements = repository.GetList(RepositoryLocation.Application, null, cancellationToken);
         await LoadRepositoryElements(RepositoryLocation.Application, null, elements);
+
         variables.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Session, variables.CurrentSessionName);
         elements = repository.GetList(RepositoryLocation.Session, variables.CurrentSessionName, cancellationToken);
         await LoadRepositoryElements(RepositoryLocation.Session, variables.CurrentSessionName, elements);
         variables.CurrentlyLoadRepository = null;
+
+        variables.WriteVariableValue(VariableScope.Command, "LocalPath", new DynamicValue(repository.GetPath(RepositoryLocation.Application)));
+        variables.WriteVariableValue(VariableScope.Command, "SessionPath", new DynamicValue(repository.GetPath(RepositoryLocation.Session, variables.CurrentSessionName)));
     }
 
     /// <summary>
