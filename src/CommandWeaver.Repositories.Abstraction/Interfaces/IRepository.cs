@@ -9,5 +9,7 @@ public interface IRepository
     /// <returns>An asynchronous stream of <see cref="RepositoryElement"/> elements representing the items in the repository.</returns>
     IAsyncEnumerable<RepositoryElement> GetList(RepositoryLocation repositoryLocation, string? sessionName, CancellationToken cancellationToken);
 
+    string GetPath(RepositoryLocation repositoryLocation, string? sessionName = null);
+
     void SaveList(RepositoryLocation location, string? repositoryElementId, string? sessionName, string content, CancellationToken cancellationToken);
 }

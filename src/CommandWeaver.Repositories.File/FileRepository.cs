@@ -12,7 +12,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutput 
             physicalFileProvider.CreateDirectoryIfItDoesNotExist(path);
             return GetFilesAsync(repositoryLocation, sessionName, cancellationToken);
         }
-        catch
+        catch(Exception ex)
         {
             output.Warning($"Failed to list location {repositoryLocation.ToString()}");
             return AsyncEnumerable.Empty<RepositoryElement>();
@@ -94,9 +94,9 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutput 
     /// <summary>
     /// Gets the path based on the specified repository location and session name.
     /// </summary>
-    private string GetPath(RepositoryLocation location, string? sessionName = null)
+    public string GetPath(RepositoryLocation repositoryLocation, string? sessionName = null)
     {
-        return location switch
+        return repositoryLocation switch
         {
             RepositoryLocation.Application => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CommandWeaver"),
             RepositoryLocation.Session when !string.IsNullOrWhiteSpace(sessionName) => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CommandWeaver", "Sessions", sessionName),

@@ -27,11 +27,11 @@ public class Loader(
         variables.CurrentlyLoadRepository = "built-in";
         var elements = embeddedRepository.GetList(cancellationToken);
         await LoadRepositoryElements(RepositoryLocation.BuiltIn, null, elements);
-        variables.CurrentlyLoadRepository = "application";
+        variables.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Application, null);
         elements = repository.GetList(RepositoryLocation.Application, null, cancellationToken);
         await LoadRepositoryElements(RepositoryLocation.Application, null, elements);
-        variables.CurrentlyLoadRepository = "session";
-        elements = repository.GetList(RepositoryLocation.Application, null, cancellationToken);
+        variables.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Session, variables.CurrentSessionName);
+        elements = repository.GetList(RepositoryLocation.Session, variables.CurrentSessionName, cancellationToken);
         await LoadRepositoryElements(RepositoryLocation.Session, variables.CurrentSessionName, elements);
         variables.CurrentlyLoadRepository = null;
     }
@@ -48,7 +48,7 @@ public class Loader(
         await foreach (var repositoryElement in repositoryElements)
         {
             variables.CurrentlyLoadRepositoryElement = repositoryElement.FriendlyName;
-            output.Debug($"Processing element {variables.CurrentlyLoadRepositoryElement}");
+            output.Debug($"Processing element {variables.CurrentlyLoadRepository}\\{variables.CurrentlyLoadRepositoryElement}");
 
             if (string.IsNullOrWhiteSpace(repositoryElement.Content))
             {
