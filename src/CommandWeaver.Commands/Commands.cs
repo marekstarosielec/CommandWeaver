@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-/// <summary>
+﻿/// <summary>
 /// Defines a service for handling command definitions.
 /// </summary>
 public interface ICommands

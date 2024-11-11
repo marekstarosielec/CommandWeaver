@@ -28,8 +28,4 @@
         <Using Include="Xunit" />
     </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\..\Cli2Context\Cli2Context.csproj" />
-    </ItemGroup>
-
 </Project>

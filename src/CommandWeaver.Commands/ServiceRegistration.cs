@@ -4,6 +4,6 @@ public static class ServiceRegistration
 {
     public static void AddCommandWeaverCommands(this IServiceCollection services)
     {
-        services.AddTransient<ICommands, Commands>();
+        services.AddSingleton<ICommands, Commands>();
     }
 }
