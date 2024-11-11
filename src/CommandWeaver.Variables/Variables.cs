@@ -50,6 +50,7 @@ public class Variables(IReader reader, IWriter writer, Storage storage) : IVaria
         }
     }
 
+    //TODO: Rework to return Repository record from RepositoryStorage?
     public Dictionary<string, List<Variable>> GetVariableList(RepositoryLocation repositoryLocation) => repositoryLocation switch
     {
         RepositoryLocation.Session => storage.Session.GroupBy(v => v?.RepositoryElementId ?? string.Empty).ToDictionary(g => g.Key, g => g.ToList()),

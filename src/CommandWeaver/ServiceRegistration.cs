@@ -5,7 +5,8 @@ public static class ServiceRegistration
     public static void AddCommandWeaver(this IServiceCollection services)
     {
         services.AddTransient<ILoader, Loader>();
-        services.AddSingleton<IRepositoryStorage, RepositoryStorage>();
+        services.AddTransient<ISaver, Saver>();
+        services.AddSingleton<IRepositoryStorage, RepositoryStorage>(); //Needs to be singleton, because it stores data.
         services.AddTransient<ICommandWeaver, CommandWeaver>();
         services.AddCommandWeaverSerialization();
         services.AddCommandWeaverFlowService();
