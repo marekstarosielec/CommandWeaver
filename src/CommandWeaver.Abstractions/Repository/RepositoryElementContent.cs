@@ -1,7 +1,7 @@
 ﻿/// <summary>
 /// Represents the content of a repository, including commands and variables.
 /// </summary>
-public record RepositoryContent
+public record RepositoryElementContent
 {
     /// <summary>
     /// Gets or sets the list of commands stored in the repository.

@@ -19,7 +19,7 @@ public class OperationConverter(IOutput output, IVariables variables, IOperation
         {
             // Operation name is not defined.
             output.Warning(
-                $"Operation without name is listed in {variables.CurrentlyProcessedElement}");
+                $"Operation without name is listed in {variables.CurrentlyLoadRepositoryElement}");
             return null;
         }
 
@@ -27,7 +27,7 @@ public class OperationConverter(IOutput output, IVariables variables, IOperation
         if (operationInstance == null)
         {
             // There is no operation with given name.
-            output.Warning($"Operation {operationName} is not valid in {variables.CurrentlyProcessedElement}");
+            output.Warning($"Operation {operationName} is not valid in {variables.CurrentlyLoadRepositoryElement}");
             return null;
         }
 
@@ -73,7 +73,7 @@ public class OperationConverter(IOutput output, IVariables variables, IOperation
             if (!operationInstance.Parameters.ContainsKey(property.Name))
             {
                 // Property defined in JSON is not defined in operation class.
-                output.Warning($"Property {property.Name} is invalid in operation {operationName} in {variables.CurrentlyProcessedElement}");
+                output.Warning($"Property {property.Name} is invalid in operation {operationName} in {variables.CurrentlyLoadRepositoryElement}");
                 continue;
             }
 
@@ -93,7 +93,7 @@ public class OperationConverter(IOutput output, IVariables variables, IOperation
             if (_conditionProperties.TryGetValue(property.Name, out var conditionProperty))
                 conditionProperty.SetValue(operationInstance.Conditions, _dynamicValueConverter.ReadElement(property.Value) ?? new DynamicValue());
             else
-                output.Warning($"Unknown condition {property.Name} in operation {operationName} in {variables.CurrentlyProcessedElement}");
+                output.Warning($"Unknown condition {property.Name} in operation {operationName} in {variables.CurrentlyLoadRepositoryElement}");
     }
 
     /// <summary>

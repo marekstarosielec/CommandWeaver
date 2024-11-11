@@ -1,13 +1,10 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 
-public class FileRepository(IPhysicalFileProvider physicalFileProvider) : IRepository
+public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutput output) : IRepository
 {
-    protected internal string BuiltInFolder { get; internal set; } = Path.Combine(AppContext.BaseDirectory, "BuiltIn");
-    protected internal string LocalFolder { get; internal set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Cli2");
-
     /// <inheritdoc />
-    public IAsyncEnumerable<RepositoryElementInfo> GetList(RepositoryLocation location, string? sessionName, CancellationToken cancellationToken)
+    public IAsyncEnumerable<RepositoryElement> GetList(RepositoryLocation location, string? sessionName, CancellationToken cancellationToken)
     {
         try
         {
@@ -18,7 +15,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider) : IRepos
         catch
         {
             //TODO: do something when path cannot be read? Output?
-            return AsyncEnumerable.Empty<RepositoryElementInfo>();
+            return AsyncEnumerable.Empty<RepositoryElement>();
         }
     }
 
@@ -30,21 +27,14 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider) : IRepos
         if (directoryPath != null)
             Directory.CreateDirectory(directoryPath);
 
-        using (var stream = new FileStream(Path.Combine(path, locationId.TrimStart('\\')), FileMode.Create, FileAccess.Write))
-        {
-            using (var writer = new StreamWriter(stream))
-            {
-                // Move the writer to the end if appending; otherwise, overwrite content
-                stream.Seek(0, SeekOrigin.End); // remove this line if you want to overwrite instead of append
-                writer.Write(content);
-            }
-        }
+        using var stream = new FileStream(Path.Combine(path, locationId.TrimStart('\\')), FileMode.Create, FileAccess.Write);
+        using var writer = new StreamWriter(stream);
+        writer.Write(content);
     }
   
-    internal async IAsyncEnumerable<RepositoryElementInfo> GetFilesAsync(RepositoryLocation location, string? sessionName, [EnumeratorCancellation] CancellationToken cancellationToken)
+    internal async IAsyncEnumerable<RepositoryElement> GetFilesAsync(RepositoryLocation location, string? sessionName, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var rootPath = GetPath(location, sessionName);
-        
         await foreach (var file in EnumerateFilesIterativelyAsync(rootPath, cancellationToken))
            yield return file;
     }
@@ -53,16 +43,38 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider) : IRepos
     /// Iteratively enumerates files and directories using a stack to avoid recursion issues.
     /// Errors encountered are logged to the result's error collection.
     /// </summary>
-    private async IAsyncEnumerable<RepositoryElementInfo> EnumerateFilesIterativelyAsync(string rootPath, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<RepositoryElement> EnumerateFilesIterativelyAsync(string rootPath, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var basePath = physicalFileProvider.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         foreach (var file in physicalFileProvider.GetFiles(rootPath))
         {
             if (cancellationToken.IsCancellationRequested)
                 yield break;
+
+            var result = await TryGetRepositoryElementInfoAsync(file, basePath, cancellationToken);
+            if (result != null)
+                yield return result;
+        }
+
+        await Task.Yield(); // Allow other asynchronous operations to run
+    }
+
+    /// <summary>
+    /// Read information and content of file in try/catch.
+    /// </summary>
+    /// <param name="file"></param>
+    /// <param name="basePath"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    private async Task<RepositoryElement?> TryGetRepositoryElementInfoAsync(string file, string basePath, CancellationToken cancellationToken)
+    {
+        try
+        {
             var fileName = physicalFileProvider.GetFileName(file);
+
+            //Skip system/hidden files.
             if (fileName.StartsWith('.'))
-                continue;
+                return null;
 
             var format = file.LastIndexOf('.') is var pos && pos >= 0 ? file[(pos + 1)..] : string.Empty;
             var friendlyName = file.Length > basePath.Length + format.Length + 1
@@ -70,22 +82,28 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider) : IRepos
                 : file;
 
             var content = await physicalFileProvider.GetFileContent(file, cancellationToken);
-            yield return new RepositoryElementInfo { Id = file, Format = format, FriendlyName = friendlyName, Content = content };
+            return new RepositoryElement { Id = file, Format = format, FriendlyName = friendlyName, Content = content };
         }
-      
-        await Task.Yield(); // Allow other asynchronous operations to run
+        catch (Exception ex)
+        {
+            // Log the exception and return null to skip this file
+            output.Warning($"Failed to process file {file}");
+            return null;
+        }
     }
 
     /// <summary>
     /// Gets the path based on the specified repository location and session name.
     /// </summary>
-    private string GetPath(RepositoryLocation location, string? sessionName = null) =>
-        location switch
+    private string GetPath(RepositoryLocation location, string? sessionName = null)
+    {
+        return location switch
         {
-            RepositoryLocation.BuiltIn => BuiltInFolder,
-            RepositoryLocation.Application => LocalFolder,
-            RepositoryLocation.Session when !string.IsNullOrWhiteSpace(sessionName) => Path.Combine(LocalFolder, "Sessions", sessionName),
+            RepositoryLocation.Application => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CommandWeaver"),
+            RepositoryLocation.Session when !string.IsNullOrWhiteSpace(sessionName) => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CommandWeaver", "Sessions", sessionName),
             RepositoryLocation.Session => throw new ArgumentException("SessionName not provided"),
+            RepositoryLocation.BuiltIn => throw new NotImplementedException(),
             _ => throw new ArgumentException("Unsupported location")
         };
+    }
 }

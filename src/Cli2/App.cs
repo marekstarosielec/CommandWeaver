@@ -3,7 +3,7 @@ using CommandLine;
 namespace Cli2;
 
 // Application entry class
-public class App(IContext context, Parser parser)
+public class App(ICommandWeaver commandWeaver, Parser parser)
 {
     public async Task Run(string[] args)
     {
@@ -18,8 +18,7 @@ public class App(IContext context, Parser parser)
         try
         {
             parser.ParseFullCommandLine(Environment.CommandLine, out var command, out var arguments);
-            await context.Initialize(cancellationTokenSource.Token);
-            await context.Run(command, arguments, cancellationTokenSource.Token);
+            await commandWeaver.Run(command, arguments, cancellationTokenSource.Token);
         }
         catch (OperationCanceledException)
         {

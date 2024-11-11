@@ -10,18 +10,24 @@ public interface IVariables
     string CurrentSessionName { get; set; }
 
     /// <summary>
-    /// Gets or sets the name of the element currently being processed.
+    /// Gets or sets the name of the repository currently being loaded.
     /// </summary>
-    /// <remarks>Used to track the active element, allowing for contextual variable management.</remarks>
-    string? CurrentlyProcessedElement { get; set; }
+    /// <remarks>Used to track the active repository, allowing for contextual variable management.</remarks>
+    string? CurrentlyLoadRepository { get; set; }
 
     /// <summary>
-    /// Sets a list of variables in a specified repository location.
+    /// Gets or sets the name of the element currently being loaded.
+    /// </summary>
+    /// <remarks>Used to track the active element, allowing for contextual variable management.</remarks>
+    string? CurrentlyLoadRepositoryElement { get; set; }
+
+    /// <summary>
+    /// Adds a set of variables in a specified repository location.
     /// </summary>
     /// <param name="repositoryLocation">The location of the repository where variables will be stored.</param>
-    /// <param name="elementsWithContent">The list of variables to store in the repository location.</param>
+    /// <param name="variables">The list of variables to store in the repository location.</param>
     /// <param name="locationId">The identifier for the specific location within the repository.</param>
-    void SetVariableList(RepositoryLocation repositoryLocation, List<Variable?> elementsWithContent, string locationId);
+    void Add(RepositoryLocation repositoryLocation, IEnumerable<Variable> variables, string locationId);
 
     /// <summary>
     /// Retrieves a dictionary of variables stored in a specified repository location.

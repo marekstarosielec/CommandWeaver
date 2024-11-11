@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 public class EmbeddedRepository : IEmbeddedRepository
 {
     /// <inheritdoc />
-    public async IAsyncEnumerable<RepositoryElementInfo> GetList([EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<RepositoryElement> GetList([EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var assembly = Assembly.GetExecutingAssembly();
         var baseName = assembly.GetName().Name ?? string.Empty;
@@ -23,7 +23,7 @@ public class EmbeddedRepository : IEmbeddedRepository
             var format = GetFileFormat(resourceName);
             var friendlyName = GetFriendlyName(resourceName, baseName, format);
 
-            yield return new RepositoryElementInfo
+            yield return new RepositoryElement
             {
                 Id = resourceName,
                 Format = format,

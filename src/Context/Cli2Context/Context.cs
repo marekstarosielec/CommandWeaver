@@ -1,23 +1,22 @@
 ﻿
 namespace Cli2Context;
 
-public class Context(IVariables variables, IFlow flow, IEmbeddedRepository embeddedRepository, ISerializerFactory serializerFactory, IOutput output) : IContext
+public class Context(IVariables variables, IFlow flow, IEmbeddedRepository embeddedRepository, IRepository repository, ISerializerFactory serializerFactory, IOutput output) : IContext
 {
-    private readonly IEmbeddedRepository _embeddedRepository = embeddedRepository;
     private readonly ISerializerFactory _serializerFactory = serializerFactory;
 
     private List<Command> Commands = [];
-    private Dictionary<RepositoryLocation, Dictionary<string, RepositoryContent>> _originalRepositories = new Dictionary<RepositoryLocation, Dictionary<string, RepositoryContent>>();
+    private Dictionary<RepositoryLocation, Dictionary<string, RepositoryElementContent>> _originalRepositories = new Dictionary<RepositoryLocation, Dictionary<string, RepositoryElementContent>>();
 
     public async Task Initialize(CancellationToken cancellationToken = default)
     {
-        var builtInElements = _embeddedRepository.GetList(cancellationToken);
+        var builtInElements = embeddedRepository.GetList(cancellationToken);
         await ProcessElements(RepositoryLocation.BuiltIn, null, builtInElements);
-        //var localElements = _embeddedRepository.GetList(RepositoryLocation.Application, null, cancellationToken);
-        //await ProcessElements(RepositoryLocation.Application, null, localElements);
-        //var currentSessionName = variables.CurrentSessionName;
-        //var sessionElements = _embeddedRepository.GetList(RepositoryLocation.Session, currentSessionName, cancellationToken);
-        //await ProcessElements(RepositoryLocation.Session, currentSessionName, sessionElements);
+        var localElements = repository.GetList(RepositoryLocation.Application, null, cancellationToken);
+        await ProcessElements(RepositoryLocation.Application, null, localElements);
+        var currentSessionName = variables.CurrentSessionName;
+        var sessionElements = repository.GetList(RepositoryLocation.Session, currentSessionName, cancellationToken);
+        await ProcessElements(RepositoryLocation.Session, currentSessionName, sessionElements);
     }
 
     public async Task Run(string commmandName, Dictionary<string, string> arguments, CancellationToken cancellationToken = default)
@@ -108,43 +107,43 @@ public class Context(IVariables variables, IFlow flow, IEmbeddedRepository embed
             await operation.Run(cancellationToken);
         }
 
-        ////Save changes in variables
-        //var variableList = variables.GetVariableList(RepositoryLocation.Application);
-        //foreach (var locationId in variableList.Keys)
-        //{
-        //    var resolvedLocationId = string.IsNullOrWhiteSpace(locationId) ? "variables.json" : locationId;
-        //    var originalFile = _originalRepositories.ContainsKey(RepositoryLocation.Application) && _originalRepositories[RepositoryLocation.Application].ContainsKey(resolvedLocationId)
-        //                ? _originalRepositories[RepositoryLocation.Application][resolvedLocationId] : null;
-        //    if (originalFile != null)
-        //        originalFile.Variables = variableList[resolvedLocationId].Select(v => new Variable { Key = v.Key, Value = v.Value }).ToList();
-        //    else
-        //        originalFile = new RepositoryContent { Variables = variableList[resolvedLocationId].Select(v =>new Variable { Key=v.Key, Value = v.Value}).ToList() };
+        //Save changes in variables
+        var variableList = variables.GetVariableList(RepositoryLocation.Application);
+        foreach (var locationId in variableList.Keys)
+        {
+            var resolvedLocationId = string.IsNullOrWhiteSpace(locationId) ? "variables.json" : locationId;
+            var originalFile = _originalRepositories.ContainsKey(RepositoryLocation.Application) && _originalRepositories[RepositoryLocation.Application].ContainsKey(resolvedLocationId)
+                        ? _originalRepositories[RepositoryLocation.Application][resolvedLocationId] : null;
+            if (originalFile != null)
+                originalFile.Variables = variableList[resolvedLocationId].Select(v => new Variable { Key = v.Key, Value = v.Value }).ToList();
+            else
+                originalFile = new RepositoryElementContent { Variables = variableList[resolvedLocationId].Select(v => new Variable { Key = v.Key, Value = v.Value }).ToList() };
 
-        //    var serializer = _serializerFactory.GetSerializer("json");
-        //    if (serializer.TrySerialize(originalFile, out var content, out var exception))
-        //        _embeddedRepository.SaveList(RepositoryLocation.Application, resolvedLocationId, null, content, cancellationToken);
-        //}
+            var serializer = _serializerFactory.GetSerializer("json");
+            if (serializer.TrySerialize(originalFile, out var content, out var exception))
+                repository.SaveList(RepositoryLocation.Application, resolvedLocationId, null, content, cancellationToken);
+        }
     }
 
 
-    private async Task ProcessElements(RepositoryLocation repositoryLocation, string? sessionName, IAsyncEnumerable<RepositoryElementInfo> elements)
+    private async Task ProcessElements(RepositoryLocation repositoryLocation, string? sessionName, IAsyncEnumerable<RepositoryElement> elements)
     {
         await foreach (var element in elements)
         {
-            variables.CurrentlyProcessedElement = element.FriendlyName;
+            variables.CurrentlyLoadRepositoryElement = element.FriendlyName;
             output.Debug($"Processing {repositoryLocation.ToString()} element {element.FriendlyName}");
-            if (element.Exception != null)
-            {
-                output.Warning($"Failed to load {element.Id}. Exception occurred: {element.Exception.Message}");
-                continue;
-            }
+            //if (element.Exception != null)
+            //{
+            //    output.Warning($"Failed to load {element.Id}. Exception occurred: {element.Exception.Message}");
+            //    continue;
+            //}
 
-            var serializer = GetSerializer(repositoryLocation, sessionName, element);
+            var serializer = GetSerializer(element);
             if (serializer == null)
                 return;
 
             //TODO: Deserialization should also return Exception if occurred.
-            serializer.TryDeserialize(element.Content, out RepositoryContent? contentObject, out var exception);
+            serializer.TryDeserialize(element.Content, out RepositoryElementContent? contentObject, out var exception);
             if (contentObject == null)
             {
                 output.Warning($"Failed to deserialize {element.Id}.");
@@ -153,19 +152,19 @@ public class Context(IVariables variables, IFlow flow, IEmbeddedRepository embed
 
             //TODO: if deserialization failed, we have to save this information. Otherwise changes will overwrite whole file.
             if (!_originalRepositories.ContainsKey(repositoryLocation))
-                _originalRepositories[repositoryLocation] = new Dictionary<string, RepositoryContent>();
+                _originalRepositories[repositoryLocation] = new Dictionary<string, RepositoryElementContent>();
             _originalRepositories[repositoryLocation][element.Id] = contentObject;
 
             if (contentObject.Variables != null)
-                variables.SetVariableList(repositoryLocation, contentObject.Variables, element.Id);
+                variables.Add(repositoryLocation, contentObject.Variables, element.Id);
             if (contentObject.Commands != null)
                 Commands.AddRange(contentObject.Commands.Where(c => c != null)!);
         }
 
-        variables.CurrentlyProcessedElement = null;
+        variables.CurrentlyLoadRepositoryElement = null;
     }
 
-    private ISerializer? GetSerializer(RepositoryLocation repositoryLocation, string? sessionName, RepositoryElementInfo element)
+    private ISerializer? GetSerializer(RepositoryElement element)
     {
         if (element.Format == null)
         {

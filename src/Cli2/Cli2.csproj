@@ -10,12 +10,7 @@
     <ItemGroup>
       <ProjectReference Include="..\BuiltInOperations\BuiltInOperations.csproj" />
       <ProjectReference Include="..\CommandLine\CommandLine.csproj" />
-      <ProjectReference Include="..\CommandWeaver.Repositories.Embedded\CommandWeaver.Repositories.Embedded.csproj" />
-      <ProjectReference Include="..\CommandWeaver.Repositories.File\CommandWeaver.Repositories.File.csproj" />
-      <ProjectReference Include="..\CommandWeaver.Serializers.Default\CommandWeaver.Serializers.Default.csproj" />
-      <ProjectReference Include="..\CommandWeaver.Services.Flow\CommandWeaver.Services.Flow.csproj" />
-      <ProjectReference Include="..\CommandWeaver.Variables\CommandWeaver.Variables.csproj" />
-      <ProjectReference Include="..\Context\Cli2Context\Cli2Context.csproj" />
+      <ProjectReference Include="..\CommandWeaver\CommandWeaver.csproj" />
       <ProjectReference Include="..\Outputs\SpectreConsole\SpectreConsole.csproj" />
       <ProjectReference Include="..\Repositories\Repositories.Abstraction\Repositories.Abstraction.csproj" />
       <ProjectReference Include="..\Repositories\Repositories.File\Repositories.File.csproj" />

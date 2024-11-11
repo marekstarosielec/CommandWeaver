@@ -8,10 +8,16 @@ public class Variables(IReader reader, IWriter writer, Storage storage) : IVaria
         set => WriteVariableValue(VariableScope.Application, "currentSessionName", new DynamicValue(value));
     }
 
-    public string? CurrentlyProcessedElement
+    public string? CurrentlyLoadRepository
     {
-        get => reader.ReadVariableValue(new DynamicValue("currentlyProcessedElement"), true)?.TextValue;
-        set => WriteVariableValue(VariableScope.Command, "currentlyProcessedElement", new DynamicValue(value));
+        get => reader.ReadVariableValue(new DynamicValue("currentlyLoadRepository"), true)?.TextValue;
+        set => WriteVariableValue(VariableScope.Command, "currentlyLoadRepository", new DynamicValue(value));
+    }
+
+    public string? CurrentlyLoadRepositoryElement
+    {
+        get => reader.ReadVariableValue(new DynamicValue("currentlyLoadRepositoryElement"), true)?.TextValue;
+        set => WriteVariableValue(VariableScope.Command, "currentlyLoadRepositoryElement", new DynamicValue(value));
     }
 
     public Variable? FindVariable(string variableName) 
@@ -23,20 +29,20 @@ public class Variables(IReader reader, IWriter writer, Storage storage) : IVaria
     public DynamicValue ReadVariableValue(DynamicValue variableValue, bool treatTextValueAsVariable = false)
     => reader.ReadVariableValue(variableValue, treatTextValueAsVariable);
 
-    public void SetVariableList(RepositoryLocation repositoryLocation, List<Variable?> elementsWithContent, string locationId)
+    public void Add(RepositoryLocation repositoryLocation, IEnumerable<Variable> variables, string locationId)
     {
-        var elementsToImport = elementsWithContent.Where(v => v != null).Cast<Variable>();
+        var elementsToImport = variables.Select(v => v with { LocationId = locationId });
 
         switch (repositoryLocation)
         {
             case RepositoryLocation.BuiltIn:
-                storage.BuiltIn = storage.BuiltIn.AddRange(elementsToImport.Select(element => element with { LocationId = locationId }).ToImmutableList());
+                storage.BuiltIn = storage.BuiltIn.AddRange(elementsToImport).ToImmutableList();
                 break;
             case RepositoryLocation.Application:
-                storage.Application.AddRange(elementsToImport.Select(element => element with { LocationId = locationId }).ToList());
+                storage.Application.AddRange(elementsToImport);
                 break;
             case RepositoryLocation.Session:
-                storage.Session.AddRange(elementsToImport.Select(element => element with { LocationId = locationId }).ToList());
+                storage.Session.AddRange(elementsToImport);
                 break;
             default:
                 throw new InvalidOperationException($"Unknown repository location: {repositoryLocation}");

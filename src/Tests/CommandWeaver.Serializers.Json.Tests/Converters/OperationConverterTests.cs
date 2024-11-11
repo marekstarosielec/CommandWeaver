@@ -13,7 +13,7 @@ public class OperationConverterTests
         _mockOutput = Substitute.For<IOutput>();
         _mockFactory = Substitute.For<IOperationFactory>();
         _variables = Substitute.For<IVariables>();
-        _variables.CurrentlyProcessedElement.Returns("TestElement");
+        _variables.CurrentlyLoadRepositoryElement.Returns("TestElement");
 
         _options = new JsonSerializerOptions
         {
