@@ -10,6 +10,4 @@ public interface IFlow
     /// <param name="exitCode">An exit code representing the reason for termination; defaults to <c>1</c>.</param>
     /// <remarks>This is typically used to end the flow due to an error.</remarks>
     void Terminate(string? message = null, int exitCode = 1);
-
-    Task ExecuteCommand(Command command, IVariables variables, CancellationToken cancellationToken);
 }

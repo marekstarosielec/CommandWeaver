@@ -24,7 +24,7 @@ public class CommandWeaver(ILoader loader, ICommands commands, IFlow flow, IVari
             return;
         }
         commands.PrepareCommandParameters(commandToExecute, arguments);
-        await flow.ExecuteCommand(commandToExecute, variables, cancellationToken);
+        await commands.ExecuteCommand(commandToExecute, cancellationToken);
 
         ////Save changes in variables
         //var variableList = variables.GetVariableList(RepositoryLocation.Application);
