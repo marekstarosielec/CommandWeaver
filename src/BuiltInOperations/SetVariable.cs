@@ -12,7 +12,6 @@ public class SetVariable(IVariables variables) : Operation
         { "id", new OperationParameter { Description = "Optional name of file where variable should be stored." } },
     };
 
-
     public override Task Run(CancellationToken cancellationToken)
     {
         variables.WriteVariableValue(

@@ -19,17 +19,16 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutput 
         }
     }
 
-    public void SaveList(RepositoryLocation location, string? repositoryElementId, string? sessionName, string content, CancellationToken cancellationToken)
+    public async Task SaveList(string repositoryElementId, string content, CancellationToken cancellationToken)
     {
-        var path = GetPath(location, sessionName);
-        var directoryPath = Path.GetDirectoryName(Path.Combine(path, repositoryElementId.TrimStart('\\')));
+        var directoryPath = Path.GetDirectoryName(repositoryElementId);
 
         if (directoryPath != null)
             Directory.CreateDirectory(directoryPath);
 
-        using var stream = new FileStream(Path.Combine(path, repositoryElementId.TrimStart('\\')), FileMode.Create, FileAccess.Write);
+        using var stream = new FileStream(repositoryElementId, FileMode.Create, FileAccess.Write);
         using var writer = new StreamWriter(stream);
-        writer.Write(content);
+        await writer.WriteAsync(content.AsMemory(), cancellationToken);
     }
   
     internal async IAsyncEnumerable<RepositoryElementSerialized> GetFilesAsync(RepositoryLocation location, string? sessionName, [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -98,7 +97,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutput 
     {
         return repositoryLocation switch
         {
-            RepositoryLocation.Application => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CommandWeaver"),
+            RepositoryLocation.Application => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CommandWeaver", "Global"),
             RepositoryLocation.Session when !string.IsNullOrWhiteSpace(sessionName) => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CommandWeaver", "Sessions", sessionName),
             RepositoryLocation.Session => throw new ArgumentException("SessionName not provided"),
             RepositoryLocation.BuiltIn => throw new NotImplementedException(),

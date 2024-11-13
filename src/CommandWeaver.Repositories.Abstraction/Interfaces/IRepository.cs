@@ -11,5 +11,5 @@ public interface IRepository
 
     string GetPath(RepositoryLocation repositoryLocation, string? sessionName = null);
 
-    void SaveList(RepositoryLocation location, string? repositoryElementId, string? sessionName, string content, CancellationToken cancellationToken);
+    Task SaveList(string repositoryElementId, string content, CancellationToken cancellationToken);
 }

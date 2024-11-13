@@ -21,7 +21,7 @@ public class CommandWeaver(ILoader loader, ICommands commands, IFlow flow, ISave
         }
         commands.PrepareCommandParameters(commandToExecute, arguments);
         await commands.ExecuteCommand(commandToExecute, cancellationToken);
-        saver.Execute(cancellationToken);
+        await saver.Execute(cancellationToken);
     }
 
     

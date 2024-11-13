@@ -1,19 +1,25 @@
 ﻿public interface IWriter
 {
-    void WriteVariableValue(VariableScope scope, string path, DynamicValue value, string? repositoryElementId);
+    void WriteVariableValue(VariableScope scope, string? sessionName, string path, DynamicValue value, string? repositoryElementId);
 }
 
-public class Writer(IFlow flow, Storage variableStorage) : IWriter
+public class Writer(IFlow flow, Storage variableStorage, IRepository repository) : IWriter
 {
-    public void WriteVariableValue(VariableScope scope, string path, DynamicValue value, string? repositoryElementId)
+    public void WriteVariableValue(VariableScope scope, string? sessionName, string path, DynamicValue value, string? repositoryElementId)
     {
+        var resolvedRepositoryElementId = repositoryElementId;
+        if (resolvedRepositoryElementId != null && scope != VariableScope.Command)
+        {
+            var basePath = repository.GetPath(scope == VariableScope.Session ? RepositoryLocation.Session : RepositoryLocation.Application, sessionName);
+            resolvedRepositoryElementId = Path.Combine(basePath, resolvedRepositoryElementId);
+        }
 
         //Replacing whole variable.
         if (ValuePath.PathIsTopLevel(path))
-            WriteVariableValueOnTopLevelVariable(scope, path, value, repositoryElementId);
+            WriteVariableValueOnTopLevelVariable(scope, path, value, resolvedRepositoryElementId);
         //Adding or replacing element in list.
         else if (ValuePath.PathIsTopLevelList(path))
-            WriteVariableValueOnTopLevelList(scope, path, value, repositoryElementId);
+            WriteVariableValueOnTopLevelList(scope, path, value, resolvedRepositoryElementId);
         else
             flow.Terminate("Writing to sub-property is not supported");
     }
