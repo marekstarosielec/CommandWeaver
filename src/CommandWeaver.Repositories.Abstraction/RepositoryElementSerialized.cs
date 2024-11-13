@@ -1,7 +1,7 @@
 /// <summary>
 /// Contains information about repository element (e.g. file on disc).
 /// </summary>
-public record RepositoryElement
+public record RepositoryElementSerialized
 {
     /// <summary>
     /// Identifier, it should be unique among repository.

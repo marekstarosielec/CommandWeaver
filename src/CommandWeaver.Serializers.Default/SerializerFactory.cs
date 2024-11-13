@@ -1,13 +1,19 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
 /// <inheritdoc />
-public class SerializerFactory(IServiceProvider serviceProvider) : ISerializerFactory
+public class SerializerFactory(IJsonSerializer jsonSerializer) : ISerializerFactory
 {
+    public ISerializer GetDefaultSerializer(out string format)
+    {
+        format = "json";
+        return jsonSerializer;
+    }
+
     /// <inheritdoc />
     public ISerializer? GetSerializer(string format) =>
         format.ToLower() switch
         {
-            "json" => serviceProvider.GetRequiredService<Serializer>(),
+            "json" => jsonSerializer,
             _ => default
         };
 }

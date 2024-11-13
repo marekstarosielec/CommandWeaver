@@ -7,6 +7,6 @@ public interface IEmbeddedRepository
     /// Retrieves a list of elements from the embedded repository based on the specified location.
     /// </summary>
     /// <param name="cancellationToken">A token to observe while waiting for the operation to complete, allowing the operation to be canceled.</param>
-    /// <returns>An asynchronous stream of <see cref="RepositoryElement"/> elements representing the items in the repository.</returns>
-    IAsyncEnumerable<RepositoryElement> GetList(CancellationToken cancellationToken);
+    /// <returns>An asynchronous stream of <see cref="RepositoryElementSerialized"/> elements representing the items in the repository.</returns>
+    IAsyncEnumerable<RepositoryElementSerialized> GetList(CancellationToken cancellationToken);
 }

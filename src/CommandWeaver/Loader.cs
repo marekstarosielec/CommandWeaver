@@ -48,36 +48,36 @@ public class Loader(
     /// <param name="sessionName"></param>
     /// <param name="repositoryElements"></param>
     /// <returns></returns>
-    private async Task LoadRepositoryElements(RepositoryLocation repositoryLocation, string? sessionName, IAsyncEnumerable<RepositoryElement> repositoryElements)
+    private async Task LoadRepositoryElements(RepositoryLocation repositoryLocation, string? sessionName, IAsyncEnumerable<RepositoryElementSerialized> repositoryElementsSerialized)
     {
-        await foreach (var repositoryElement in repositoryElements)
+        await foreach (var repositoryElementSerialized in repositoryElementsSerialized)
         {
-            variables.CurrentlyLoadRepositoryElement = repositoryElement.FriendlyName;
+            variables.CurrentlyLoadRepositoryElement = repositoryElementSerialized.FriendlyName;
             output.Debug($"Processing element {variables.CurrentlyLoadRepository}\\{variables.CurrentlyLoadRepositoryElement}");
 
-            if (string.IsNullOrWhiteSpace(repositoryElement.Content))
+            if (string.IsNullOrWhiteSpace(repositoryElementSerialized.Content))
             {
                 output.Warning($"Element {variables.CurrentlyLoadRepositoryElement} is empty");
                 continue;
             }
 
-            var serializer = GetSerializer(repositoryElement);
+            var serializer = GetSerializer(repositoryElementSerialized);
             if (serializer == null)
                 continue;
 
-            if (!serializer.TryDeserialize(repositoryElement.Content, out RepositoryElementContent? repositoryContent, out var exception) || repositoryContent == null)
+            if (!serializer.TryDeserialize(repositoryElementSerialized.Content, out RepositoryElementContent? repositoryContent, out var exception) || repositoryContent == null)
             {
                 //Still save information about repository, to avoid overriding it with partial conent.
-                repositoryStorage.Add(new Repository(repositoryLocation, repositoryElement.Id, repositoryContent));
+                repositoryStorage.Add(new RepositoryElement(repositoryLocation, repositoryElementSerialized.Id, repositoryContent));
 
                 output.Warning($"Element {variables.CurrentlyLoadRepositoryElement} failed to deserialize");
                 continue;
             }
 
-            repositoryStorage.Add(new Repository(repositoryLocation, repositoryElement.Id, repositoryContent));
+            repositoryStorage.Add(new RepositoryElement(repositoryLocation, repositoryElementSerialized.Id, repositoryContent));
 
             if (repositoryContent.Variables != null)
-                variables.Add(repositoryLocation, repositoryContent.Variables, repositoryElement.Id);
+                variables.Add(repositoryLocation, repositoryContent.Variables, repositoryElementSerialized.Id);
             if (repositoryContent.Commands != null)
                 commands.Add(repositoryContent.Commands.Where(c => c != null)!);
         }
@@ -88,19 +88,19 @@ public class Loader(
     /// <summary>
     /// Gets serializer depending on repository element format.
     /// </summary>
-    /// <param name="element"></param>
+    /// <param name="repositoryElementSerialized"></param>
     /// <returns></returns>
-    private ISerializer? GetSerializer(RepositoryElement element)
+    private ISerializer? GetSerializer(RepositoryElementSerialized repositoryElementSerialized)
     {
-        if (element.Format == null)
+        if (repositoryElementSerialized.Format == null)
         {
             output.Warning($"Failed to determine format of {variables.CurrentlyLoadRepositoryElement}");
             return null;
         }
-        var serializer = serializerFactory.GetSerializer(element.Format);
+        var serializer = serializerFactory.GetSerializer(repositoryElementSerialized.Format);
         if (serializer == null)
         {
-            output.Warning($"Failed to deserialize {variables.CurrentlyLoadRepositoryElement} - unknown format {element.Format}");
+            output.Warning($"Failed to deserialize {variables.CurrentlyLoadRepositoryElement} - unknown format {repositoryElementSerialized.Format}");
             return null;
         }
 

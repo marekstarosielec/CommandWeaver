@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutput output) : IRepository
 {
     /// <inheritdoc />
-    public IAsyncEnumerable<RepositoryElement> GetList(RepositoryLocation repositoryLocation, string? sessionName, CancellationToken cancellationToken)
+    public IAsyncEnumerable<RepositoryElementSerialized> GetList(RepositoryLocation repositoryLocation, string? sessionName, CancellationToken cancellationToken)
     {
         try
         {
@@ -15,7 +15,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutput 
         catch(Exception ex)
         {
             output.Warning($"Failed to list location {repositoryLocation.ToString()}");
-            return AsyncEnumerable.Empty<RepositoryElement>();
+            return AsyncEnumerable.Empty<RepositoryElementSerialized>();
         }
     }
 
@@ -32,7 +32,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutput 
         writer.Write(content);
     }
   
-    internal async IAsyncEnumerable<RepositoryElement> GetFilesAsync(RepositoryLocation location, string? sessionName, [EnumeratorCancellation] CancellationToken cancellationToken)
+    internal async IAsyncEnumerable<RepositoryElementSerialized> GetFilesAsync(RepositoryLocation location, string? sessionName, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var rootPath = GetPath(location, sessionName);
         await foreach (var file in EnumerateFilesIterativelyAsync(rootPath, cancellationToken))
@@ -43,7 +43,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutput 
     /// Iteratively enumerates files and directories using a stack to avoid recursion issues.
     /// Errors encountered are logged to the result's error collection.
     /// </summary>
-    private async IAsyncEnumerable<RepositoryElement> EnumerateFilesIterativelyAsync(string rootPath, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<RepositoryElementSerialized> EnumerateFilesIterativelyAsync(string rootPath, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         foreach (var file in physicalFileProvider.GetFiles(rootPath))
         {
@@ -65,7 +65,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutput 
     /// <param name="basePath"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    private async Task<RepositoryElement?> TryGetRepositoryElementInfoAsync(string rootPath, string file, CancellationToken cancellationToken)
+    private async Task<RepositoryElementSerialized?> TryGetRepositoryElementInfoAsync(string rootPath, string file, CancellationToken cancellationToken)
     {
         try
         {
@@ -81,7 +81,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutput 
                 : file;
 
             var content = await physicalFileProvider.GetFileContent(file, cancellationToken);
-            return new RepositoryElement { Id = file, Format = format, FriendlyName = friendlyName, Content = content };
+            return new RepositoryElementSerialized { Id = file, Format = format, FriendlyName = friendlyName, Content = content };
         }
         catch (Exception ex)
         {

@@ -50,13 +50,18 @@ public class Variables(IReader reader, IWriter writer, Storage storage) : IVaria
         }
     }
 
-    //TODO: Rework to return Repository record from RepositoryStorage?
-    public Dictionary<string, List<Variable>> GetVariableList(RepositoryLocation repositoryLocation) => repositoryLocation switch
+    public RepositoryElementStorage GetRepositoryElementStorage()
     {
-        RepositoryLocation.Session => storage.Session.GroupBy(v => v?.RepositoryElementId ?? string.Empty).ToDictionary(g => g.Key, g => g.ToList()),
-        RepositoryLocation.Application => storage.Application.GroupBy(v => v?.RepositoryElementId ?? string.Empty).ToDictionary(g => g.Key, g => g.ToList()),
-        _ => throw new InvalidOperationException($"Cannot GetVariableList for RepositoryLocation=={repositoryLocation}")
-    };
+        var result = new RepositoryElementStorage();
+        var repositoryElements = storage.Session.GroupBy(v => v?.RepositoryElementId ?? string.Empty).ToDictionary(g => g.Key, g => g.ToList());
+        foreach (var repositoryElement in repositoryElements)
+            result.Add(new RepositoryElement(RepositoryLocation.Session, repositoryElement.Key, new RepositoryElementContent { Variables = repositoryElement.Value.ToImmutableList() }));
+        repositoryElements = storage.Application.GroupBy(v => v?.RepositoryElementId ?? string.Empty).ToDictionary(g => g.Key, g => g.ToList());
+        foreach (var repositoryElement in repositoryElements)
+            result.Add(new RepositoryElement(RepositoryLocation.Application, repositoryElement.Key, new RepositoryElementContent { Variables = repositoryElement.Value.ToImmutableList() }));
+        return result;
+
+    }
 
     public void WriteVariableValue(VariableScope scope, string path, DynamicValue value) => writer.WriteVariableValue(scope, path, value, "");
 }

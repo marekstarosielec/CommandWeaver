@@ -1,4 +1,6 @@
-﻿/// <summary>
+﻿using System.Collections.Immutable;
+
+/// <summary>
 /// Represents the content of a repository, including commands and variables.
 /// </summary>
 public record RepositoryElementContent
@@ -9,7 +11,7 @@ public record RepositoryElementContent
     /// <remarks>
     /// Each command defines a set of operations and parameters. This list may contain <c>null</c> entries.
     /// </remarks>
-    public List<Command>? Commands { get; set; }
+    public ImmutableList<Command>? Commands { get; set; }
 
     /// <summary>
     /// Gets or sets the list of variables stored in the repository.
@@ -17,5 +19,5 @@ public record RepositoryElementContent
     /// <remarks>
     /// Each variable represents a configurable or dynamic value associated with the repository. This list may contain <c>null</c> entries.
     /// </remarks>
-    public List<Variable>? Variables { get; set; }
+    public ImmutableList<Variable>? Variables { get; set; }
 }

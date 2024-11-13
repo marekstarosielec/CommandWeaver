@@ -30,13 +30,11 @@ public interface IVariables
     void Add(RepositoryLocation repositoryLocation, IEnumerable<Variable> variables, string repositoryElementId);
 
     /// <summary>
-    /// Retrieves a dictionary of variables stored in a specified repository location.
+    /// Retrieves repository elemnt storage with current variables values.
     /// </summary>
-    /// <param name="repositoryLocation">The repository location to retrieve variables from.</param>
     /// <returns>
-    /// A dictionary mapping variable names to their corresponding list of <see cref="Variable"/> instances.
     /// </returns>
-    Dictionary<string, List<Variable>> GetVariableList(RepositoryLocation repositoryLocation);
+    RepositoryElementStorage GetRepositoryElementStorage();
 
     /// <summary>
     /// Resolves all variable tags within the specified value.

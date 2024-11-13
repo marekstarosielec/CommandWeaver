@@ -1,8 +1,10 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+public interface IJsonSerializer : ISerializer { }
+
 /// <inheritdoc />
-public class Serializer(IOperationConverter operationConverter, IDynamicValueConverter dynamicValueConverter) : ISerializer
+public class Serializer(IOperationConverter operationConverter, IDynamicValueConverter dynamicValueConverter) : IJsonSerializer
 {
     /// <inheritdoc />
     public bool TryDeserialize<T>(string content, out T? result, out Exception? exception) where T : class
