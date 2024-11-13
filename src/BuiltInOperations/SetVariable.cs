@@ -15,7 +15,11 @@ public class SetVariable(IVariables variables) : Operation
 
     public override Task Run(CancellationToken cancellationToken)
     {
-        variables.WriteVariableValue(Parameters["scope"].Value.GetEnumValue<VariableScope>() ?? VariableScope.Command, Parameters["key"].Value.TextValue!, Parameters["value"].Value);
+        variables.WriteVariableValue(
+            Parameters["scope"].Value.GetEnumValue<VariableScope>() ?? VariableScope.Command, 
+            Parameters["key"].Value.TextValue!, 
+            Parameters["value"].Value,
+            Parameters["id"].Value.TextValue);
         return Task.CompletedTask;
     }
 }

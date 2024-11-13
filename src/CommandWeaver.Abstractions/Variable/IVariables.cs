@@ -57,5 +57,6 @@ public interface IVariables
     /// <param name="scope">The scope within which the variable is stored (e.g., command, session, application).</param>
     /// <param name="path">The path where the variable value will be written.</param>
     /// <param name="value">The value to assign to the variable at the specified path.</param>
-    void WriteVariableValue(VariableScope scope, string path, DynamicValue value); //TODO: Rename to Set and reorder arguments
+    /// <param name="respositoryElementId">Optional id of repository where variable will be stored.</param>
+    void WriteVariableValue(VariableScope scope, string path, DynamicValue value, string? respositoryElementId = null); //TODO: Rename to Set and reorder arguments
 }

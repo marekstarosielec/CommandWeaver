@@ -63,5 +63,5 @@ public class Variables(IReader reader, IWriter writer, Storage storage) : IVaria
 
     }
 
-    public void WriteVariableValue(VariableScope scope, string path, DynamicValue value) => writer.WriteVariableValue(scope, path, value, "");
+    public void WriteVariableValue(VariableScope scope, string path, DynamicValue value, string? respositoryElementId = null) => writer.WriteVariableValue(scope, path, value, respositoryElementId);
 }

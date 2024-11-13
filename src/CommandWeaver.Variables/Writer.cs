@@ -93,7 +93,7 @@ public class Writer(IFlow flow, Storage variableStorage) : IWriter
             ?? variableStorage.Session.FirstOrDefault(v => v.Key == variableName)
             ?? variableStorage.Application.FirstOrDefault(v => v.Key == variableName)
             ?? variableStorage.BuiltIn.FirstOrDefault(v => v.Key == variableName);
-        var resolvedRepositoryElementId = existingVariable?.RepositoryElementId ?? repositoryElementId;
+        var resolvedRepositoryElementId = repositoryElementId ?? existingVariable?.RepositoryElementId;
 
         //When given list element was not yet edited.
         var newVariable = new Variable { Key = variableName, Value = new DynamicValue(new DynamicValueList([value.ObjectValue])), RepositoryElementId = resolvedRepositoryElementId };
