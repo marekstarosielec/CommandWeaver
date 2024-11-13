@@ -5,7 +5,7 @@ public interface ISaver
     Task Execute(CancellationToken cancellationToken);
 }
 
-public class Saver(IVariables variables, IRepositoryStorage repositoryStorage, ISerializerFactory serializerFactory, IFlow flow, IRepository repository) : ISaver
+public class Saver(IVariables variables, IRepositoryStorage repositoryStorage, ISerializerFactory serializerFactory, IFlow flow, IRepository repository, IOutput output) : ISaver
 {
     public async Task Execute(CancellationToken cancellationToken)
     {
@@ -31,7 +31,12 @@ public class Saver(IVariables variables, IRepositoryStorage repositoryStorage, I
                 content = originalReporitory.content with { Variables = repositoryWithUpdatedVariables.content.Variables?.Select(v => v with { RepositoryElementId = null}).ToImmutableList() };
             else if (originalReporitory == null)
                 content = repositoryWithUpdatedVariables.content with { Variables = repositoryWithUpdatedVariables.content.Variables?.Select(v => v with { RepositoryElementId = null }).ToImmutableList() };
-            
+            else
+            {
+                //Avoid overwriting file if its contents could not be read - this could lead to loosing previous data.
+                output.Warning($"Skipping saving to {name} as its content was not loaded.");
+                continue;
+            }
             if (!serializer.TrySerialize(content, out var serializedContent, out var exception))
             {
                 flow.Terminate($"Failed to serialize variables");
@@ -43,4 +48,3 @@ public class Saver(IVariables variables, IRepositoryStorage repositoryStorage, I
         }
     }
 }
-
