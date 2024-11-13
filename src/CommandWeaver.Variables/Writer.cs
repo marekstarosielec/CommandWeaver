@@ -7,6 +7,27 @@ public class Writer(IFlow flow, Storage variableStorage, IRepository repository)
 {
     public void WriteVariableValue(VariableScope scope, string? sessionName, string path, DynamicValue value, string? repositoryElementId)
     {
+        var fullRepositoryElementId = GetFullRepositoryElementId(scope, sessionName, repositoryElementId);
+
+        //Replacing whole variable.
+        if (ValuePath.PathIsTopLevel(path))
+            WriteVariableValueOnTopLevelVariable(scope, path, value, fullRepositoryElementId);
+        //Adding or replacing element in list.
+        else if (ValuePath.PathIsTopLevelList(path))
+            WriteVariableValueOnTopLevelList(scope, path, value, fullRepositoryElementId);
+        else
+            flow.Terminate("Writing to sub-property is not supported");
+    }
+
+    /// <summary>
+    /// If SetVariable operation contains id parameter, it points just to file name. Here we add full path.
+    /// </summary>
+    /// <param name="scope"></param>
+    /// <param name="sessionName"></param>
+    /// <param name="repositoryElementId"></param>
+    /// <returns></returns>
+    private string? GetFullRepositoryElementId(VariableScope scope, string? sessionName, string? repositoryElementId)
+    {
         var resolvedRepositoryElementId = repositoryElementId;
         if (resolvedRepositoryElementId != null && scope != VariableScope.Command)
         {
@@ -14,14 +35,7 @@ public class Writer(IFlow flow, Storage variableStorage, IRepository repository)
             resolvedRepositoryElementId = Path.Combine(basePath, resolvedRepositoryElementId);
         }
 
-        //Replacing whole variable.
-        if (ValuePath.PathIsTopLevel(path))
-            WriteVariableValueOnTopLevelVariable(scope, path, value, resolvedRepositoryElementId);
-        //Adding or replacing element in list.
-        else if (ValuePath.PathIsTopLevelList(path))
-            WriteVariableValueOnTopLevelList(scope, path, value, resolvedRepositoryElementId);
-        else
-            flow.Terminate("Writing to sub-property is not supported");
+        return resolvedRepositoryElementId;
     }
 
     internal void WriteVariableValueOnTopLevelVariable(VariableScope scope, string path, DynamicValue value, string? repositoryElementId)

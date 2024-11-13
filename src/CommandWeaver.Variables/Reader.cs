@@ -141,21 +141,21 @@ public class Reader(IFlow flow, Storage variableStorage) : IReader
     internal DynamicValue? ResolveSingleValue(string path)
     {
         var builtIn = ResolveSingleValueFromSingleList(variableStorage.BuiltIn, path);
-        var local = ResolveSingleValueFromSingleList(variableStorage.Application, path);
+        var application = ResolveSingleValueFromSingleList(variableStorage.Application, path);
         var session = ResolveSingleValueFromSingleList(variableStorage.Session, path);
-        var temporary = ResolveSingleValueFromSingleList(variableStorage.Command, path);
+        var command = ResolveSingleValueFromSingleList(variableStorage.Command, path);
 
         if (ValuePath.PathIsTopLevel(path) &&
             (builtIn?.ListValue != null
-            || local?.ListValue != null
+            || application?.ListValue != null
             || session?.ListValue != null
-            || temporary?.ListValue != null))
+            || command?.ListValue != null))
         {
             // If the whole variable value is requested and it is a list, values from all locations will be combined.
             var result = new List<DynamicValueObject>();
 
-            if (temporary?.ListValue != null)
-                foreach (var item in temporary.ListValue)
+            if (command?.ListValue != null)
+                foreach (var item in command.ListValue)
                     result.Add(item);
 
             if (session?.ListValue != null)
@@ -163,8 +163,8 @@ public class Reader(IFlow flow, Storage variableStorage) : IReader
                     if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
                         result.Add(item);
 
-            if (local?.ListValue != null)
-                foreach (var item in local.ListValue)
+            if (application?.ListValue != null)
+                foreach (var item in application.ListValue)
                     if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
                         result.Add(item);
 
@@ -175,8 +175,13 @@ public class Reader(IFlow flow, Storage variableStorage) : IReader
 
             return new DynamicValue(result);
         }
-
-        return temporary ?? session ?? local ?? builtIn;
+        if (command?.IsNull() == false)
+            return command;
+        if (session?.IsNull() == false)
+            return session;
+        if (application?.IsNull() == false)
+            return application;
+        return builtIn;
     }
 
     /// <summary>

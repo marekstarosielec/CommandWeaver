@@ -41,12 +41,12 @@
             "proxy": "{{proxy}}",
             "defaultPartner": "{{defaultPartner}}"
           },
-          "scope": "Session",
+          "scope": "Application",
           "id": "Variables//nag-core-environments.json"
         },
         {
           "operation": "output",
-          "text": "{{ nag-core-environments[{{key}}].url }}"
+          "text": "{{ nag-core-environments[{{key}}].key }}"
         }
       ]
     }
