@@ -22,10 +22,8 @@ internal static class MarkupConverter
             }
 
             // Process and add the matched tag content as a dynamic argument
-            object processedTag = ProcessTag(match.Groups[1].Value);
-            //formatSegments.Add("{" + arguments.Count + "}");  // Use a numbered placeholder
-            //arguments.Add(processedTag);
-            formatSegments.Add(processedTag.ToString());
+            var processedTag = ProcessTag(match.Groups[1].Value);
+            formatSegments.Add(processedTag);
             lastIndex = match.Index + match.Length;
         }
 
@@ -42,7 +40,7 @@ internal static class MarkupConverter
     }
 
     // Define a function to process each matched element
-    static object ProcessTag(string tagContent)
+    static string ProcessTag(string tagContent)
     {
         var parts = tagContent.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -53,12 +51,14 @@ internal static class MarkupConverter
             // Custom rules for translating elements
             if (parts[i].StartsWith("#"))
             {
-                //parts[i] = parts[i].ToUpper(); // Example transformation
+                //Color
             }
-            else if (parts[i].Equals("underline", StringComparison.OrdinalIgnoreCase))
-            {
-              //  parts[i] = "UL"; // Example transformation
-            }
+            else if (parts[i].Equals("underline", StringComparison.OrdinalIgnoreCase) || parts[i].Equals("u", StringComparison.OrdinalIgnoreCase))
+                parts[i] = "underline";
+            else if (parts[i].Equals("bold", StringComparison.OrdinalIgnoreCase) || parts[i].Equals("b", StringComparison.OrdinalIgnoreCase))
+                parts[i] = "bold";
+            else if (parts[i].Equals("italic", StringComparison.OrdinalIgnoreCase) || parts[i].Equals("i", StringComparison.OrdinalIgnoreCase))
+                parts[i] = "italic";
         }
 
         return $"[{string.Join(" ", parts)}]";
