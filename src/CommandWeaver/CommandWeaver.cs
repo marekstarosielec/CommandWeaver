@@ -9,7 +9,7 @@ public class CommandWeaver(ILoader loader, ICommands commands, IFlow flow, ISave
             flow.Terminate($"Command not provided.");
             return;
         }
-
+        
         await loader.Execute(cancellationToken);
         commands.Validate();
         

@@ -2,7 +2,7 @@
 {
     public void Debug(string message)
     {
-        outputWriter.Write(message);
+        outputWriter.Write($"[[#FF0000]]{message}[[/]]");
     }
 
     public void Error(string message)

@@ -31,6 +31,6 @@ public class SpectreConsoleOutput : IOutputWriter
 
     public void Write(string text)
     {
-        AnsiConsole.MarkupLineInterpolated($"[blue]{text}[/]");
+        AnsiConsole.MarkupLineInterpolated(MarkupConverter.Convert(text));  
     }
 }
