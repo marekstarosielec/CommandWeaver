@@ -1,0 +1,34 @@
+{
+  "commands": [
+    {
+      "name": "output-test",
+      "operations": [
+        {
+          "operation": "output",
+          "text": "This is debug",
+          "logLevel": "debug"
+        },
+        {
+          "operation": "output",
+          "text": "This is trace",
+          "logLevel": "trace"
+        },
+        {
+          "operation": "output",
+          "text": "This is result",
+          "logLevel": "information"
+        },
+        {
+          "operation": "output",
+          "text": "This is warning",
+          "logLevel": "warning"
+        },
+        {
+          "operation": "output",
+          "text": "This is error",
+          "logLevel": "error"
+        }
+      ]
+    }
+  ]
+}

@@ -14,7 +14,7 @@
     },
     "Log level": {
       "commandName": "Project",
-      "commandLineArgs": "paths -log-level error"
+      "commandLineArgs": "output-test --log-level debug"
     }
   }
 }
