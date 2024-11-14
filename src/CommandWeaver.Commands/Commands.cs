@@ -140,6 +140,11 @@ public class Commands(IOutput output, IFlow flow, IOperationConditions operation
                 if (!string.IsNullOrWhiteSpace(operation.Parameters[parameterKey].Value.TextValue) && !Enum.IsDefined(operation.Parameters[parameterKey].AllowedEnumValues!, operation.Parameters[parameterKey].Value.TextValue!))
                     flow.Terminate($"Parameter {parameterKey} has invalid value in operation {operation.Name}.");
             }
+            if (operation.Parameters[parameterKey].AllowedValues != null)
+            {
+                if (!string.IsNullOrWhiteSpace(operation.Parameters[parameterKey].Value.TextValue) && !operation.Parameters[parameterKey].AllowedValues!.Contains(operation.Parameters[parameterKey].Value.TextValue!))
+                    flow.Terminate($"Parameter {parameterKey} has invalid value in operation {operation.Name}.");
+            }
         }
     }
 }
