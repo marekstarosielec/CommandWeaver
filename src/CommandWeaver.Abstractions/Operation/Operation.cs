@@ -32,5 +32,5 @@ public abstract class Operation
     /// The <see cref="OperationCondition"/> object defines conditions, such as checking if certain values are null or not,
     /// that control the execution of this operation.
     /// </remarks>
-    public OperationCondition Conditions { get; } = new OperationCondition();
+    public OperationCondition? Conditions { get; set; }
 }

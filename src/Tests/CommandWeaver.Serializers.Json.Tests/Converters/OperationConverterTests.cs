@@ -92,7 +92,7 @@ public class OperationConverterTests
         var result = JsonSerializer.Deserialize<Operation>(json, _options);
 
         Assert.NotNull(result);
-        Assert.True(result.Conditions.IsNull?.BoolValue);
-        Assert.False(result.Conditions.IsNotNull?.BoolValue);
+        Assert.True(result.Conditions?.IsNull?.BoolValue);
+        Assert.False(result.Conditions?.IsNotNull?.BoolValue);
     }
 }

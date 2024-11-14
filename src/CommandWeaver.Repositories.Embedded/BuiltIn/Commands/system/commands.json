@@ -5,14 +5,14 @@
       "parameters": [
         {
           "key": "name",
+          "otherNames": ["n"],
           "description": "Name of command",
-          "requiredText": true
+          "required": true
         }
       ],
       "operations": [
         {
           "operation": "terminate",
-          "_comment": "Do not allow to add environment with name that already exists.",
           "message": "Command {{name}} does not exist",
           "conditions": {
             "isNull": "{{ commands[{{name}}] }}"

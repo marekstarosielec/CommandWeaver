@@ -32,7 +32,7 @@ public class Commands(IOutput output, IFlow flow, IOperationConditions operation
         _commands.AddRange(commands);
     }
 
-    public Command? Get(string name) => _commands.FirstOrDefault(c => c.Name == name || c.OtherNames.Any(n => n == name));
+    public Command? Get(string name) => _commands.FirstOrDefault(c => c.Name == name || c.OtherNames?.Any(n => n == name) == true);
 
     public void PrepareCommandParameters(Command command, Dictionary<string, string> arguments)
     {
@@ -40,6 +40,16 @@ public class Commands(IOutput output, IFlow flow, IOperationConditions operation
         foreach (var parameter in command.Parameters.Union(BuiltInCommandParameters.List))
         {
             arguments.TryGetValue(parameter.Key, out var argumentValue);
+            if (argumentValue == null && parameter.OtherNames != null)
+                foreach(var otherName in parameter.OtherNames)
+                {
+                    arguments.TryGetValue(otherName, out var otherValue);
+                    if (otherValue != null)
+                    {
+                        argumentValue = otherValue;
+                        break;
+                    }
+                }
             variables.WriteVariableValue(VariableScope.Command, parameter.Key, new DynamicValue(argumentValue));
         }
 
@@ -70,8 +80,9 @@ public class Commands(IOutput output, IFlow flow, IOperationConditions operation
                         continue;
                     }
                     allNames.Add(new KeyValuePair<string, string>(command.Name, repositoryElement.id));
-                    foreach (var otherName in command.OtherNames)
-                        allNames.Add(new KeyValuePair<string, string>(otherName, repositoryElement.id));
+                    if (command.OtherNames != null)
+                        foreach (var otherName in command.OtherNames)
+                            allNames.Add(new KeyValuePair<string, string>(otherName, repositoryElement.id));
 
                     //Find duplicated command parameters within command.
                     var duplicatedParameters = command.Parameters.GroupBy(p => p.Key).Where(g => g.Count() > 1).Select(p => p.Key).ToList();

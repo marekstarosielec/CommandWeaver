@@ -91,7 +91,10 @@ public class OperationConverter(IOutput output, IVariables variables, IOperation
     {
         foreach (var property in rootElement.EnumerateObject())
             if (_conditionProperties.TryGetValue(property.Name, out var conditionProperty))
+            {
+                operationInstance.Conditions ??= new OperationCondition();
                 conditionProperty.SetValue(operationInstance.Conditions, _dynamicValueConverter.ReadElement(property.Value) ?? new DynamicValue());
+            }
             else
                 output.Warning($"Unknown condition {property.Name} in operation {operationName} in {variables.CurrentlyLoadRepositoryElement}");
     }

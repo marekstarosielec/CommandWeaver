@@ -88,7 +88,7 @@ public class Loader(
                     {
                         var commandInformation = new Dictionary<string, DynamicValue?>();
                         commandInformation["key"] = new DynamicValue(command.Name);
-                        commandInformation["json"] = new DynamicValue(serializedSingleCommand);
+                        commandInformation["json"] = new DynamicValue(serializedSingleCommand, true);
                         variables.WriteVariableValue(VariableScope.Command, $"commands[{command.Name}]", new DynamicValue(new DynamicValueObject(commandInformation)));
                     }
                 

@@ -6,7 +6,7 @@
     },
     "Command information": {
       "commandName": "Project",
-      "commandLineArgs": "cmd -name paths1"
+      "commandLineArgs": "cmd -n cmd"
     }
   }
 }

@@ -17,7 +17,12 @@ public record DynamicValue
     /// Initializes a new instance of the <see cref="DynamicValue"/> class with a text value.
     /// </summary>
     /// <param name="textValue">The string value to be assigned.</param>
-    public DynamicValue(string? textValue) => TextValue = textValue;
+    /// <param name="noResolving">Determines whether resolving stops here.</param>
+    public DynamicValue(string? textValue, bool noResolving = false)
+    {
+        TextValue = textValue;
+        NoResolving = noResolving;
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DynamicValue"/> class with a date-time value.
@@ -72,6 +77,12 @@ public record DynamicValue
     /// Gets or sets the text value of the dynamic value.
     /// </summary>
     public string? TextValue { get; }
+
+    /// <summary>
+    /// Informs that value should not be resolved anymore. It is useful when text contains {{ }} and we don't
+    /// want to have it rosolved, e.g. when printing raw command json.
+    /// </summary>
+    public bool NoResolving { get; set; }
 
     /// <summary>
     /// Gets or sets the date-time value of the dynamic value.

@@ -19,7 +19,7 @@ public record OperationParameter
     /// Gets the list of allowed values for this parameter.
     /// </summary>
     /// <remarks>If specified, only values within this list are valid for the parameter.</remarks>
-    public List<string> AllowedValues { get; init; } = [];
+    public List<string>? AllowedValues { get; init; }
 
     /// <summary>
     /// Gets or sets a value indicating whether this parameter is required.

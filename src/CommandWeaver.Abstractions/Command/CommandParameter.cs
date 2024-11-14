@@ -9,6 +9,8 @@ public record CommandParameter
     /// <remarks>This field is required and serves as the unique identifier for the parameter.</remarks>
     public required string Key { get; init; }
 
+    public virtual List<string>? OtherNames { get; init; }
+
     /// <summary>
     /// Gets or sets a description of the command parameter.
     /// </summary>
@@ -19,7 +21,7 @@ public record CommandParameter
     /// Gets or sets the list of allowed values for the command parameter.
     /// </summary>
     /// <remarks>If specified, only these values are accepted for the parameter.</remarks>
-    public List<string> AllowedValues { get; init; } = [];
+    public List<string>? AllowedValues { get; init; }
 
     /// <summary>
     /// Gets or sets a value indicating whether this command parameter is required.
