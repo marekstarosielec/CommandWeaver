@@ -12,7 +12,6 @@ internal static class ServicesConfiguration
         // Register services
         services.AddCommandWeaver();
 
-        services.AddTransient<IOutput, SpectreConsoleOutput>();
         services.AddTransient<IOperationFactory, OperationFactory>();
          services.AddTransient<Parser>();
         // Register the main application entry point
