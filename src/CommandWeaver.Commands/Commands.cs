@@ -1,4 +1,6 @@
-﻿/// <summary>
+﻿using System.Collections.Generic;
+
+/// <summary>
 /// Defines a service for handling command definitions.
 /// </summary>
 public interface ICommands
@@ -20,7 +22,7 @@ public interface ICommands
 
 
 /// <inheritdoc />
-public class Commands(IOutput output, IFlow flow, IOperationConditions operationConditions, IVariables variables) : ICommands
+public class Commands(IOutput output, IFlow flow, IOperationConditions operationConditions, IVariables variables, IRepositoryElementStorage repositoryElementStorage) : ICommands
 {
     private List<Command> _commands = [];
 
@@ -30,7 +32,7 @@ public class Commands(IOutput output, IFlow flow, IOperationConditions operation
         _commands.AddRange(commands);
     }
 
-    public Command? Get(string name) => _commands.FirstOrDefault(c => c.Name == name);
+    public Command? Get(string name) => _commands.FirstOrDefault(c => c.Name == name || c.OtherNames.Any(n => n == name));
 
     public void PrepareCommandParameters(Command command, Dictionary<string, string> arguments)
     {
@@ -56,14 +58,41 @@ public class Commands(IOutput output, IFlow flow, IOperationConditions operation
 
     public void Validate()
     {
-        var commandWithDuplicateNames = _commands
-            .GroupBy(x => x.Name)
-            .Where(g => g.Count() > 1)
-            .SelectMany(g => g)
-            .ToList();
+        var allNames = new List<KeyValuePair<string, string>>();
+        foreach (var repositoryElement in repositoryElementStorage.Get())
+            if (repositoryElement.content?.Commands != null)
+                foreach (var command in repositoryElement.content.Commands)
+                {
+                    //Find commands where name is not defined.
+                    if (string.IsNullOrWhiteSpace(command.Name))
+                    {
+                        output.Warning($"There is a command with missing name in {repositoryElement.id}");
+                        continue;
+                    }
+                    allNames.Add(new KeyValuePair<string, string>(command.Name, repositoryElement.id));
+                    foreach (var otherName in command.OtherNames)
+                        allNames.Add(new KeyValuePair<string, string>(otherName, repositoryElement.id));
 
-        foreach (var command in commandWithDuplicateNames)
-            output.Warning($"Command name {command.Name} is duplicated");
+                    //Find duplicated command parameters within command.
+                    var duplicatedParameters = command.Parameters.GroupBy(p => p.Key).Where(g => g.Count() > 1).Select(p => p.Key).ToList();
+                    foreach (var duplicatedParameter in duplicatedParameters)
+                        output.Warning($"More than one parameter named {duplicatedParameter} is defined in command {command.Name} in {repositoryElement.id}");
+
+
+                }
+
+        //Find duplicated command names in all repositories.
+        var duplicates = allNames
+            .GroupBy(pair => pair.Key)
+            .Where(g => g.Count() > 1)
+            .ToDictionary(
+                g => g.Key,
+                g => string.Join(", ", g.Select(pair => pair.Value))
+            );
+
+        foreach (var duplicate in duplicates)
+            output.Warning($"Command name {duplicate.Key} is duplicated in {duplicate.Value}");
+
     }
 
     public async Task ExecuteCommand(Command command, CancellationToken cancellationToken)

@@ -9,6 +9,8 @@ public class Command
     /// <remarks>This is a required field and uniquely identifies the command.</remarks>
     public required string Name { get; init; }
 
+    public List<string> OtherNames { get; init; } = [];
+
     /// <summary>
     /// Gets or sets the list of operations associated with the command.
     /// </summary>

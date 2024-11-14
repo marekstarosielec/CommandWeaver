@@ -2,6 +2,7 @@
   "commands": [
     {
       "name": "nag-core-environment-add",
+      "otherNames": ["ncea", "nc environment add"],
       "parameters": [
         {
           "key": "key",

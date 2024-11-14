@@ -5,14 +5,14 @@ public interface ISaver
     Task Execute(CancellationToken cancellationToken);
 }
 
-public class Saver(IVariables variables, IRepositoryStorage repositoryStorage, ISerializerFactory serializerFactory, IFlow flow, IRepository repository, IOutput output) : ISaver
+public class Saver(IVariables variables, IRepositoryElementStorage repositoryElementStorage, ISerializerFactory serializerFactory, IFlow flow, IRepository repository, IOutput output) : ISaver
 {
     public async Task Execute(CancellationToken cancellationToken)
     {
         var serializer = serializerFactory.GetDefaultSerializer(out var format);
         var defaultFileName = $"variables.{format}";
 
-        var originalRepositories = repositoryStorage.Get();
+        var originalRepositories = repositoryElementStorage.Get();
         var repositoriesWithUpdatedVariables = variables.GetRepositoryElementStorage().Get();
         foreach (var repositoryWithUpdatedVariables in repositoriesWithUpdatedVariables)
         {

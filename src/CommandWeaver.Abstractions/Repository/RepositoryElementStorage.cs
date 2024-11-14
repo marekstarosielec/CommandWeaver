@@ -6,14 +6,14 @@ public record RepositoryElement(RepositoryLocation repositoryLocation, string id
 /// <summary>
 /// Interface for storing original contents of repositories. 
 /// </summary>
-public interface IRepositoryStorage
+public interface IRepositoryElementStorage
 {
     void Add(RepositoryElement repository);
 
     ImmutableList<RepositoryElement> Get();
 }
 
-public class RepositoryElementStorage : IRepositoryStorage
+public class RepositoryElementStorage : IRepositoryElementStorage
 {
     private readonly List<RepositoryElement> _repositories = [];
 

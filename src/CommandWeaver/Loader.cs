@@ -10,7 +10,7 @@ public class Loader(
     IOutput output, 
     ICommands commands,
     ISerializerFactory serializerFactory,
-    IRepositoryStorage repositoryStorage) : ILoader
+    IRepositoryElementStorage repositoryElementStorage) : ILoader
 {
     public Task Execute(CancellationToken cancellationToken)
     {
@@ -68,13 +68,13 @@ public class Loader(
             if (!serializer.TryDeserialize(repositoryElementSerialized.Content, out RepositoryElementContent? repositoryContent, out var exception) || repositoryContent == null)
             {
                 //Still save information about repository, to avoid overriding it with partial conent.
-                repositoryStorage.Add(new RepositoryElement(repositoryLocation, repositoryElementSerialized.Id, repositoryContent));
+                repositoryElementStorage.Add(new RepositoryElement(repositoryLocation, repositoryElementSerialized.Id, repositoryContent));
 
                 output.Warning($"Element {variables.CurrentlyLoadRepositoryElement} failed to deserialize");
                 continue;
             }
 
-            repositoryStorage.Add(new RepositoryElement(repositoryLocation, repositoryElementSerialized.Id, repositoryContent));
+            repositoryElementStorage.Add(new RepositoryElement(repositoryLocation, repositoryElementSerialized.Id, repositoryContent));
 
             if (repositoryContent.Variables != null)
                 variables.Add(repositoryLocation, repositoryContent.Variables, repositoryElementSerialized.Id);
