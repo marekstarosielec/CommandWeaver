@@ -76,10 +76,23 @@ public class Loader(
 
             repositoryElementStorage.Add(new RepositoryElement(repositoryLocation, repositoryElementSerialized.Id, repositoryContent));
 
+            var defaultSerializer = serializerFactory.GetDefaultSerializer(out _);
             if (repositoryContent.Variables != null)
                 variables.Add(repositoryLocation, repositoryContent.Variables, repositoryElementSerialized.Id);
             if (repositoryContent.Commands != null)
-                commands.Add(repositoryContent.Commands.Where(c => c != null)!);
+            {
+                var allCommands = repositoryContent.Commands.Where(c => c != null)!;
+                commands.Add(allCommands);
+                foreach (var command in allCommands)
+                    if (defaultSerializer.TrySerialize(command, out var serializedSingleCommand, out _))
+                    {
+                        var commandInformation = new Dictionary<string, DynamicValue?>();
+                        commandInformation["key"] = new DynamicValue(command.Name);
+                        commandInformation["json"] = new DynamicValue(serializedSingleCommand);
+                        variables.WriteVariableValue(VariableScope.Command, $"commands[{command.Name}]", new DynamicValue(new DynamicValueObject(commandInformation)));
+                    }
+                
+            }
         }
 
         variables.CurrentlyLoadRepositoryElement = null;

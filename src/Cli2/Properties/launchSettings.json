@@ -3,6 +3,10 @@
     "Cli2": {
       "commandName": "Project",
       "commandLineArgs": "ncea -key test2 -host https://abc.com"
+    },
+    "Command information": {
+      "commandName": "Project",
+      "commandLineArgs": "cmd -name paths1"
     }
   }
 }

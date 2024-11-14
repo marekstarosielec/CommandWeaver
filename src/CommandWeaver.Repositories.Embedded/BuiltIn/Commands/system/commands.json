@@ -1,0 +1,28 @@
+{
+  "commands": [
+    {
+      "name": "cmd",
+      "parameters": [
+        {
+          "key": "name",
+          "description": "Name of command",
+          "requiredText": true
+        }
+      ],
+      "operations": [
+        {
+          "operation": "terminate",
+          "_comment": "Do not allow to add environment with name that already exists.",
+          "message": "Command {{name}} does not exist",
+          "conditions": {
+            "isNull": "{{ commands[{{name}}] }}"
+          }
+        },
+        {
+          "operation": "output",
+          "text": "{{ commands[{{name}}].json }}"
+        }
+      ]
+    }
+  ]
+}
