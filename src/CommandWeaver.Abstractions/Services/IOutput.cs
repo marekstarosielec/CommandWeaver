@@ -37,5 +37,5 @@ public interface IOutput
     /// Outputs result information, which is always visible, no matter log-level.
     /// </summary>
     /// <param name="message"></param>
-    void Result(string message);
+    void Result(string message, string? format);
 }

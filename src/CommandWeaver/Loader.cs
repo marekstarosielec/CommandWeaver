@@ -83,12 +83,14 @@ public class Loader(
             {
                 var allCommands = repositoryContent.Commands.Where(c => c != null)!;
                 commands.Add(allCommands);
+                //Add information about command into variables, so that they can be part of commands.
                 foreach (var command in allCommands)
                     if (defaultSerializer.TrySerialize(command, out var serializedSingleCommand, out _))
                     {
                         var commandInformation = new Dictionary<string, DynamicValue?>();
                         commandInformation["key"] = new DynamicValue(command.Name);
                         commandInformation["json"] = new DynamicValue(serializedSingleCommand, true);
+                        commandInformation["id"] = new DynamicValue(repositoryElementSerialized.Id);
                         variables.WriteVariableValue(VariableScope.Command, $"commands[{command.Name}]", new DynamicValue(new DynamicValueObject(commandInformation)));
                     }
                 

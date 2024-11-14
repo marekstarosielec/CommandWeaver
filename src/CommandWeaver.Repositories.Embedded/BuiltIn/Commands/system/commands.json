@@ -20,7 +20,12 @@
         },
         {
           "operation": "output",
-          "text": "{{ commands[{{name}}].json }}"
+          "text": "Command [[#0000FF]]{{ name }}[[/]] in [[u]]{{commands[{{name}}].id}}[[/]]"
+        },
+        {
+          "operation": "output",
+          "text": "{{ commands[{{name}}].json }}",
+          "formatting": "raw"
         }
       ]
     }

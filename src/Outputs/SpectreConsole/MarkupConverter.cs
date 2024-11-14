@@ -59,6 +59,12 @@ internal static class MarkupConverter
                 parts[i] = "bold";
             else if (parts[i].Equals("italic", StringComparison.OrdinalIgnoreCase) || parts[i].Equals("i", StringComparison.OrdinalIgnoreCase))
                 parts[i] = "italic";
+            else if (parts[i].Equals("/", StringComparison.OrdinalIgnoreCase))
+            { }
+            else if (parts[i].Equals("raw", StringComparison.OrdinalIgnoreCase))
+            { }
+            else
+                throw new InvalidOperationException($"Unknown text formatter: {parts[i]}");
         }
 
         return $"[{string.Join(" ", parts)}]";

@@ -2,7 +2,7 @@
 {
     public void Debug(string message)
     {
-        outputWriter.Write($"[[#808080]]{message}[[/]]");
+        outputWriter.Write($"[[{"#808080"}]]{message}[[/]]");
     }
 
     public void Error(string message)
@@ -10,9 +10,12 @@
         outputWriter.Write($"[[#af0000]]{message}[[/]]");
     }
 
-    public void Result(string message)
+    public void Result(string message, string? format)
     {
-        outputWriter.Write(message);
+        if (format == "raw") 
+            outputWriter.WriteRaw(message);
+        else
+            outputWriter.Write(message);
     }
 
     public void Trace(string message)
