@@ -1,4 +1,7 @@
-﻿public interface ILoader
+﻿using System.Reflection.Metadata.Ecma335;
+using System.Text.Json;
+
+public interface ILoader
 {
     Task Execute(CancellationToken cancellationToken);
 }
@@ -76,24 +79,29 @@ public class Loader(
 
             repositoryElementStorage.Add(new RepositoryElement(repositoryLocation, repositoryElementSerialized.Id, repositoryContent));
 
-            var defaultSerializer = serializerFactory.GetDefaultSerializer(out _);
             if (repositoryContent.Variables != null)
                 variables.Add(repositoryLocation, repositoryContent.Variables, repositoryElementSerialized.Id);
             if (repositoryContent.Commands != null)
             {
-                var allCommands = repositoryContent.Commands.Where(c => c != null)!;
+                var allCommands = repositoryContent.Commands.Where(c => c != null)!.ToList();
                 commands.Add(allCommands);
+
                 //Add information about command into variables, so that they can be part of commands.
-                foreach (var command in allCommands)
-                    if (defaultSerializer.TrySerialize(command, out var serializedSingleCommand, out _))
+                using var doc = JsonDocument.Parse(repositoryElementSerialized.Content);
+                var root = doc.RootElement.GetProperty("commands");
+                if (root.ValueKind == JsonValueKind.Array)
+                {
+                    for (var x = 0; x < allCommands.Count(); x++)
                     {
+                        var command = allCommands[x];
+                        var serializedCommand = root[x].GetRawText();
                         var commandInformation = new Dictionary<string, DynamicValue?>();
                         commandInformation["key"] = new DynamicValue(command.Name);
-                        commandInformation["json"] = new DynamicValue(serializedSingleCommand, true);
+                        commandInformation["json"] = new DynamicValue(serializedCommand, true);
                         commandInformation["id"] = new DynamicValue(repositoryElementSerialized.Id);
                         variables.WriteVariableValue(VariableScope.Command, $"commands[{command.Name}]", new DynamicValue(new DynamicValueObject(commandInformation)));
                     }
-                
+                }
             }
         }
 

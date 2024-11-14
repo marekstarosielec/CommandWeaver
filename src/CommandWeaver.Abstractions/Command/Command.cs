@@ -1,7 +1,7 @@
 /// <summary>
 /// Represents a command consisting of a name, a list of operations to be executed, and a set of parameters.
 /// </summary>
-public class Command
+public record Command
 {
     /// <summary>
     /// Gets or sets the name of the command.
