@@ -11,6 +11,10 @@
     "Paths": {
       "commandName": "Project",
       "commandLineArgs": "paths"
+    },
+    "Log level": {
+      "commandName": "Project",
+      "commandLineArgs": "paths -log-level trace"
     }
   }
 }

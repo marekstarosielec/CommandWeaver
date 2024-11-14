@@ -50,6 +50,10 @@ public class Commands(IOutput output, IFlow flow, IOperationConditions operation
                         break;
                     }
                 }
+
+            if (parameter.AllowedValues != null && argumentValue != null && !parameter.AllowedValues.Contains(argumentValue))
+                flow.Terminate($"Argument {parameter.Key} has invalid value.");
+
             variables.WriteVariableValue(VariableScope.Command, parameter.Key, new DynamicValue(argumentValue));
         }
 
