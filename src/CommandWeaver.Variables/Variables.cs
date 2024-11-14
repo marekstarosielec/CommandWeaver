@@ -20,6 +20,12 @@ public class Variables(IReader reader, IWriter writer, Storage storage) : IVaria
         set => WriteVariableValue(VariableScope.Command, "currentlyLoadRepositoryElement", new DynamicValue(value));
     }
 
+    public string? LogLevel
+    {
+        get => reader.ReadVariableValue(new DynamicValue("log-level"), true)?.TextValue;
+        set => WriteVariableValue(VariableScope.Command, "log-level", new DynamicValue(value));
+    }
+
     public Variable? FindVariable(string variableName) 
             => storage.Command.FirstOrDefault(v => v.Key == variableName)
             ?? storage.Session.FirstOrDefault(v => v.Key == variableName)

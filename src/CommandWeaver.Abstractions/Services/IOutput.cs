@@ -9,6 +9,9 @@ public interface IOutput
     string? ErrorStyle { get; set; }
     string? ResultStyle { get; set; }
 
+    string? LogLevel { get; set; }
+
+
     /// <summary>
     /// Outputs a trace-level message.
     /// </summary>

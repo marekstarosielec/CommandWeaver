@@ -21,6 +21,8 @@ public interface IVariables
     /// <remarks>Used to track the active element, allowing for contextual variable management.</remarks>
     string? CurrentlyLoadRepositoryElement { get; set; }
 
+    string? LogLevel { get; set; }
+
     /// <summary>
     /// Adds a set of variables in a specified repository location.
     /// </summary>

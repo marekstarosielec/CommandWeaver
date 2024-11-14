@@ -68,6 +68,8 @@ public class Commands(IOutput output, IFlow flow, IOperationConditions operation
                 return;
             }
         }
+
+        output.LogLevel = variables.LogLevel;
     }
 
     public void Validate()
