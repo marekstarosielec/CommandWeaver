@@ -3,6 +3,12 @@
 /// </summary>
 public interface IOutput
 {
+    string? DebugStyle { get; set; }
+    string? TraceStyle { get; set; }
+    string? WarningStyle { get; set; }
+    string? ErrorStyle { get; set; }
+    string? ResultStyle { get; set; }
+
     /// <summary>
     /// Outputs a trace-level message.
     /// </summary>

@@ -30,18 +30,30 @@ public class Loader(
         variables.CurrentlyLoadRepository = "built-in";
         var elements = embeddedRepository.GetList(cancellationToken);
         await LoadRepositoryElements(RepositoryLocation.BuiltIn, null, elements);
+        SetupStyles();
 
         variables.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Application, null);
         elements = repository.GetList(RepositoryLocation.Application, null, cancellationToken);
         await LoadRepositoryElements(RepositoryLocation.Application, null, elements);
+        SetupStyles();
 
         variables.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Session, variables.CurrentSessionName);
         elements = repository.GetList(RepositoryLocation.Session, variables.CurrentSessionName, cancellationToken);
         await LoadRepositoryElements(RepositoryLocation.Session, variables.CurrentSessionName, elements);
         variables.CurrentlyLoadRepository = null;
+        SetupStyles();
 
         variables.WriteVariableValue(VariableScope.Command, "LocalPath", new DynamicValue(repository.GetPath(RepositoryLocation.Application)));
         variables.WriteVariableValue(VariableScope.Command, "SessionPath", new DynamicValue(repository.GetPath(RepositoryLocation.Session, variables.CurrentSessionName)));
+    }
+
+    private void SetupStyles()
+    {
+        output.DebugStyle = variables.ReadVariableValue(new DynamicValue("styles[debug].value"), true).TextValue;
+        output.TraceStyle = variables.ReadVariableValue(new DynamicValue("styles[trace].value"), true).TextValue;
+        output.WarningStyle = variables.ReadVariableValue(new DynamicValue("styles[warning].value"), true).TextValue;
+        output.ErrorStyle = variables.ReadVariableValue(new DynamicValue("styles[error].value"), true).TextValue;
+        output.ResultStyle = variables.ReadVariableValue(new DynamicValue("styles[result].value"), true).TextValue;
     }
 
     /// <summary>

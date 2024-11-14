@@ -1,0 +1,29 @@
+{
+  "variables": [
+    {
+      "key": "styles",
+      "value": [
+        {
+          "key": "debug",
+          "value": "#808080"
+        },
+        {
+          "key": "trace",
+          "value": "#c0c0c0"
+        },
+        {
+          "key": "warning",
+          "value": "#af8700"
+        },
+        {
+          "key": "error",
+          "value": "#af0000"
+        },
+        {
+          "key": "result",
+          "value": ""
+        }
+      ]
+    }
+  ]
+}

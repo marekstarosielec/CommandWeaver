@@ -11,6 +11,7 @@
     <None Remove="BuiltIn\Commands\nag-core\ais\prepare.json" />
     <None Remove="BuiltIn\Commands\nag-core\environments\add.json" />
     <None Remove="BuiltIn\Commands\system\commands.json" />
+    <None Remove="BuiltIn\Commands\system\defaultStyles.json" />
     <None Remove="BuiltIn\Commands\system\paths.json" />
     <None Remove="BuiltIn\Variables\nag-core-environments.json" />
     <None Remove="BuiltIn\Variables\variables.json" />
@@ -25,6 +26,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="BuiltIn\Commands\nag-core\environments\add.json" />
     <EmbeddedResource Include="BuiltIn\Commands\system\commands.json" />
+    <EmbeddedResource Include="BuiltIn\Commands\system\defaultStyles.json" />
     <EmbeddedResource Include="BuiltIn\Commands\system\paths.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
