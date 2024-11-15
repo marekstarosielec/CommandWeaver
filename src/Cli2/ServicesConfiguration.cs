@@ -1,7 +1,5 @@
-﻿using BuiltInOperations;
-using CommandLine;
+﻿using CommandLine;
 using Microsoft.Extensions.DependencyInjection;
-using SpectreConsole;
 
 namespace Cli2;
 
@@ -11,9 +9,8 @@ internal static class ServicesConfiguration
     {
         // Register services
         services.AddCommandWeaver();
-
-        services.AddTransient<IOperationFactory, OperationFactory>();
-         services.AddTransient<Parser>();
+        services.AddTransient<Parser>();
+        
         // Register the main application entry point
         services.AddTransient<App>();
     }

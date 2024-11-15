@@ -10,7 +10,6 @@ public class OperationFactory(IServiceProvider serviceProvider) : IOperationFact
         { "terminate", serviceProvider.GetService<Terminate>() ?? throw new InvalidOperationException("Cannot resolve operation terminate") }
     };
     
-    
     //TODO: Add test that checks if every class derived from Operation is created here
     public Operation? GetOperation(string? name) =>
         !string.IsNullOrWhiteSpace(name) && Operations.TryGetValue(name, out var operation) ? operation : null;

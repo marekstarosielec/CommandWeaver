@@ -1,0 +1,34 @@
+{
+  "commands": [
+    {
+      "name": "variable",
+      "parameters": [
+        {
+          "key": "name",
+          "otherNames": ["n"],
+          "description": "Name of variable",
+          "required": true
+        }
+      ],
+      "operations": [
+        {
+          "operation": "terminate",
+          "message": "Command {{name}} does not exist",
+          "conditions": {
+            "isNull": "{{ {{name}} }}"
+          }
+        },
+        {
+          "operation": "output",
+          "text": "Variable [[#0000FF]]{{ name }}[[/]]"
+        }
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "key": "currentSessionName",
+      "value": "session1"
+    }
+  ]
+}

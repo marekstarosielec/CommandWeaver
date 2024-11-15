@@ -18,22 +18,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="BuiltIn\Commands\nag-core\ais\prepare.json">
+    <EmbeddedResource Include="BuiltIn\nag-core\ais\prepare.json" />
+    <EmbeddedResource Include="BuiltIn\nag-core\environments\add.json" />
+    <EmbeddedResource Include="BuiltIn\nag-core\nag-core-environments.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="BuiltIn\Commands\nag-core\environments\add.json" />
-    <EmbeddedResource Include="BuiltIn\Commands\system\commands.json" />
-    <EmbeddedResource Include="BuiltIn\Commands\system\defaultStyles.json" />
-    <EmbeddedResource Include="BuiltIn\Commands\system\paths.json">
+    <EmbeddedResource Include="BuiltIn\system\commands.json" />
+    <EmbeddedResource Include="BuiltIn\system\defaultStyles.json" />
+    <EmbeddedResource Include="BuiltIn\system\paths.json" />
+    <EmbeddedResource Include="BuiltIn\system\variables.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="BuiltIn\Commands\test\outputTest.json" />
-    <EmbeddedResource Include="BuiltIn\Variables\nag-core-environments.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="BuiltIn\Variables\variables.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </EmbeddedResource>
+    <EmbeddedResource Include="BuiltIn\test\outputTest.json" />
   </ItemGroup>
 
   <ItemGroup>
