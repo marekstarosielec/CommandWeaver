@@ -26,8 +26,9 @@ public class Reader(IFlow flow, Storage variableStorage) : IReader
     /// <param name="variableValue">The variable value to resolve.</param>
     /// <param name="treatTextValueAsVariable">If true, treats text values as potential variable name for resolution.</param>
     /// <param name="depth">Current resolving depth.</param>
+    /// <param name="noResolving">If reached value which has NoResolving flag set, resolving is stopped. This is useful when we have variables containing commands.</param>
     /// <returns></returns>
-    private DynamicValue? ReadVariableValue(DynamicValue? variableValue, bool treatTextValueAsVariable, int depth)
+    private DynamicValue? ReadVariableValue(DynamicValue? variableValue, bool treatTextValueAsVariable, int depth, bool noResolving = false)
     {
         if (variableValue == null)
             return null;
@@ -41,7 +42,7 @@ public class Reader(IFlow flow, Storage variableStorage) : IReader
         var result = variableValue with { };
         
         //Allow to stop resolving at some level, e.g. when printing command json, we don't want to have variables inside resolved.
-        if (result.NoResolving)
+        if (result.NoResolving || noResolving)
             return result;
 
         if (result.TextValue != null)
@@ -76,7 +77,7 @@ public class Reader(IFlow flow, Storage variableStorage) : IReader
 
         if (resolvedVariable == null)
             return new DynamicValue();
-
+            
         if (ValuePath.WholePathIsSingleVariable(resolvedKey, path))
             //If whole key is variable name, it can be replaced by any type.
             return ReadVariableValue(resolvedVariable, false, depth);
@@ -85,7 +86,7 @@ public class Reader(IFlow flow, Storage variableStorage) : IReader
         {
             //If variable name is just part of text, it can be replaced only by text.
             resolvedKey = ValuePath.ReplaceVariableWithValue(resolvedKey, path, resolvedVariable.TextValue);
-            return ReadVariableValue(new DynamicValue(resolvedKey), false, depth);
+            return ReadVariableValue(new DynamicValue(resolvedKey), false, depth, resolvedVariable.NoResolving);
         }
 
         flow.Terminate($"{{{{ {path} }}}} resolved to a non-text value, it cannot be part of text.");

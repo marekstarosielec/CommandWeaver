@@ -24,7 +24,7 @@
         },
         {
           "operation": "output",
-          "value": "{{ commands[{{name}}].json }}",
+          "value": "[[raw,json]]{{ commands[{{name}}].json }}[[/]]",
           "formatting": "raw"
         }
       ]

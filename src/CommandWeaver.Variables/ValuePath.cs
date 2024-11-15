@@ -34,8 +34,18 @@ internal static class ValuePath
     /// <param name="path"></param>
     /// <param name="variableName"></param>
     /// <returns></returns>
-    public static bool WholePathIsSingleVariable(string path, string variableName) => path.StartsWith("{{") && path.EndsWith("}}") && path.Trim('{', '}', ' ').Equals(variableName) && path.Trim().IndexOf("{{", 2, StringComparison.Ordinal) == -1;
-
+    public static bool WholePathIsSingleVariable(string path, string variableName) 
+    {
+        return path.StartsWith("{{") && path.EndsWith("}}") && path.Trim('{', '}', ' ').Equals(variableName) && path.Trim().IndexOf("{{", 2, StringComparison.Ordinal) == -1;
+        // if (string.IsNullOrWhiteSpace(path) || string.IsNullOrWhiteSpace(variableName))
+        //     return false;
+        //
+        // // Remove all [[...]] patterns including their content
+        // path = Regex.Replace(path, @"\[\[.*?\]\]", "").Trim();
+        //
+        // // Check if path matches {{variableName}}
+        // return path == $"{{{{{variableName}}}}}";
+    }
     /// <summary>
     /// Replaces variable tag in path with value.
     /// </summary>

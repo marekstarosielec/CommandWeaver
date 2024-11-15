@@ -1,4 +1,6 @@
-﻿public class Output(IOutputWriter outputWriter) : IOutput
+﻿using CommandWeaver.Abstractions;
+
+public class Output(IOutputWriter outputWriter) : IOutput
 {
     public string? DebugStyle { get; set; }
     public string? TraceStyle { get; set; }
@@ -29,7 +31,8 @@
             outputWriter.WriteText($"[[{ResultStyle ?? ""}]]{message}[[/]]");
     }
 
-    public void Test(DynamicValue value)
+    
+    public void Test(DynamicValue value, LogLevel? logLevel)
     {
         if (value.TextValue != null)
             outputWriter.WriteText(value.TextValue);

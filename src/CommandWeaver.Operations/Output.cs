@@ -13,7 +13,7 @@ public class Output(IOutput output) : Operation
   
     public override Task Run(CancellationToken cancellationToken)
     {
-        output.Test(Parameters["value"].Value);
+        output.Test(Parameters["value"].Value, Parameters["logLevel"].Value.GetEnumValue<LogLevel>());
         // switch (Parameters["logLevel"].Value.TextValue)
         // {
         //     case "trace":

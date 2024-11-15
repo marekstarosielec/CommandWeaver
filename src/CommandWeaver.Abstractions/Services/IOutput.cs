@@ -1,3 +1,5 @@
+using CommandWeaver.Abstractions;
+
 /// <summary>
 /// Defines a service for outputting messages to a console or other output target, supporting various log levels.
 /// </summary>
@@ -49,5 +51,5 @@ public interface IOutput
     /// <param name="message"></param>
     void Result(string message, string? format);
     
-    void Test(DynamicValue value);
+    void Test(DynamicValue value, LogLevel? logLevel);
 }
