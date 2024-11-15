@@ -85,7 +85,10 @@ public class Reader(IFlow flow, Storage variableStorage) : IReader
         if (resolvedVariable.TextValue != null)
         {
             //If variable name is just part of text, it can be replaced only by text.
-            resolvedKey = ValuePath.ReplaceVariableWithValue(resolvedKey, path, resolvedVariable.TextValue);
+            
+            //If variable contains styling, it is replaced here so it is not applied.
+            var replacement = resolvedVariable.TextValue.Replace("[[", "/[/[").Replace("]]", "/]/]");
+            resolvedKey = ValuePath.ReplaceVariableWithValue(resolvedKey, path, replacement);
             return ReadVariableValue(new DynamicValue(resolvedKey), false, depth, resolvedVariable.NoResolving);
         }
 
