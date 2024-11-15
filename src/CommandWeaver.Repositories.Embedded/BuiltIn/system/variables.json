@@ -13,14 +13,14 @@
       "operations": [
         {
           "operation": "terminate",
-          "message": "Command {{name}} does not exist",
+          "message": "Variable {{name}} does not exist or has no value",
           "conditions": {
             "isNull": "{{ {{name}} }}"
           }
         },
         {
           "operation": "output",
-          "text": "Variable [[#0000FF]]{{ name }}[[/]]"
+          "text": "{{ {{ name }} }}"
         }
       ]
     }

@@ -11,24 +11,25 @@ public class Output(IOutput output) : Operation
   
     public override Task Run(CancellationToken cancellationToken)
     {
-        switch (Parameters["logLevel"].Value.TextValue)
-        {
-            case "trace":
-                output.Trace(Parameters["text"].Value.TextValue!);
-                break;
-            case "debug":
-                output.Debug(Parameters["text"].Value.TextValue!);
-                break;
-            case "warning":
-                output.Warning(Parameters["text"].Value.TextValue!);
-                break;
-            case "error":
-                output.Error(Parameters["text"].Value.TextValue!);
-                break;
-            default:
-                output.Result(Parameters["text"].Value.TextValue!, Parameters["formatting"].Value.TextValue);
-                break;
-        }
+        output.Test(Parameters["text"].Value);
+        // switch (Parameters["logLevel"].Value.TextValue)
+        // {
+        //     case "trace":
+        //         output.Trace(Parameters["text"].Value.TextValue!);
+        //         break;
+        //     case "debug":
+        //         output.Debug(Parameters["text"].Value.TextValue!);
+        //         break;
+        //     case "warning":
+        //         output.Warning(Parameters["text"].Value.TextValue!);
+        //         break;
+        //     case "error":
+        //         output.Error(Parameters["text"].Value.TextValue!);
+        //         break;
+        //     default:
+        //         output.Result(Parameters["text"].Value.TextValue!, Parameters["formatting"].Value.TextValue);
+        //         break;
+        // }
 
         return Task.CompletedTask;
     }

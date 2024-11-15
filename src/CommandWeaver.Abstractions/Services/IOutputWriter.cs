@@ -1,6 +1,7 @@
 ﻿public interface IOutputWriter
 {
-    void Write(string text);
-
+    void WriteText(string textValue);
+    void WriteObject(DynamicValueObject objectValue);
+        
     void WriteRaw(string text);
 }

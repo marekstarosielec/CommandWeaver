@@ -40,7 +40,7 @@ public class Reader(IFlow flow, Storage variableStorage) : IReader
         }
         var result = variableValue with { };
         
-        //Allow to stop resolving at some level, e.g. when printing comman json, we don't want to have variables inside resolved.
+        //Allow to stop resolving at some level, e.g. when printing command json, we don't want to have variables inside resolved.
         if (result.NoResolving)
             return result;
 

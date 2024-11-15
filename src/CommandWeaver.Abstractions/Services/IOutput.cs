@@ -47,4 +47,6 @@ public interface IOutput
     /// </summary>
     /// <param name="message"></param>
     void Result(string message, string? format);
+    
+    void Test(DynamicValue value);
 }

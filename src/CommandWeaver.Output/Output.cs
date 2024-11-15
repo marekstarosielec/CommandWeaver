@@ -13,12 +13,12 @@
     {
         if (GetLogLevel() != "debug")
             return;
-        outputWriter.Write($"[[{DebugStyle ?? "#808080"}]]{message}[[/]]");   
+        outputWriter.WriteText($"[[{DebugStyle ?? "#808080"}]]{message}[[/]]");   
     }
 
     public void Error(string message)
     {
-        outputWriter.Write($"[[{ErrorStyle ?? "#af0000"}]]{message}[[/]]");
+        outputWriter.WriteText($"[[{ErrorStyle ?? "#af0000"}]]{message}[[/]]");
     }
 
     public void Result(string message, string? format)
@@ -26,7 +26,18 @@
         if (format == "raw") 
             outputWriter.WriteRaw(message);
         else
-            outputWriter.Write($"[[{ResultStyle ?? ""}]]{message}[[/]]");
+            outputWriter.WriteText($"[[{ResultStyle ?? ""}]]{message}[[/]]");
+    }
+
+    public void Test(DynamicValue value)
+    {
+        if (value.TextValue != null)
+            outputWriter.WriteText(value.TextValue);
+        if (value.BoolValue != null)
+            outputWriter.WriteText(value.BoolValue.ToString());
+        
+        if (value.ObjectValue != null)
+            outputWriter.WriteObject(value.ObjectValue);
     }
 
     public void Trace(string message)
@@ -34,7 +45,7 @@
         if (GetLogLevel() == "information" || GetLogLevel() == "warning" || GetLogLevel() == "error")
             return;
 
-        outputWriter.Write($"[[{TraceStyle ?? "#c0c0c0"}]]{message}[[/]]");
+        outputWriter.WriteText($"[[{TraceStyle ?? "#c0c0c0"}]]{message}[[/]]");
     }
 
     public void Warning(string message)
@@ -42,7 +53,7 @@
         if (GetLogLevel() == "error")
             return;
 
-        outputWriter.Write($"[[{WarningStyle ?? "#af8700" }]]{message}[[/]]");
+        outputWriter.WriteText($"[[{WarningStyle ?? "#af8700" }]]{message}[[/]]");
     }
 }
 
