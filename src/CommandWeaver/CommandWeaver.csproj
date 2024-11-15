@@ -10,6 +10,7 @@
     <ProjectReference Include="..\CommandWeaver.Abstractions\CommandWeaver.Abstractions.csproj" />
     <ProjectReference Include="..\CommandWeaver.Commands\CommandWeaver.Commands.csproj" />
     <ProjectReference Include="..\CommandWeaver.Flow\CommandWeaver.Flow.csproj" />
+    <ProjectReference Include="..\CommandWeaver.Operations\CommandWeaver.Operations.csproj" />
     <ProjectReference Include="..\CommandWeaver.Output\CommandWeaver.Output.csproj" />
     <ProjectReference Include="..\CommandWeaver.Repositories.Abstraction\CommandWeaver.Repositories.Abstraction.csproj" />
     <ProjectReference Include="..\CommandWeaver.Repositories.Embedded\CommandWeaver.Repositories.Embedded.csproj" />

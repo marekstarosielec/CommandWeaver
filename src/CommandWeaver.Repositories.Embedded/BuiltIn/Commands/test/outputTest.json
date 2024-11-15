@@ -25,7 +25,7 @@
         },
         {
           "operation": "output",
-          "text": "This is error",
+          "text": "This is error2",
           "logLevel": "error"
         }
       ]

@@ -13,6 +13,7 @@ public static class ServiceRegistration
         services.AddCommandWeaverSerialization();
         services.AddCommandWeaverFlow();
         services.AddCommandWeaverOutput();
+        services.AddCommandWeaverOperations();
         services.AddCommandWeaverVariables();
         services.AddCommandWeaverFileRepository();
         services.AddCommandWeaverEmbeddedRepository();

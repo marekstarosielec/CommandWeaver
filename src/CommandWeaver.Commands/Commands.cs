@@ -122,15 +122,15 @@ public class Commands(IOutput output, IFlow flow, IOperationConditions operation
 
     internal async Task ExecuteOperation(Operation operation, CancellationToken cancellationToken)
     {
-        PrepareOperationParameters(operation, variables);
+        PrepareOperationParameters(operation);
         await operation.Run(cancellationToken);
     }
 
-    private void PrepareOperationParameters(Operation operation, IVariables variables)
+    private void PrepareOperationParameters(Operation operation)
     {
         foreach (var parameterKey in operation.Parameters.Keys)
         {
-            //Evaluate all operation parametes.
+            //Evaluate all operation parameters.
             operation.Parameters[parameterKey] = operation.Parameters[parameterKey] with { Value = variables.ReadVariableValue(operation.Parameters[parameterKey].Value) ?? new DynamicValue() };
             if (operation.Parameters[parameterKey].Required && operation.Parameters[parameterKey].Value.IsNull())
                 flow.Terminate($"Parameter {parameterKey} is required in operation {operation.Name}.");

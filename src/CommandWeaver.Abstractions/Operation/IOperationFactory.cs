@@ -12,4 +12,6 @@ public interface IOperationFactory
     /// otherwise, <c>null</c> if no matching operation is found.
     /// </returns>
     Operation? GetOperation(string? name);
+
+    Dictionary<string, Operation> Operations { get; }
 }
