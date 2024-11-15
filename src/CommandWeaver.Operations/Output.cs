@@ -1,3 +1,5 @@
+using CommandWeaver.Abstractions;
+
 public class Output(IOutput output) : Operation
 {
     public override string Name => nameof(Output);
@@ -6,7 +8,7 @@ public class Output(IOutput output) : Operation
     {
         { "value", new OperationParameter { Description = "Value to output", Required = true } },
         { "formatting", new OperationParameter { Description = "Optional formatting", AllowedValues = ["default", "raw"] } },
-        { "logLevel", new OperationParameter { Description = "Logging level", AllowedValues = ["trace", "debug", "information", "warning", "error"] } }
+        { "logLevel", new OperationParameter { Description = "Logging level", AllowedEnumValues = typeof(LogLevel) } }
     };
   
     public override Task Run(CancellationToken cancellationToken)

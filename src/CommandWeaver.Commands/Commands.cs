@@ -54,6 +54,9 @@ public class Commands(IOutput output, IFlow flow, IOperationConditions operation
             if (parameter.AllowedValues != null && argumentValue != null && !parameter.AllowedValues.Contains(argumentValue))
                 flow.Terminate($"Argument {parameter.Key} has invalid value.");
 
+            if (parameter.AllowedEnumValues != null && argumentValue != null && !Enum.GetNames(parameter.AllowedEnumValues).Any(name => name.Equals(argumentValue, StringComparison.OrdinalIgnoreCase)))
+                flow.Terminate($"Argument {parameter.Key} has invalid value.");
+
             variables.WriteVariableValue(VariableScope.Command, parameter.Key, new DynamicValue(argumentValue));
         }
 
@@ -143,7 +146,7 @@ public class Commands(IOutput output, IFlow flow, IOperationConditions operation
                 if (!operation.Parameters[parameterKey].AllowedEnumValues!.IsEnum)
                     flow.Terminate($"Parameter {parameterKey} contains invalid AllowedEnumValues in operation {operation.Name}.");
 
-                if (!string.IsNullOrWhiteSpace(operation.Parameters[parameterKey].Value.TextValue) && !Enum.IsDefined(operation.Parameters[parameterKey].AllowedEnumValues!, operation.Parameters[parameterKey].Value.TextValue!))
+                if (!string.IsNullOrWhiteSpace(operation.Parameters[parameterKey].Value.TextValue) && !Enum.GetNames(operation.Parameters[parameterKey].AllowedEnumValues!).Any(name => string.Equals(name, operation.Parameters[parameterKey].Value.TextValue!, StringComparison.OrdinalIgnoreCase)))
                     flow.Terminate($"Parameter {parameterKey} has invalid value in operation {operation.Name}.");
             }
             if (operation.Parameters[parameterKey].AllowedValues != null)

@@ -28,4 +28,6 @@ public record CommandParameter
     /// </summary>
     /// <remarks>If <c>true</c>, the parameter must be provided; otherwise, it is optional.</remarks>
     public bool Required { get; set; }
+    
+    public Type? AllowedEnumValues { get; set; }
 }
