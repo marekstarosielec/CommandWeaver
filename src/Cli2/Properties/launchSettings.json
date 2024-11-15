@@ -18,7 +18,7 @@
     },
     "Variable": {
       "commandName": "Project",
-      "commandLineArgs": "variable -name currentSessionName"
+      "commandLineArgs": "variable -name styles"
     }
   }
 }

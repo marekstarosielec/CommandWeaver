@@ -5,27 +5,27 @@
       "operations": [
         {
           "operation": "output",
-          "text": "This is debug",
+          "value": "This is debug",
           "logLevel": "debug"
         },
         {
           "operation": "output",
-          "text": "This is trace",
+          "value": "This is trace",
           "logLevel": "trace"
         },
         {
           "operation": "output",
-          "text": "This is result",
+          "value": "This is result",
           "logLevel": "information"
         },
         {
           "operation": "output",
-          "text": "This is warning",
+          "value": "This is warning",
           "logLevel": "warning"
         },
         {
           "operation": "output",
-          "text": "This is error2",
+          "value": "This is error2",
           "logLevel": "error"
         }
       ]

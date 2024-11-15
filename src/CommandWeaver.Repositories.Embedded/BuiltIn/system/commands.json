@@ -20,11 +20,11 @@
         },
         {
           "operation": "output",
-          "text": "Command [[#0000FF]]{{ name }}[[/]] in [[u]]{{commands[{{name}}].id}}[[/]]"
+          "value": "Command [[#0000FF]]{{ name }}[[/]] in [[u]]{{commands[{{name}}].id}}[[/]]"
         },
         {
           "operation": "output",
-          "text": "{{ commands[{{name}}].json }}",
+          "value": "{{ commands[{{name}}].json }}",
           "formatting": "raw"
         }
       ]

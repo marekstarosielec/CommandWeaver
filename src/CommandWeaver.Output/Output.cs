@@ -6,7 +6,7 @@
     public string? ErrorStyle { get; set; }
     public string? ResultStyle { get; set; }
     public string? LogLevel { get; set; }
-
+    public ISerializer? Serializer { get; set; }
     private string GetLogLevel() => LogLevel ?? "information";
 
     public void Debug(string message)
@@ -35,9 +35,16 @@
             outputWriter.WriteText(value.TextValue);
         if (value.BoolValue != null)
             outputWriter.WriteText(value.BoolValue.ToString());
-        
-        if (value.ObjectValue != null)
-            outputWriter.WriteObject(value.ObjectValue);
+
+        if (value.ObjectValue != null || value.ListValue != null)
+        {
+            if (Serializer == null)
+            {
+                return;
+            }
+            if (Serializer.TrySerialize(value, out var result, out _))
+                outputWriter.WriteObject(result);
+        }
     }
 
     public void Trace(string message)

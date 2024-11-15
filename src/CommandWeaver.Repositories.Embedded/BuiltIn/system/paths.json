@@ -5,11 +5,11 @@
       "operations": [
         {
           "operation": "output",
-          "text": "Local path: [[u]]{{ LocalPath }}[[/]]"
+          "value": "Local path: [[u]]{{ LocalPath }}[[/]]"
         },
         {
           "operation": "output",
-          "text": "Current session path: [[u]]{{ SessionPath }}[[/]]"
+          "value": "Current session path: [[u]]{{ SessionPath }}[[/]]"
         }
       ]
     }

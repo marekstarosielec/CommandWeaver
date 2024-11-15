@@ -11,7 +11,8 @@ public interface IOutput
 
     string? LogLevel { get; set; }
 
-
+    ISerializer? Serializer { get; set; }
+    
     /// <summary>
     /// Outputs a trace-level message.
     /// </summary>

@@ -45,6 +45,8 @@ public class Loader(
 
         variables.WriteVariableValue(VariableScope.Command, "LocalPath", new DynamicValue(repository.GetPath(RepositoryLocation.Application)));
         variables.WriteVariableValue(VariableScope.Command, "SessionPath", new DynamicValue(repository.GetPath(RepositoryLocation.Session, variables.CurrentSessionName)));
+        
+        output.Serializer = serializerFactory.GetDefaultSerializer(out _);
     }
 
     private void SetupStyles()

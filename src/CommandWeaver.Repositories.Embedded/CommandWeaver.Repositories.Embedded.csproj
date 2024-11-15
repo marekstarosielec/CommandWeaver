@@ -18,9 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="BuiltIn\nag-core\ais\prepare.json" />
     <EmbeddedResource Include="BuiltIn\nag-core\environments\add.json" />
-    <EmbeddedResource Include="BuiltIn\nag-core\nag-core-environments.json">
+    <EmbeddedResource Include="BuiltIn\nag-core\environments\nag-core-environments.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="BuiltIn\system\commands.json" />

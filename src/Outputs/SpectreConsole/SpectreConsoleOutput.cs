@@ -10,9 +10,9 @@ public class SpectreConsoleOutput : IOutputWriter
         AnsiConsole.MarkupLineInterpolated(MarkupConverter.Convert(textValue));  
     }
 
-    public void WriteObject(DynamicValueObject objectValue)
+    public void WriteObject(string json)
     {
-        AnsiConsole.Write(new JsonText("{ \"property\":\"value\"}"));
+        AnsiConsole.Write(new JsonText(json));
     }
 
     public void WriteRaw(string text)

@@ -47,7 +47,7 @@
         },
         {
           "operation": "output",
-          "text": "{{ nag-core-environments[{{key}}].key }}"
+          "value": "{{ nag-core-environments[{{key}}].key }}"
         }
       ]
     }

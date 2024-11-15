@@ -4,14 +4,14 @@ public class Output(IOutput output) : Operation
 
     public override Dictionary<string, OperationParameter> Parameters { get; } = new Dictionary<string, OperationParameter>
     {
-        { "text", new OperationParameter { Description = "Text to output", RequiredText = true } },
+        { "value", new OperationParameter { Description = "Value to output", Required = true } },
         { "formatting", new OperationParameter { Description = "Optional formatting", AllowedValues = ["default", "raw"] } },
         { "logLevel", new OperationParameter { Description = "Logging level", AllowedValues = ["trace", "debug", "information", "warning", "error"] } }
     };
   
     public override Task Run(CancellationToken cancellationToken)
     {
-        output.Test(Parameters["text"].Value);
+        output.Test(Parameters["value"].Value);
         // switch (Parameters["logLevel"].Value.TextValue)
         // {
         //     case "trace":

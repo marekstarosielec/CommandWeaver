@@ -1,7 +1,7 @@
 ﻿public interface IOutputWriter
 {
     void WriteText(string textValue);
-    void WriteObject(DynamicValueObject objectValue);
+    void WriteObject(string json);
         
     void WriteRaw(string text);
 }
