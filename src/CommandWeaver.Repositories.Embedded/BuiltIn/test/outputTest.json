@@ -15,7 +15,7 @@
         },
         {
           "operation": "output",
-          "value": "This is result",
+          "value": "This is information",
           "logLevel": "information"
         },
         {

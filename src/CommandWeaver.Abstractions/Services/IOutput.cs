@@ -1,20 +1,8 @@
-using CommandWeaver.Abstractions;
-
 /// <summary>
 /// Defines a service for outputting messages to a console or other output target, supporting various log levels.
 /// </summary>
 public interface IOutput
 {
-    string? TraceStyle { get; set; }
-    string? DebugStyle { get; set; }
-    string? InformationStyle { get; set; }
-    string? WarningStyle { get; set; }
-    string? ErrorStyle { get; set; }
-    
-    LogLevel CurrentLogLevel { get; set; }
-
-    ISerializer? Serializer { get; set; }
-    
     /// <summary>
     /// Outputs a trace-level message.
     /// </summary>

@@ -1,5 +1,3 @@
-using CommandWeaver.Abstractions;
-
 public class Output(IOutput output) : Operation
 {
     public override string Name => nameof(Output);

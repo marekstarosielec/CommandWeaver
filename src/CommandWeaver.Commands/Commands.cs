@@ -22,7 +22,7 @@ public interface ICommands
 
 
 /// <inheritdoc />
-public class Commands(IOutput output, IFlow flow, IOperationConditions operationConditions, IVariables variables, IRepositoryElementStorage repositoryElementStorage) : ICommands
+public class Commands(IOutput output, IFlow flow, IOperationConditions operationConditions, IVariables variables, IRepositoryElementStorage repositoryElementStorage, IOutputSettings outputSettings) : ICommands
 {
     private List<Command> _commands = [];
 
@@ -72,7 +72,7 @@ public class Commands(IOutput output, IFlow flow, IOperationConditions operation
             }
         }
 
-        output.CurrentLogLevel = variables.LogLevel;
+        outputSettings.CurrentLogLevel = variables.LogLevel;
     }
 
     public void Validate()

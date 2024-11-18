@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using CommandWeaver.Abstractions;
 
 public class Variables(IReader reader, IWriter writer, Storage storage) : IVariables
 {

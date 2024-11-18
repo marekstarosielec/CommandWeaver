@@ -1,5 +1,3 @@
-using CommandWeaver.Abstractions;
-
 /// <summary>
 /// Defines a service for managing context-specific variables, including setting, retrieving, and resolving variable values.
 /// </summary>

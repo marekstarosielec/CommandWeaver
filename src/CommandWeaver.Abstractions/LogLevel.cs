@@ -1,5 +1,3 @@
-namespace CommandWeaver.Abstractions;
-
 public enum LogLevel
 {
     Trace, 

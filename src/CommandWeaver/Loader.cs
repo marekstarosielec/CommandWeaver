@@ -11,6 +11,7 @@ public class Loader(
     IEmbeddedRepository embeddedRepository, 
     IRepository repository,
     IOutput output, 
+    IOutputSettings outputSettings,
     ICommands commands,
     ISerializerFactory serializerFactory,
     IRepositoryElementStorage repositoryElementStorage) : ILoader
@@ -46,16 +47,16 @@ public class Loader(
         variables.WriteVariableValue(VariableScope.Command, "LocalPath", new DynamicValue(repository.GetPath(RepositoryLocation.Application)));
         variables.WriteVariableValue(VariableScope.Command, "SessionPath", new DynamicValue(repository.GetPath(RepositoryLocation.Session, variables.CurrentSessionName)));
         
-        output.Serializer = serializerFactory.GetDefaultSerializer(out _);
+        outputSettings.Serializer = serializerFactory.GetDefaultSerializer(out _);
     }
 
     private void SetupStyles()
     {
-        output.TraceStyle = variables.ReadVariableValue(new DynamicValue("styles[trace].value"), true).TextValue;
-        output.DebugStyle = variables.ReadVariableValue(new DynamicValue("styles[debug].value"), true).TextValue;
-        output.InformationStyle = variables.ReadVariableValue(new DynamicValue("styles[information].value"), true).TextValue;
-        output.WarningStyle = variables.ReadVariableValue(new DynamicValue("styles[warning].value"), true).TextValue;
-        output.ErrorStyle = variables.ReadVariableValue(new DynamicValue("styles[error].value"), true).TextValue;
+        outputSettings.TraceStyle = variables.ReadVariableValue(new DynamicValue("styles[trace].value"), true).TextValue;
+        outputSettings.DebugStyle = variables.ReadVariableValue(new DynamicValue("styles[debug].value"), true).TextValue;
+        outputSettings.InformationStyle = variables.ReadVariableValue(new DynamicValue("styles[information].value"), true).TextValue;
+        outputSettings.WarningStyle = variables.ReadVariableValue(new DynamicValue("styles[warning].value"), true).TextValue;
+        outputSettings.ErrorStyle = variables.ReadVariableValue(new DynamicValue("styles[error].value"), true).TextValue;
     }
 
     /// <summary>

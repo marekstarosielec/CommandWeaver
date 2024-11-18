@@ -1,6 +1,4 @@
-﻿using CommandWeaver.Abstractions;
-
-internal static class BuiltInCommandParameters
+﻿internal static class BuiltInCommandParameters
 {
     public static List<CommandParameter> List = [
         new CommandParameter

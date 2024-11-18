@@ -125,7 +125,7 @@ public record DynamicValue
     /// <typeparam name="T">The enum type to attempt parsing.</typeparam>
     /// <returns>The parsed enum value if successful; otherwise, null.</returns>
     public T? GetEnumValue<T>() where T : struct, Enum =>
-        !string.IsNullOrWhiteSpace(TextValue) && Enum.TryParse(TextValue, out T result)
+        !string.IsNullOrWhiteSpace(TextValue) && Enum.TryParse(TextValue, true, out T result)
         ? result
         : null;
 

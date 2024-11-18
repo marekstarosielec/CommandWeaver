@@ -1,31 +1,21 @@
-﻿using CommandWeaver.Abstractions;
-
-public class Output(IOutputWriter outputWriter) : IOutput
+﻿public class Output(IOutputWriter outputWriter, IOutputSettings outputSettings) : IOutput
 {
-    public string? TraceStyle { get; set; }
-    public string? DebugStyle { get; set; }
-    public string? InformationStyle { get; set; }
-    public string? WarningStyle { get; set; }
-    public string? ErrorStyle { get; set; }
-    public LogLevel CurrentLogLevel { get; set; }
-    public ISerializer? Serializer { get; set; }
-
-    public void Trace(string message)=> Write(new DynamicValue($"[[{TraceStyle}]]{message}[[/]]"), LogLevel.Trace, Styling.MarkupLine);
-    public void Debug(string message) => Write(new DynamicValue($"[[{DebugStyle}]]{message}[[/]]"), LogLevel.Debug, Styling.MarkupLine);
-    public void Information(string message) => Write(new DynamicValue($"[[{InformationStyle}]]{message}[[/]]"), LogLevel.Information, Styling.MarkupLine);
-    public void Warning(string message) => Write(new DynamicValue($"[[{WarningStyle}]]{message}[[/]]"), LogLevel.Warning, Styling.MarkupLine);
-    public void Error(string message)=> Write(new DynamicValue($"[[{ErrorStyle}]]{message}[[/]]"), LogLevel.Error, Styling.MarkupLine);
+    public void Trace(string message)=> Write(new DynamicValue($"[[{outputSettings.TraceStyle}]]{message}[[/]]"), LogLevel.Trace, Styling.MarkupLine);
+    public void Debug(string message) => Write(new DynamicValue($"[[{outputSettings.DebugStyle}]]{message}[[/]]"), LogLevel.Debug, Styling.MarkupLine);
+    public void Information(string message) => Write(new DynamicValue($"[[{outputSettings.InformationStyle}]]{message}[[/]]"), LogLevel.Information, Styling.MarkupLine);
+    public void Warning(string message) => Write(new DynamicValue($"[[{outputSettings.WarningStyle}]]{message}[[/]]"), LogLevel.Warning, Styling.MarkupLine);
+    public void Error(string message)=> Write(new DynamicValue($"[[{outputSettings.ErrorStyle}]]{message}[[/]]"), LogLevel.Error, Styling.MarkupLine);
 
     public void Write(DynamicValue value, LogLevel? logLevel, Styling styling)
     {
-        if (logLevel is not null && logLevel < CurrentLogLevel)
+        if (logLevel is not null && logLevel < outputSettings.CurrentLogLevel)
             return;
         
         if (value.ObjectValue != null || value.ListValue != null)
         {
-            if (Serializer == null)
+            if (outputSettings.Serializer == null)
                 return;
-            if (Serializer.TrySerialize(value, out var result, out _) && !string.IsNullOrEmpty(result))
+            if (outputSettings.Serializer.TrySerialize(value, out var result, out _) && !string.IsNullOrEmpty(result))
                 outputWriter.WriteJson(result);
         }
 
@@ -55,11 +45,11 @@ public class Output(IOutputWriter outputWriter) : IOutput
             //Styling == Default
             var text = logLevel switch
             {
-                LogLevel.Trace => $"[[{TraceStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
-                LogLevel.Debug => $"[[{DebugStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
-                LogLevel.Information => $"[[{InformationStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
-                LogLevel.Warning => $"[[{WarningStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
-                LogLevel.Error => $"[[{ErrorStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
+                LogLevel.Trace => $"[[{outputSettings.TraceStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
+                LogLevel.Debug => $"[[{outputSettings.DebugStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
+                LogLevel.Information => $"[[{outputSettings.InformationStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
+                LogLevel.Warning => $"[[{outputSettings.WarningStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
+                LogLevel.Error => $"[[{outputSettings.ErrorStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
                 _ => $"{value.TextValue}{Environment.NewLine}"
             };
             
