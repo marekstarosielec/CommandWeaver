@@ -4,12 +4,16 @@
       "key": "styles",
       "value": [
         {
+          "key": "trace",
+          "value": "#c0c0c0"
+        },
+        {
           "key": "debug",
           "value": "#808080"
         },
         {
-          "key": "trace",
-          "value": "#c0c0c0"
+          "key": "information",
+          "value": "#ffffff"
         },
         {
           "key": "warning",
@@ -18,10 +22,6 @@
         {
           "key": "error",
           "value": "#af0000"
-        },
-        {
-          "key": "result",
-          "value": ""
         }
       ]
     }

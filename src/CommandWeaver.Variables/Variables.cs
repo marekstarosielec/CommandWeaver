@@ -1,29 +1,30 @@
 using System.Collections.Immutable;
+using CommandWeaver.Abstractions;
 
 public class Variables(IReader reader, IWriter writer, Storage storage) : IVariables
 {
     public string CurrentSessionName
     {
-        get => reader.ReadVariableValue(new DynamicValue("currentSessionName"), true)?.TextValue ?? "session1";
-        set => WriteVariableValue(VariableScope.Application, "currentSessionName", new DynamicValue(value));
+        get => reader.ReadVariableValue(new DynamicValue("current-session-name"), true)?.TextValue ?? "session1";
+        set => WriteVariableValue(VariableScope.Application, "current-session-name", new DynamicValue(value));
     }
 
     public string? CurrentlyLoadRepository
     {
-        get => reader.ReadVariableValue(new DynamicValue("currentlyLoadRepository"), true)?.TextValue;
-        set => WriteVariableValue(VariableScope.Command, "currentlyLoadRepository", new DynamicValue(value));
+        get => reader.ReadVariableValue(new DynamicValue("currently-load-repository"), true)?.TextValue;
+        set => WriteVariableValue(VariableScope.Command, "currently-load-repository", new DynamicValue(value));
     }
 
     public string? CurrentlyLoadRepositoryElement
     {
-        get => reader.ReadVariableValue(new DynamicValue("currentlyLoadRepositoryElement"), true)?.TextValue;
-        set => WriteVariableValue(VariableScope.Command, "currentlyLoadRepositoryElement", new DynamicValue(value));
+        get => reader.ReadVariableValue(new DynamicValue("currently-load-repository-element"), true)?.TextValue;
+        set => WriteVariableValue(VariableScope.Command, "currently-load-repository-element", new DynamicValue(value));
     }
 
-    public string? LogLevel
+    public LogLevel LogLevel
     {
-        get => reader.ReadVariableValue(new DynamicValue("log-level"), true)?.TextValue;
-        set => WriteVariableValue(VariableScope.Command, "log-level", new DynamicValue(value));
+        get => reader.ReadVariableValue(new DynamicValue("log-level"), true).GetEnumValue<LogLevel>() ?? LogLevel.Information;
+        set => WriteVariableValue(VariableScope.Command, "log-level", new DynamicValue(value.ToString()));
     }
 
     public Variable? FindVariable(string variableName) 

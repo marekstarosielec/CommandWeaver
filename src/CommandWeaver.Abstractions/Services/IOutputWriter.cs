@@ -1,7 +1,9 @@
 ﻿public interface IOutputWriter
 {
-    void WriteText(string textValue);
-    void WriteObject(string json);
-        
-    void WriteRaw(string text);
+    void WriteRaw(string textValue);
+    
+    void WriteMarkup(string textValue);
+    
+    void WriteJson(string json);
+
 }

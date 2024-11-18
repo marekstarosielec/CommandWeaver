@@ -72,7 +72,7 @@ public class Commands(IOutput output, IFlow flow, IOperationConditions operation
             }
         }
 
-        output.LogLevel = variables.LogLevel;
+        output.CurrentLogLevel = variables.LogLevel;
     }
 
     public void Validate()

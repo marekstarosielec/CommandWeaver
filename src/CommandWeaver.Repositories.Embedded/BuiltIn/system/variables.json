@@ -27,8 +27,12 @@
   ],
   "variables": [
     {
-      "key": "currentSessionName",
+      "key": "current-session-name",
       "value": "session1"
+    },
+    {
+      "key": "log-level",
+      "value": "information"
     }
   ]
 }

@@ -20,12 +20,8 @@
         },
         {
           "operation": "output",
-          "value": "Command [[#0000FF,bold]]{{ name }}[[/]] in [[u]]{{commands[{{name}}].id}}[[/]]"
-        },
-        {
-          "operation": "output",
-          "value": "[[raw,json]]{{ commands[{{name}}].json }}[[/]]",
-          "formatting": "raw"
+          "value": "{{ commands[{{name}}].json }}",
+          "styling": "json"
         }
       ]
     }

@@ -18,8 +18,6 @@ internal static class MarkupConverter
                 var value = segment.Replace("/[/[", "[[").Replace("/]/]", "]]");
                 yield return style == null ? new Segment(value) : new Segment(value, style);
             }
-
-        yield return new Segment(Environment.NewLine);
     }
 
     private static Style? GetStyle(string input)
@@ -65,7 +63,7 @@ internal static class MarkupConverter
 
         return new Color(
             Convert.ToByte(rgb.Substring(1, 2), 16),
-            Convert.ToByte(rgb.Substring(2, 2), 16),
+            Convert.ToByte(rgb.Substring(3, 2), 16),
             Convert.ToByte(rgb.Substring(5, 2), 16));
     }
     public static List<string> SplitByDoubleBrackets(string input)

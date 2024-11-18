@@ -51,11 +51,11 @@ public class Loader(
 
     private void SetupStyles()
     {
-        output.DebugStyle = variables.ReadVariableValue(new DynamicValue("styles[debug].value"), true).TextValue;
         output.TraceStyle = variables.ReadVariableValue(new DynamicValue("styles[trace].value"), true).TextValue;
+        output.DebugStyle = variables.ReadVariableValue(new DynamicValue("styles[debug].value"), true).TextValue;
+        output.InformationStyle = variables.ReadVariableValue(new DynamicValue("styles[information].value"), true).TextValue;
         output.WarningStyle = variables.ReadVariableValue(new DynamicValue("styles[warning].value"), true).TextValue;
         output.ErrorStyle = variables.ReadVariableValue(new DynamicValue("styles[error].value"), true).TextValue;
-        output.ResultStyle = variables.ReadVariableValue(new DynamicValue("styles[result].value"), true).TextValue;
     }
 
     /// <summary>

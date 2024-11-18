@@ -5,13 +5,13 @@
       "operations": [
         {
           "operation": "output",
-          "value": "This is debug",
-          "logLevel": "debug"
+          "value": "This is trace",
+          "logLevel": "trace"
         },
         {
           "operation": "output",
-          "value": "This is trace",
-          "logLevel": "trace"
+          "value": "This is debug",
+          "logLevel": "debug"
         },
         {
           "operation": "output",
@@ -31,6 +31,16 @@
         {
           "operation": "output",
           "value": "This is no log level"
+        },
+        {
+          "operation": "output",
+          "value": "[[#FF00FF]]Styling test[[/]]",
+          "styling": "markupline"
+        },
+        {
+          "operation": "output",
+          "value": "next line",
+          "styling": "raw"
         }
       ]
     }

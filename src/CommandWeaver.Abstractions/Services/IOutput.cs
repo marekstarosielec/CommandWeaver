@@ -5,13 +5,13 @@ using CommandWeaver.Abstractions;
 /// </summary>
 public interface IOutput
 {
-    string? DebugStyle { get; set; }
     string? TraceStyle { get; set; }
+    string? DebugStyle { get; set; }
+    string? InformationStyle { get; set; }
     string? WarningStyle { get; set; }
     string? ErrorStyle { get; set; }
-    string? ResultStyle { get; set; }
-
-    string? LogLevel { get; set; }
+    
+    LogLevel CurrentLogLevel { get; set; }
 
     ISerializer? Serializer { get; set; }
     
@@ -29,6 +29,8 @@ public interface IOutput
     /// <remarks>Debug messages are used for general debugging information to aid in diagnosing issues.</remarks>
     void Debug(string message);
 
+    void Information(string message);
+
     /// <summary>
     /// Outputs a warning message.
     /// </summary>
@@ -44,12 +46,16 @@ public interface IOutput
     /// Error messages indicate serious issues that may halt program execution
     /// </remarks>
     void Error(string message);
-
-    /// <summary>
-    /// Outputs result information, which is always visible, no matter log-level.
-    /// </summary>
-    /// <param name="message"></param>
-    void Result(string message, string? format);
     
-    void Test(DynamicValue value, LogLevel? logLevel);
+    
+    void Write(DynamicValue value, LogLevel? logLevel, Styling styling);
+}
+
+public enum Styling
+{
+    Markup,
+    MarkupLine,
+    Json,
+    Raw,
+    Default
 }

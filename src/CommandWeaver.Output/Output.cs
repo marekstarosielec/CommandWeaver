@@ -2,68 +2,76 @@
 
 public class Output(IOutputWriter outputWriter) : IOutput
 {
-    public string? DebugStyle { get; set; }
     public string? TraceStyle { get; set; }
+    public string? DebugStyle { get; set; }
+    public string? InformationStyle { get; set; }
     public string? WarningStyle { get; set; }
     public string? ErrorStyle { get; set; }
-    public string? ResultStyle { get; set; }
-    public string? LogLevel { get; set; }
+    public LogLevel CurrentLogLevel { get; set; }
     public ISerializer? Serializer { get; set; }
-    private string GetLogLevel() => LogLevel ?? "information";
 
-    public void Debug(string message)
+    public void Trace(string message)=> Write(new DynamicValue($"[[{TraceStyle}]]{message}[[/]]"), LogLevel.Trace, Styling.MarkupLine);
+    public void Debug(string message) => Write(new DynamicValue($"[[{DebugStyle}]]{message}[[/]]"), LogLevel.Debug, Styling.MarkupLine);
+    public void Information(string message) => Write(new DynamicValue($"[[{InformationStyle}]]{message}[[/]]"), LogLevel.Information, Styling.MarkupLine);
+    public void Warning(string message) => Write(new DynamicValue($"[[{WarningStyle}]]{message}[[/]]"), LogLevel.Warning, Styling.MarkupLine);
+    public void Error(string message)=> Write(new DynamicValue($"[[{ErrorStyle}]]{message}[[/]]"), LogLevel.Error, Styling.MarkupLine);
+
+    public void Write(DynamicValue value, LogLevel? logLevel, Styling styling)
     {
-        if (GetLogLevel() != "debug")
+        if (logLevel is not null && logLevel < CurrentLogLevel)
             return;
-        outputWriter.WriteText($"[[{DebugStyle ?? "#808080"}]]{message}[[/]]");   
-    }
-
-    public void Error(string message)
-    {
-        outputWriter.WriteText($"[[{ErrorStyle ?? "#af0000"}]]{message}[[/]]");
-    }
-
-    public void Result(string message, string? format)
-    {
-        if (format == "raw") 
-            outputWriter.WriteRaw(message);
-        else
-            outputWriter.WriteText($"[[{ResultStyle ?? ""}]]{message}[[/]]");
-    }
-
-    
-    public void Test(DynamicValue value, LogLevel? logLevel)
-    {
-        if (value.TextValue != null)
-            outputWriter.WriteText(value.TextValue);
-        if (value.BoolValue != null)
-            outputWriter.WriteText(value.BoolValue.ToString());
-
+        
         if (value.ObjectValue != null || value.ListValue != null)
         {
             if (Serializer == null)
+                return;
+            if (Serializer.TrySerialize(value, out var result, out _) && !string.IsNullOrEmpty(result))
+                outputWriter.WriteJson(result);
+        }
+
+        if (value.TextValue != null)
+        {
+            if (styling == Styling.Raw)
             {
+                outputWriter.WriteRaw(value.TextValue);
                 return;
             }
-            if (Serializer.TrySerialize(value, out var result, out _))
-                outputWriter.WriteObject(result);
+            if (styling == Styling.Markup)
+            {
+                outputWriter.WriteMarkup(value.TextValue);
+                return;
+            }
+            if (styling == Styling.MarkupLine)
+            {
+                outputWriter.WriteMarkup($"{value.TextValue}{Environment.NewLine}");
+                return;
+            }
+            if (styling == Styling.Json)
+            {
+                outputWriter.WriteJson(value.TextValue);
+                return;
+            }
+
+            //Styling == Default
+            var text = logLevel switch
+            {
+                LogLevel.Trace => $"[[{TraceStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
+                LogLevel.Debug => $"[[{DebugStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
+                LogLevel.Information => $"[[{InformationStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
+                LogLevel.Warning => $"[[{WarningStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
+                LogLevel.Error => $"[[{ErrorStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
+                _ => $"{value.TextValue}{Environment.NewLine}"
+            };
+            
+            outputWriter.WriteMarkup(text);
         }
+
+        if (value.BoolValue.HasValue && value.BoolValue.Value)
+            outputWriter.WriteRaw("true");
+        if (value.BoolValue.HasValue && !value.BoolValue.Value)
+            outputWriter.WriteRaw("false");
     }
 
-    public void Trace(string message)
-    {
-        if (GetLogLevel() == "information" || GetLogLevel() == "warning" || GetLogLevel() == "error")
-            return;
-
-        outputWriter.WriteText($"[[{TraceStyle ?? "#c0c0c0"}]]{message}[[/]]");
-    }
-
-    public void Warning(string message)
-    {
-        if (GetLogLevel() == "error")
-            return;
-
-        outputWriter.WriteText($"[[{WarningStyle ?? "#af8700" }]]{message}[[/]]");
-    }
+    
 }
 
