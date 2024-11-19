@@ -117,7 +117,7 @@ public record DynamicValue
     /// <summary>
     /// Gets a value indicating whether the dynamic value is null (i.e., all properties are unassigned).
     /// </summary>
-    public bool IsNull() => TextValue == null && DateTimeValue == null && BoolValue == null && NumericValue == null && PrecisionValue == null && ObjectValue == null && ListValue == null;
+    public bool IsNull() => string.IsNullOrEmpty(TextValue) && DateTimeValue == null && BoolValue == null && NumericValue == null && PrecisionValue == null && ObjectValue == null && ListValue == null;
 
     /// <summary>
     /// Attempts to retrieve an enum value from the stored text value if it matches the specified enum type.

@@ -15,7 +15,20 @@
           "operations": [
             {
               "operation": "output",
-              "value": "  [[#FFFFFF]]{{ command.key }}[[/]] - {{ command.description }}",
+              "value": "  [[#FFFFFF]]{{ command.key }}[[/]]",
+              "styling": "Markup"
+            },
+            {
+              "operation": "output",
+              "value": " - {{ command.description }}",
+              "styling": "Markup",
+              "conditions": {
+                "isNotNull": "{{ command.description }}"
+              }
+            },
+            {
+              "operation": "output",
+              "value": " ",
               "styling": "MarkupLine"
             }
           ]
