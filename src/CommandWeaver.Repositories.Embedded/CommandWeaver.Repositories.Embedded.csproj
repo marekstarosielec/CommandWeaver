@@ -29,6 +29,8 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="BuiltIn\test\outputTest.json" />
+    <None Remove="BuiltIn\system\help.json" />
+    <EmbeddedResource Include="BuiltIn\system\help.json" />
   </ItemGroup>
 
   <ItemGroup>

@@ -2,6 +2,7 @@
   "commands": [
     {
       "name": "cmd",
+      "description": "Display information about single command",
       "parameters": [
         {
           "key": "name",

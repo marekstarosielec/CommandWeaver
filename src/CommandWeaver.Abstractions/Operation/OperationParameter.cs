@@ -33,6 +33,8 @@ public record OperationParameter
     /// <remarks>If <c>true</c>, the parameter expects a text value as its value.</remarks>
     public bool RequiredText { get; init; }
 
+    public bool RequiredList { get; init; }
+
     /// <summary>
     /// Gets or sets the allowed enum type for this parameter.
     /// </summary>

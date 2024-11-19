@@ -19,6 +19,10 @@
     "Variable": {
       "commandName": "Project",
       "commandLineArgs": "variable -name styles"
+    },
+    "Help": {
+      "commandName": "Project",
+      "commandLineArgs": "help"
     }
   }
 }

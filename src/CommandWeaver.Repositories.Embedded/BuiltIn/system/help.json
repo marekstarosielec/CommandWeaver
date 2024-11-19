@@ -1,0 +1,26 @@
+{
+  "commands": [
+    {
+      "name": "help",
+      "operations": [
+        {
+          "operation": "output",
+          "value": "Command-Weaver by [[#FFFFFF]]Marek Starosielec\r\n",
+          "styling": "MarkupLine"
+        },
+        {
+          "operation": "forEach",
+          "list": "{{ commands }}",
+          "element": "command",
+          "operations": [
+            {
+              "operation": "output",
+              "value": "  [[#FFFFFF]]{{ command.key }}[[/]] - {{ command.description }}",
+              "styling": "MarkupLine"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

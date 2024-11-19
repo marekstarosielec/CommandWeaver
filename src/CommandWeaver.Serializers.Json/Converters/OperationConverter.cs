@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 
 /// <inheritdoc />
-public class OperationConverter(IOutput output, IVariables variables, IOperationFactory operationFactory) : IOperationConverter
+public class OperationConverter(IVariables variables, IOperationFactory operationFactory, IFlow flow) : IOperationConverter
 {
     /// <summary>
     /// A converter for dynamic values within JSON data.
@@ -14,23 +14,8 @@ public class OperationConverter(IOutput output, IVariables variables, IOperation
     {
         using var document = JsonDocument.ParseValue(ref reader);
         var rootElement = document.RootElement;
-
-        if (!rootElement.TryGetProperty("operation", out var operationElement) || operationElement.GetString() is not { } operationName)
-        {
-            // Operation name is not defined.
-            output.Warning(
-                $"Operation without name is listed in {variables.CurrentlyLoadRepositoryElement}");
-            return null;
-        }
-
-        var operationInstance = operationFactory.GetOperation(operationName);
-        if (operationInstance == null)
-        {
-            // There is no operation with given name.
-            output.Warning($"Operation {operationName} is not valid in {variables.CurrentlyLoadRepositoryElement}");
-            return null;
-        }
-
+        var operationName = GetOperationName(rootElement);
+        var operationInstance = GetOperationInstance(operationName);
         SetOperationProperties(operationName, operationInstance, rootElement);
         return operationInstance;
     }
@@ -44,6 +29,29 @@ public class OperationConverter(IOutput output, IVariables variables, IOperation
     public void Write(Utf8JsonWriter writer, Operation value, JsonSerializerOptions options) =>
         throw new InvalidOperationException($"Serializing {nameof(Operation)} is not supported");
 
+    private string GetOperationName(JsonElement element)
+    {
+        if (!element.TryGetProperty("operation", out var operationElement) || operationElement.GetString() is not { } operationName)
+        {
+            // Operation name is not defined.
+            flow.Terminate(
+                $"Operation without name is listed in {variables.CurrentlyLoadRepositoryElement}");
+            return null!;
+        }
+        return operationName;
+    }
+    
+    private Operation GetOperationInstance(string operationName)
+    {
+        var result = operationFactory.GetOperation(operationName);
+        if (result != null)
+            return result;
+        
+        // There is no operation with given name.
+        flow.Terminate($"Operation {operationName} is not valid in {variables.CurrentlyLoadRepositoryElement}");
+        return default!;
+    }
+    
     /// <summary>
     /// Sets the properties of an <see cref="Operation"/> instance based on JSON data.
     /// </summary>
@@ -52,7 +60,6 @@ public class OperationConverter(IOutput output, IVariables variables, IOperation
     /// <param name="rootElement">The root JSON element containing property values.</param>
     private void SetOperationProperties(string operationName, Operation operationInstance, JsonElement rootElement)
     {
-        var type = operationInstance.GetType();
         foreach (var property in rootElement.EnumerateObject())
         {
             // Skip operation name. 
@@ -65,6 +72,22 @@ public class OperationConverter(IOutput output, IVariables variables, IOperation
                 SetConditions(operationName, operationInstance, property.Value);
                 continue;
             }
+            
+            // Set sub operations.
+            if (property.Name.Equals("operations", StringComparison.CurrentCultureIgnoreCase) 
+                && operationInstance is OperationAggregate operationAggregateInstance
+                && property.Value.ValueKind == JsonValueKind.Array)
+            {
+                operationAggregateInstance.SerializedOperations = property.Value.GetRawText();
+                foreach (var subOperation in property.Value.EnumerateArray())
+                {
+                    var subOperationName = GetOperationName(subOperation);
+                    var subOperationInstance = GetOperationInstance(subOperationName);
+                    SetOperationProperties(subOperationName, subOperationInstance, subOperation);
+                    operationAggregateInstance.Operations.Add(subOperationInstance);
+                }
+                continue;
+            }
 
             // Ignore properties starting with "_".
             if (property.Name.StartsWith("_", StringComparison.CurrentCultureIgnoreCase))
@@ -73,7 +96,7 @@ public class OperationConverter(IOutput output, IVariables variables, IOperation
             if (!operationInstance.Parameters.ContainsKey(property.Name))
             {
                 // Property defined in JSON is not defined in operation class.
-                output.Warning($"Property {property.Name} is invalid in operation {operationName} in {variables.CurrentlyLoadRepositoryElement}");
+                flow.Terminate($"Property {property.Name} is invalid in operation {operationName} in {variables.CurrentlyLoadRepositoryElement}");
                 continue;
             }
 
@@ -96,7 +119,7 @@ public class OperationConverter(IOutput output, IVariables variables, IOperation
                 conditionProperty.SetValue(operationInstance.Conditions, _dynamicValueConverter.ReadElement(property.Value) ?? new DynamicValue());
             }
             else
-                output.Warning($"Unknown condition {property.Name} in operation {operationName} in {variables.CurrentlyLoadRepositoryElement}");
+                flow.Terminate($"Unknown condition {property.Name} in operation {operationName} in {variables.CurrentlyLoadRepositoryElement}");
     }
 
     /// <summary>

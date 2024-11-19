@@ -1,26 +1,4 @@
-﻿using System.Collections.Generic;
-
-/// <summary>
-/// Defines a service for handling command definitions.
-/// </summary>
-public interface ICommands
-{
-    /// <summary>
-    /// Adds a set of commands that can be executed.
-    /// </summary>
-    /// <param name="commands"></param>
-    void Add(IEnumerable<Command> commands);
-
-    void Validate();
-
-    Command? Get(string name);
-
-    void PrepareCommandParameters(Command command, Dictionary<string, string> arguments);
-
-    Task ExecuteCommand(Command command, CancellationToken cancellationToken);
-}
-
-
+﻿
 /// <inheritdoc />
 public class Commands(IOutput output, IFlow flow, IOperationConditions operationConditions, IVariables variables, IRepositoryElementStorage repositoryElementStorage, IOutputSettings outputSettings) : ICommands
 {
@@ -115,9 +93,9 @@ public class Commands(IOutput output, IFlow flow, IOperationConditions operation
 
     }
 
-    public async Task ExecuteCommand(Command command, CancellationToken cancellationToken)
+    public async Task ExecuteOperations(List<Operation> operations, CancellationToken cancellationToken)
     {
-        foreach (var operation in command.Operations)
+        foreach (var operation in operations)
             if (!operationConditions.OperationShouldBeSkipped(operation, variables)
                 && !cancellationToken.IsCancellationRequested)
                 await ExecuteOperation(operation, cancellationToken);
@@ -139,6 +117,8 @@ public class Commands(IOutput output, IFlow flow, IOperationConditions operation
                 flow.Terminate($"Parameter {parameterKey} is required in operation {operation.Name}.");
             if (operation.Parameters[parameterKey].RequiredText && string.IsNullOrWhiteSpace(operation.Parameters[parameterKey].Value.TextValue))
                 flow.Terminate($"Parameter {parameterKey} requires text value in operation {operation.Name}.");
+            if (operation.Parameters[parameterKey].RequiredList && operation.Parameters[parameterKey].Value.ListValue == null)
+                flow.Terminate($"Parameter {parameterKey} requires list value in operation {operation.Name}.");
 
             if (operation.Parameters[parameterKey].AllowedEnumValues != null)
             {

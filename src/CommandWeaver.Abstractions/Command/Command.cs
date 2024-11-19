@@ -9,6 +9,8 @@ public record Command
     /// <remarks>This is a required field and uniquely identifies the command.</remarks>
     public required string Name { get; init; }
 
+    public string Description { get; init; } = string.Empty;
+    
     public List<string>? OtherNames { get; init; }
 
     /// <summary>

@@ -1,10 +1,10 @@
 ﻿public class Output(IOutputWriter outputWriter, IOutputSettings outputSettings) : IOutput
 {
-    public void Trace(string message)=> Write(new DynamicValue($"[[{outputSettings.TraceStyle}]]{message}[[/]]"), LogLevel.Trace, Styling.MarkupLine);
-    public void Debug(string message) => Write(new DynamicValue($"[[{outputSettings.DebugStyle}]]{message}[[/]]"), LogLevel.Debug, Styling.MarkupLine);
-    public void Information(string message) => Write(new DynamicValue($"[[{outputSettings.InformationStyle}]]{message}[[/]]"), LogLevel.Information, Styling.MarkupLine);
-    public void Warning(string message) => Write(new DynamicValue($"[[{outputSettings.WarningStyle}]]{message}[[/]]"), LogLevel.Warning, Styling.MarkupLine);
-    public void Error(string message)=> Write(new DynamicValue($"[[{outputSettings.ErrorStyle}]]{message}[[/]]"), LogLevel.Error, Styling.MarkupLine);
+    public void Trace(string message)=> Write(new DynamicValue(message), LogLevel.Trace, Styling.Default);
+    public void Debug(string message) => Write(new DynamicValue(message), LogLevel.Debug, Styling.Default);
+    public void Information(string message) => Write(new DynamicValue(message), LogLevel.Information, Styling.Default);
+    public void Warning(string message) => Write(new DynamicValue(message), LogLevel.Warning, Styling.Default);
+    public void Error(string message)=> Write(new DynamicValue(message), LogLevel.Error, Styling.Default);
 
     public void Write(DynamicValue value, LogLevel? logLevel, Styling styling)
     {

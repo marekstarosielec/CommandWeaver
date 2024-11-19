@@ -1,5 +1,4 @@
-﻿using System.Reflection.Metadata.Ecma335;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 public interface ILoader
 {
@@ -33,7 +32,7 @@ public class Loader(
         await LoadRepositoryElements(RepositoryLocation.BuiltIn, null, elements);
         SetupStyles();
 
-        variables.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Application, null);
+        variables.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Application);
         elements = repository.GetList(RepositoryLocation.Application, null, cancellationToken);
         await LoadRepositoryElements(RepositoryLocation.Application, null, elements);
         SetupStyles();
@@ -64,7 +63,7 @@ public class Loader(
     /// </summary>
     /// <param name="repositoryLocation"></param>
     /// <param name="sessionName"></param>
-    /// <param name="repositoryElements"></param>
+    /// <param name="repositoryElementsSerialized"></param>
     /// <returns></returns>
     private async Task LoadRepositoryElements(RepositoryLocation repositoryLocation, string? sessionName, IAsyncEnumerable<RepositoryElementSerialized> repositoryElementsSerialized)
     {
@@ -85,7 +84,7 @@ public class Loader(
 
             if (!serializer.TryDeserialize(repositoryElementSerialized.Content, out RepositoryElementContent? repositoryContent, out var exception) || repositoryContent == null)
             {
-                //Still save information about repository, to avoid overriding it with partial conent.
+                //Still save information about repository, to avoid overriding it with partial content.
                 repositoryElementStorage.Add(new RepositoryElement(repositoryLocation, repositoryElementSerialized.Id, repositoryContent));
 
                 output.Warning($"Element {variables.CurrentlyLoadRepositoryElement} failed to deserialize");
@@ -112,6 +111,7 @@ public class Loader(
                         var serializedCommand = root[x].GetRawText();
                         var commandInformation = new Dictionary<string, DynamicValue?>();
                         commandInformation["key"] = new DynamicValue(command.Name);
+                        commandInformation["description"] = new DynamicValue(command.Description);
                         commandInformation["json"] = new DynamicValue(serializedCommand, true);
                         commandInformation["id"] = new DynamicValue(repositoryElementSerialized.Id);
                         variables.WriteVariableValue(VariableScope.Command, $"commands[{command.Name}]", new DynamicValue(new DynamicValueObject(commandInformation)));

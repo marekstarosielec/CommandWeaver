@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using CommandWeaver.Operations;
+using Microsoft.Extensions.DependencyInjection;
 
 public class OperationFactory(IServiceProvider serviceProvider) : IOperationFactory
 {
@@ -7,7 +8,8 @@ public class OperationFactory(IServiceProvider serviceProvider) : IOperationFact
         //Need to create new instance everytime, so GetOperation returns new instance everytime.
         { "output", serviceProvider.GetService<Output>() ?? throw new InvalidOperationException("Cannot resolve operation output")},
         { "setVariable", serviceProvider.GetService<SetVariable>() ?? throw new InvalidOperationException("Cannot resolve operation setVariable") },
-        { "terminate", serviceProvider.GetService<Terminate>() ?? throw new InvalidOperationException("Cannot resolve operation terminate") }
+        { "terminate", serviceProvider.GetService<Terminate>() ?? throw new InvalidOperationException("Cannot resolve operation terminate") },
+        { "forEach", serviceProvider.GetService<ForEach>() ?? throw new InvalidOperationException("Cannot resolve operation forEach") }
     };
     
     //TODO: Add test that checks if every class derived from Operation is created here

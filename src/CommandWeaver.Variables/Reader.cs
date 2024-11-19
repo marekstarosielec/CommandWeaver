@@ -221,7 +221,14 @@ public class Reader(IFlow flow, Storage variableStorage) : IReader
                 return null;
             }
             else if (i > 0 && pathSections[i].Groups[1].Success)
+            {
+                if (result?.ObjectValue == null || !result.ObjectValue.Keys.Contains(pathSections[i].Groups[1].Value))
+                {
+                    flow.Terminate($"Invalid property {pathSections[i].Groups[1].Value}");
+                    return null;
+                }
                 result = result?.ObjectValue?[pathSections[i].Groups[1].Value];
+            }
             else if (i > 0 && pathSections[i].Groups[2].Success)
                 result = new DynamicValue(result?.ListValue?.FirstOrDefault(v => v["key"].TextValue?.Equals(pathSections[i].Groups[2].Value) == true));
 
