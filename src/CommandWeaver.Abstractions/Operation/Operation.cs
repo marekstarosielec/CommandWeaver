@@ -1,7 +1,7 @@
 /// <summary>
 /// Represents an abstract base class for an operation that can be executed within a command.
 /// </summary>
-public abstract class Operation
+public abstract record Operation
 {
     /// <summary>
     /// Gets the name of the operation.

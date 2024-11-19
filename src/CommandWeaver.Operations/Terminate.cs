@@ -1,4 +1,4 @@
-﻿public class Terminate(IFlow flow) : Operation
+﻿public record Terminate(IFlow flow) : Operation
 {
     public override string Name => nameof(Terminate);
 

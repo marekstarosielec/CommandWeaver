@@ -1,4 +1,4 @@
-public class SetVariable(IVariables variables) : Operation
+public record SetVariable(IVariables variables) : Operation
 {
     public override string Name => nameof(SetVariable);
 

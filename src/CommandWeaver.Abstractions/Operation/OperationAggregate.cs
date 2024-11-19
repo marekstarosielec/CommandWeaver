@@ -1,5 +1,4 @@
-public abstract class OperationAggregate : Operation
+public abstract record OperationAggregate : Operation
 {
-    public List<Operation> Operations { get; } = new ();
     public string SerializedOperations { get; set; } = string.Empty;
 }
