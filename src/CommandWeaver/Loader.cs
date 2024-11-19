@@ -111,9 +111,22 @@ public class Loader(
                         var serializedCommand = root[x].GetRawText();
                         var commandInformation = new Dictionary<string, DynamicValue?>();
                         commandInformation["key"] = new DynamicValue(command.Name);
+                        commandInformation["name"] = new DynamicValue(command.Name);
                         commandInformation["description"] = new DynamicValue(command.Description);
+                        commandInformation["repositoryElementId"] = new DynamicValue(repositoryElementSerialized.Id);
                         commandInformation["json"] = new DynamicValue(serializedCommand, true);
                         commandInformation["id"] = new DynamicValue(repositoryElementSerialized.Id);
+
+                        var commandParameterValues = new List<DynamicValueObject>();
+                        foreach (var commandParameter in command.Parameters)
+                        {
+                            var commandParameterValue = new Dictionary<string, DynamicValue?>();
+                            commandParameterValue["key"] = new DynamicValue(commandParameter.Key);
+                            commandParameterValue["description"] = new DynamicValue(commandParameter.Description);
+                            commandParameterValues.Add(new DynamicValueObject(commandParameterValue));;
+                        }
+
+                        commandInformation["parameters"] = new DynamicValue(commandParameterValues);
                         variables.WriteVariableValue(VariableScope.Command, $"commands[{command.Name}]", new DynamicValue(new DynamicValueObject(commandInformation)));
                     }
                 }

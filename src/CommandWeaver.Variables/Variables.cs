@@ -33,7 +33,7 @@ public class Variables(IReader reader, IWriter writer, Storage storage) : IVaria
             ?? storage.BuiltIn.FirstOrDefault(v => v.Key == variableName);
 
     public DynamicValue ReadVariableValue(DynamicValue variableValue, bool treatTextValueAsVariable = false)
-    => reader.ReadVariableValue(variableValue, treatTextValueAsVariable);
+    =>   reader.ReadVariableValue(variableValue, treatTextValueAsVariable);
 
     public void Add(RepositoryLocation repositoryLocation, IEnumerable<Variable> variables, string repositoryElementId)
     {

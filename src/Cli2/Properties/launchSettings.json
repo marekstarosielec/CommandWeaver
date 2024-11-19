@@ -23,6 +23,10 @@
     "Help": {
       "commandName": "Project",
       "commandLineArgs": "help"
+    },
+    "Help test": {
+      "commandName": "Project",
+      "commandLineArgs": "help --command \"help test\""
     }
   }
 }

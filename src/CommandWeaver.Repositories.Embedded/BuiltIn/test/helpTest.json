@@ -1,0 +1,22 @@
+{
+  "commands": [
+    {
+      "name": "help test",
+      "parameters":[{
+        "key": "param1",
+        "description": "description1"
+      },{
+        "key": "param2",
+        "description": "description2"
+      }
+      ],
+      "operations": [
+        {
+          "operation": "output",
+          "value": "test"
+        }
+      ]
+    }
+  ]
+  
+}

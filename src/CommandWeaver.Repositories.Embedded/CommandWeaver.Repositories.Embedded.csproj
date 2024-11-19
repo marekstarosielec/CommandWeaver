@@ -31,6 +31,8 @@
     <EmbeddedResource Include="BuiltIn\test\outputTest.json" />
     <None Remove="BuiltIn\system\help.json" />
     <EmbeddedResource Include="BuiltIn\system\help.json" />
+    <None Remove="BuiltIn\test\helpTest.json" />
+    <EmbeddedResource Include="BuiltIn\test\helpTest.json" />
   </ItemGroup>
 
   <ItemGroup>

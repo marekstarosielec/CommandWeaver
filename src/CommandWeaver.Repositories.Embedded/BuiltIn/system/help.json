@@ -2,6 +2,12 @@
   "commands": [
     {
       "name": "help",
+      "parameters": [
+        {
+          "key": "command",
+          "description": "Name of command"
+        }
+      ],
       "operations": [
         {
           "operation": "output",
@@ -12,10 +18,13 @@
           "operation": "forEach",
           "list": "{{ commands }}",
           "element": "command",
+          "conditions": {
+            "isNull": "{{ command }}"
+          },
           "operations": [
             {
               "operation": "output",
-              "value": "  [[#FFFFFF]]{{ command.key }}[[/]]",
+              "value": "  [[#FFFFFF]]{{ command.name }}[[/]]",
               "styling": "Markup"
             },
             {
@@ -30,6 +39,37 @@
               "operation": "output",
               "value": " ",
               "styling": "MarkupLine"
+            }
+          ]
+        },
+        {
+          "operation": "output",
+          "value": "\r\nTo display additional help about specific command, use command [[#FFFFFF]]help --command [[#FFFFFF,italic]]<command-name>",
+          "styling": "Markup",
+          "conditions": {
+            "isNull": "{{ command }}"
+          }
+        },
+        {
+          "operation": "output",
+          "value": "Usage: [[#FFFFFF]] {{ commands[{{command}}].name }}",
+          "styling": "Markup",
+          "conditions": {
+            "isNotNull": "{{ command }}"
+          }
+        },
+        {
+          "operation": "forEach",
+          "list": "{{ commands[{{command}}].parameters }}",
+          "element": "commandParameter",
+          "conditions": {
+            "isNotNull": "{{ commands[{{command}}].parameters }}"
+          },
+          "operations": [
+            {
+              "operation": "output",
+              "value": " --{{commandParameter.key}}",
+              "styling": "Markup"
             }
           ]
         }

@@ -63,7 +63,7 @@ public class Reader(IFlow flow, Storage variableStorage) : IReader
     /// <param name="depth">Current resolving depth.</param>
     /// <returns>The resolved variable value, or null if the resolution fails.</returns>
     private DynamicValue? ReadTextKey(string key, bool treatTextValueAsVariable, int depth)
-    {
+     {
         if (string.IsNullOrWhiteSpace(key))
             return null;
 
@@ -230,7 +230,16 @@ public class Reader(IFlow flow, Storage variableStorage) : IReader
                 result = result?.ObjectValue?[pathSections[i].Groups[1].Value];
             }
             else if (i > 0 && pathSections[i].Groups[2].Success)
-                result = new DynamicValue(result?.ListValue?.FirstOrDefault(v => v["key"].TextValue?.Equals(pathSections[i].Groups[2].Value) == true));
+            {
+                var listElement = result?.ListValue?.FirstOrDefault(v =>
+                    v["key"].TextValue?.Equals(pathSections[i].Groups[2].Value) == true);
+                if (listElement == null)
+                {
+                    flow.Terminate($"List does not contain element with key {pathSections[i].Groups[2].Value}");
+                    return null;
+                }
+                result = new DynamicValue(listElement);
+            }
 
             if (result == null)
                 return null;
