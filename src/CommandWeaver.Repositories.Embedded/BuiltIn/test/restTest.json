@@ -11,7 +11,7 @@
             { 
               "Accept": "application/json",
               "conditions": {
-                "IsNull": ""
+                "IsNull": "abc"
               }
             }
           ]

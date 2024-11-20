@@ -29,8 +29,8 @@ public abstract record Operation
     /// Gets the conditions that determine whether this operation should execute.
     /// </summary>
     /// <remarks>
-    /// The <see cref="OperationCondition"/> object defines conditions, such as checking if certain values are null or not,
+    /// The <see cref="Condition"/> object defines conditions, such as checking if certain values are null or not,
     /// that control the execution of this operation.
     /// </remarks>
-    public OperationCondition? Conditions { get; set; }
+    public Condition? Conditions { get; set; }
 }

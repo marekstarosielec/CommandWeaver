@@ -1,6 +1,6 @@
 ﻿
 /// <inheritdoc />
-public class Commands(IOutput output, IFlow flow, IOperationConditions operationConditions, IVariables variables, IRepositoryElementStorage repositoryElementStorage, IOutputSettings outputSettings) : ICommands
+public class Commands(IOutput output, IFlow flow, IConditionsService conditionsService, IVariables variables, IRepositoryElementStorage repositoryElementStorage, IOutputSettings outputSettings) : ICommands
 {
     private List<Command> _commands = [];
 
@@ -96,7 +96,7 @@ public class Commands(IOutput output, IFlow flow, IOperationConditions operation
     public async Task ExecuteOperations(List<Operation> operations, CancellationToken cancellationToken)
     {
         foreach (var operation in operations)
-            if (!operationConditions.ShouldBeSkipped(operation.Conditions, variables)
+            if (!conditionsService.ShouldBeSkipped(operation.Conditions, variables)
                 && !cancellationToken.IsCancellationRequested)
                 await ExecuteOperation(operation, cancellationToken);
     }

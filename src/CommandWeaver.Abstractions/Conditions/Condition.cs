@@ -1,7 +1,7 @@
 ﻿/// <summary>
 /// Represents conditions for executing an operation,.
 /// </summary>
-public record OperationCondition
+public record Condition
 {
     /// <summary>
     /// Gets or sets the condition specifying that the operation should execute if a value is <c>null</c>.

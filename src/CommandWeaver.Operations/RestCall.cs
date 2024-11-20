@@ -1,4 +1,4 @@
-public record RestCall(IOperationConditions operationConditions) : Operation
+public record RestCall(IConditionsService conditionsService, IVariables variables) : Operation
 {
     public override string Name => nameof(RestCall);
 
@@ -29,7 +29,9 @@ public record RestCall(IOperationConditions operationConditions) : Operation
                 {
                     if (string.Equals(headerKey, "conditions", StringComparison.OrdinalIgnoreCase))
                     {
-                        //operationConditions.ShouldBeSkipped()
+                        var condition = conditionsService.GetFromDynamicValue(header[headerKey]);
+                        if (condition != null && conditionsService.ShouldBeSkipped(condition, variables))
+                            skipHeader = true;
                     }
                     else
                     {

@@ -110,7 +110,7 @@ public class OperationConverter(IVariables variables, IOperationFactory operatio
         foreach (var property in rootElement.EnumerateObject())
             if (_conditionProperties.TryGetValue(property.Name, out var conditionProperty))
             {
-                operationInstance.Conditions ??= new OperationCondition();
+                operationInstance.Conditions ??= new Condition();
                 conditionProperty.SetValue(operationInstance.Conditions, _dynamicValueConverter.ReadElement(property.Value) ?? new DynamicValue());
             }
             else
@@ -118,9 +118,9 @@ public class OperationConverter(IVariables variables, IOperationFactory operatio
     }
 
     /// <summary>
-    /// Cached property information for <see cref="OperationCondition"/>, allowing case-insensitive access.
+    /// Cached property information for <see cref="Condition"/>, allowing case-insensitive access.
     /// </summary>
-    private static readonly Dictionary<string, PropertyInfo> _conditionProperties = typeof(OperationCondition)
+    private static readonly Dictionary<string, PropertyInfo> _conditionProperties = typeof(Condition)
         .GetProperties(BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)
         .ToDictionary(prop => prop.Name, StringComparer.OrdinalIgnoreCase);
 }

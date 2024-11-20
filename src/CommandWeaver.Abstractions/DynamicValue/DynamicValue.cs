@@ -142,7 +142,7 @@ public record DynamicValue
             if (NumericValue != null) return $"Numeric: {NumericValue}";
             if (PrecisionValue != null) return $"Precision: {PrecisionValue.Value.ToString(CultureInfo.InvariantCulture)}";
             if (ObjectValue != null) {
-                var value = ObjectValue.Keys.FirstOrDefault("key") != null ? ObjectValue["key"].TextValue : "no key";
+                var value = ObjectValue.Keys.FirstOrDefault(k => k=="key") != null ? ObjectValue["key"].TextValue : "no key";
                 return $"Object: {value}";
             }
             if (ListValue != null) return $"List (Count: {ListValue.ToList().Count})";
