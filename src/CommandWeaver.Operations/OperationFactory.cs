@@ -9,7 +9,8 @@ public class OperationFactory(IServiceProvider serviceProvider) : IOperationFact
         { "output", serviceProvider.GetService<Output>() ?? throw new InvalidOperationException("Cannot resolve operation output")},
         { "setVariable", serviceProvider.GetService<SetVariable>() ?? throw new InvalidOperationException("Cannot resolve operation setVariable") },
         { "terminate", serviceProvider.GetService<Terminate>() ?? throw new InvalidOperationException("Cannot resolve operation terminate") },
-        { "forEach", serviceProvider.GetService<ForEach>() ?? throw new InvalidOperationException("Cannot resolve operation forEach") }
+        { "forEach", serviceProvider.GetService<ForEach>() ?? throw new InvalidOperationException("Cannot resolve operation forEach") },
+        { "restCall", serviceProvider.GetService<RestCall>() ?? throw new InvalidOperationException("Cannot resolve operation restCall") }
     };
     
     //TODO: Add test that checks if every class derived from Operation is created here

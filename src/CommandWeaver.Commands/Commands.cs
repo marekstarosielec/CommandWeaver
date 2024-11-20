@@ -131,7 +131,7 @@ public class Commands(IOutput output, IFlow flow, IOperationConditions operation
             }
             if (operation.Parameters[parameterKey].AllowedValues != null)
             {
-                if (!string.IsNullOrWhiteSpace(operation.Parameters[parameterKey].Value.TextValue) && !operation.Parameters[parameterKey].AllowedValues!.Contains(operation.Parameters[parameterKey].Value.TextValue!))
+                if (!string.IsNullOrWhiteSpace(operation.Parameters[parameterKey].Value.TextValue) && !operation.Parameters[parameterKey].AllowedValues!.Any(v => string.Equals(operation.Parameters[parameterKey].Value.TextValue!,v, StringComparison.OrdinalIgnoreCase)))
                     flow.Terminate($"Parameter {parameterKey} has invalid value in operation {operation.Name}.");
             }
         }

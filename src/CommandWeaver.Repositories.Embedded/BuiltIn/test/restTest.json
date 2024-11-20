@@ -1,0 +1,14 @@
+{
+  "commands": [
+    {
+      "name": "restTest",
+      "operations":[
+        {
+          "operation": "restCall",
+          "method": "get",
+          "url": "https://jsonplaceholder.typicode.com/todos/1"
+        }
+      ]
+    }
+  ]
+}
