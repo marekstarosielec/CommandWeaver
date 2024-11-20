@@ -17,22 +17,22 @@
         {
           "operation": "forEach",
           "list": "{{ commands }}",
-          "element": "command",
+          "element": "currentCommand",
           "conditions": {
             "isNull": "{{ command }}"
           },
           "operations": [
             {
               "operation": "output",
-              "value": "  [[#FFFFFF]]{{ command.name }}[[/]]",
+              "value": "  [[#FFFFFF]]{{ currentCommand.name }}[[/]]",
               "styling": "Markup"
             },
             {
               "operation": "output",
-              "value": " - {{ command.description }}",
+              "value": " - {{ currentCommand.description }}",
               "styling": "Markup",
               "conditions": {
-                "isNotNull": "{{ command.description }}"
+                "isNotNull": "{{ currentCommand.description }}"
               }
             },
             {

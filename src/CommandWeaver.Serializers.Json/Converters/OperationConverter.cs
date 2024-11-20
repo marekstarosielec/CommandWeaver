@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 
 /// <inheritdoc />
-public class OperationConverter(IVariables variables, IOperationFactory operationFactory, IFlow flow) : IOperationConverter
+public class OperationConverter(IVariables variables, IOperationFactory operationFactory, IFlow flow, IConditionsService conditionsService) : IOperationConverter
 {
     /// <summary>
     /// A converter for dynamic values within JSON data.
@@ -107,14 +107,10 @@ public class OperationConverter(IVariables variables, IOperationFactory operatio
     /// <param name="rootElement">The JSON element containing condition properties.</param>
     private void SetConditions(string operationName, Operation operationInstance, JsonElement rootElement)
     {
-        foreach (var property in rootElement.EnumerateObject())
-            if (_conditionProperties.TryGetValue(property.Name, out var conditionProperty))
-            {
-                operationInstance.Conditions ??= new Condition();
-                conditionProperty.SetValue(operationInstance.Conditions, _dynamicValueConverter.ReadElement(property.Value) ?? new DynamicValue());
-            }
-            else
-                flow.Terminate($"Unknown condition {property.Name} in operation {operationName} in {variables.CurrentlyLoadRepositoryElement}");
+        var conditionsElement = _dynamicValueConverter.ReadElement(rootElement);
+        if (conditionsElement == null)
+            return;
+        operationInstance.Conditions ??= conditionsService.GetFromDynamicValue(conditionsElement);
     }
 
     /// <summary>
