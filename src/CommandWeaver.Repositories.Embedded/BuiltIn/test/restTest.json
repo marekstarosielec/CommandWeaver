@@ -6,7 +6,15 @@
         {
           "operation": "restCall",
           "method": "get",
-          "url": "https://jsonplaceholder.typicode.com/todos/1"
+          "url": "https://jsonplaceholder.typicode.com/todos/1",
+          "headers":[
+            { 
+              "Accept": "application/json",
+              "conditions": {
+                "IsNull": ""
+              }
+            }
+          ]
         }
       ]
     }

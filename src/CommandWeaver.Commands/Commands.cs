@@ -96,7 +96,7 @@ public class Commands(IOutput output, IFlow flow, IOperationConditions operation
     public async Task ExecuteOperations(List<Operation> operations, CancellationToken cancellationToken)
     {
         foreach (var operation in operations)
-            if (!operationConditions.OperationShouldBeSkipped(operation, variables)
+            if (!operationConditions.ShouldBeSkipped(operation.Conditions, variables)
                 && !cancellationToken.IsCancellationRequested)
                 await ExecuteOperation(operation, cancellationToken);
     }

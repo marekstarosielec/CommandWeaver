@@ -1,27 +1,23 @@
-﻿public interface IOperationConditions
+﻿public class OperationConditions(IOutput output) : IOperationConditions
 {
-    bool OperationShouldBeSkipped(Operation operation, IVariables variables);
-}
-
-public class OperationConditions(IOutput output) : IOperationConditions
-{
-    public bool OperationShouldBeSkipped(Operation operation, IVariables variables)
+    public bool ShouldBeSkipped(OperationCondition? condition, IVariables variables)
     {
-        if (operation.Conditions?.IsNull != null)
+        if (condition?.IsNull != null)
         {
-            var result = variables.ReadVariableValue(operation.Conditions.IsNull);
+            var result = variables.ReadVariableValue(condition.IsNull);
             if (!result.IsNull())
             {
-                output.Trace($"Skipping operation {operation.Name} because of IsNull condition.");
+                //TODO: Conditions are also used for rest headers - need to adjust message
+               // output.Trace($"Skipping operation because of IsNull condition.");
                 return true;
             }
         }
-        if (operation.Conditions?.IsNotNull != null)
+        if (condition?.IsNotNull != null)
         {
-            var result = variables.ReadVariableValue(operation.Conditions.IsNotNull);
+            var result = variables.ReadVariableValue(condition.IsNotNull);
             if (result.IsNull())
             {
-                output.Trace($"Skipping operation {operation.Name} because of IsNotNull condition.");
+             //   output.Trace($"Skipping operation because of IsNotNull condition.");
                 return true;
             }
         }
