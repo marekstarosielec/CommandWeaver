@@ -11,7 +11,7 @@
       "operations": [
         {
           "operation": "output",
-          "value": "Command-Weaver by [[#FFFFFF]]Marek Starosielec\r\n",
+          "value": "Command-Weaver by [[{{styles[focused].value}}]]Marek Starosielec\r\n",
           "styling": "MarkupLine"
         },
         {
@@ -24,7 +24,7 @@
           "operations": [
             {
               "operation": "output",
-              "value": "  [[#FFFFFF]]{{ currentCommand.name }}[[/]]",
+              "value": "  [[{{styles[focused].value}}]]{{ currentCommand.name }}[[/]]",
               "styling": "Markup"
             },
             {
@@ -44,7 +44,7 @@
         },
         {
           "operation": "output",
-          "value": "\r\nTo display additional help about specific command, use command [[#FFFFFF]]help --command [[#FFFFFF,italic]]<command-name>",
+          "value": "\r\nTo display additional help about specific command, use command [[{{styles[focused].value}}]]help --command [[{{styles[focused].value}},italic]]<command-name>",
           "styling": "Markup",
           "conditions": {
             "isNull": "{{ command }}"
@@ -52,7 +52,7 @@
         },
         {
           "operation": "output",
-          "value": "Usage: [[#FFFFFF]] {{ commands[{{command}}].name }}",
+          "value": "Usage: [[{{styles[focused].value}}]] {{ commands[{{command}}].name }}",
           "styling": "Markup",
           "conditions": {
             "isNotNull": "{{ command }}"

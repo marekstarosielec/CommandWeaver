@@ -22,6 +22,10 @@
         {
           "key": "error",
           "value": "#af0000"
+        },
+        {
+          "key": "focused",
+          "value": "#ffffff"
         }
       ]
     }

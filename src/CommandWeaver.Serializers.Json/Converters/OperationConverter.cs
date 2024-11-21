@@ -78,9 +78,6 @@ public class OperationConverter(IVariables variables, IOperationFactory operatio
                 && operationInstance is OperationAggregate operationAggregateInstance
                 && property.Value.ValueKind == JsonValueKind.Array)
             {
-                //Keeping operations in serialized form, because they might be needed several times (e.g. to run in loop)
-                //and they need to be cloned.
-                //operationAggregateInstance.SerializedOperations = property.Value.GetRawText();
                 foreach (var subOperation in property.Value.EnumerateArray())
                 {
                     var subOperationName = GetOperationName(subOperation);
