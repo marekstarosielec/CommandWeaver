@@ -5,16 +5,23 @@
       "operations":[
         {
           "operation": "restCall",
-          "method": "get",
-          "url": "https://jsonplaceholder.typicode.com/todos/1",
+          "method": "post",
+          "url": "https://jsonplaceholder.typicode.com/posts",
+          "timeout": 2,
           "headers":[
             { 
-              "Accept": "application/json",
+              "key": "Accept",
+              "value": "application/json",
               "conditions": {
                 "IsNull": "abc"
               }
             }
-          ]
+          ],
+          "body": {
+            "title": "foo",
+            "body": "bar",
+            "userId": 1
+          }
         }
       ]
     }
