@@ -23,17 +23,30 @@ public record RestCall(IConditionsService conditionsService, IVariables variable
         request.Method = HttpMethod.Parse(Parameters["method"].Value.TextValue!);
         request.RequestUri = new Uri(Parameters["url"].Value.TextValue!);
         httpClient.Timeout = TimeSpan.FromSeconds(Parameters["timeout"].Value.NumericValue ?? 60);
+        var serializer = serializerFactory.GetDefaultSerializer(out _);
         if (Parameters["body"].Value.TextValue != null)
-            request.Content = new StringContent(Parameters["body"].Value.TextValue!, Encoding.UTF8, "application/json");
-        if (Parameters["body"].Value.ObjectValue != null)
+            request.Content = new StringContent(Parameters["body"].Value.TextValue!, Encoding.UTF8, GetContentType() ?? "application/json");
+        if (Parameters["body"].Value.ObjectValue != null || Parameters["body"].Value.ListValue != null)
         {
-            var serializer = serializerFactory.GetDefaultSerializer(out _);
             serializer.TrySerialize(Parameters["body"].Value, out var body, out _);
-            request.Content = new StringContent(body, Encoding.UTF8, GetContentType() ?? "application/json");
+            request.Content = new StringContent(body, Encoding.UTF8,"application/json");
         }
 
         var result = await httpClient.SendAsync(request, cancellationToken);
-        var t = await result.Content.ReadAsStringAsync(cancellationToken);
+        var resultBody = await result.Content.ReadAsStringAsync(cancellationToken);
+        //try to deserialize to json
+        serializer.TryDeserialize(resultBody, out DynamicValue resultModel, out _);
+        
+        // 
+        // lastRestCall["response"] = resultBody;
+        var dynamicValueResponse =  new Dictionary<string, DynamicValue?>();
+        dynamicValueResponse["status"] = new DynamicValue((int)result.StatusCode);
+        dynamicValueResponse["body"] = resultModel;
+        
+        var lastRestCall = new Dictionary<string, DynamicValue?>();
+        lastRestCall["response"] = new DynamicValue(dynamicValueResponse);
+        variables.WriteVariableValue(VariableScope.Command, "lastRestCall", new DynamicValue(lastRestCall));
+        var t = variables.ReadVariableValue(new DynamicValue("lastRestCall"), true);
     }
 
     private string? GetContentType() => Parameters["headers"].Value.ListValue?.FirstOrDefault(h => string.Equals(h["key"]?.TextValue, "content-type", StringComparison.InvariantCultureIgnoreCase))?["value"].TextValue;
