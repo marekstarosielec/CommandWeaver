@@ -112,7 +112,7 @@ public class Commands(IOutput output, IFlow flow, IConditionsService conditionsS
         foreach (var parameterKey in operation.Parameters.Keys)
         {
             //Evaluate all operation parameters.
-            operation.Parameters[parameterKey] = operation.Parameters[parameterKey] with { Value = variables.ReadVariableValue(operation.Parameters[parameterKey].Value) ?? new DynamicValue() };
+            operation.Parameters[parameterKey] = operation.Parameters[parameterKey] with { Value = variables.ReadVariableValue(operation.Parameters[parameterKey].OriginalValue) ?? new DynamicValue() };
             if (operation.Parameters[parameterKey].Required && operation.Parameters[parameterKey].Value.IsNull())
                 flow.Terminate($"Parameter {parameterKey} is required in operation {operation.Name}.");
             if (operation.Parameters[parameterKey].RequiredText && string.IsNullOrWhiteSpace(operation.Parameters[parameterKey].Value.TextValue))

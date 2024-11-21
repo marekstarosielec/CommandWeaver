@@ -1,6 +1,6 @@
 namespace CommandWeaver.Operations;
 
-public record ForEach(ICommands commands, IVariables variables, ISerializerFactory serializerFactory) : OperationAggregate
+public record ForEach(ICommands commands, IVariables variables) : OperationAggregate
 {
     public override string Name => nameof(ForEach);
 
@@ -17,14 +17,7 @@ public record ForEach(ICommands commands, IVariables variables, ISerializerFacto
         foreach (var element in Parameters["list"].Value.ListValue!)
         {
             variables.WriteVariableValue(VariableScope.Command, path, new DynamicValue(element));
-            await commands.ExecuteOperations(GetOperationsCopy(), cancellationToken);
+            await commands.ExecuteOperations(Operations, cancellationToken);
         }
-    }
-
-    private List<Operation> GetOperationsCopy()
-    {
-        var serializer = serializerFactory.GetDefaultSerializer(out _);
-        serializer.TryDeserialize(SerializedOperations, out List<Operation> operations, out _);
-        return operations;
     }
 }

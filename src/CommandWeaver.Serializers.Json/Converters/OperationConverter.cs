@@ -80,7 +80,14 @@ public class OperationConverter(IVariables variables, IOperationFactory operatio
             {
                 //Keeping operations in serialized form, because they might be needed several times (e.g. to run in loop)
                 //and they need to be cloned.
-                operationAggregateInstance.SerializedOperations = property.Value.GetRawText();
+                //operationAggregateInstance.SerializedOperations = property.Value.GetRawText();
+                foreach (var subOperation in property.Value.EnumerateArray())
+                {
+                    var subOperationName = GetOperationName(subOperation);
+                    var subOperationInstance = GetOperationInstance(subOperationName);
+                    SetOperationProperties(subOperationName, subOperationInstance, subOperation);
+                    operationAggregateInstance.Operations.Add(subOperationInstance);
+                }
                 continue;
             }
 
@@ -95,7 +102,7 @@ public class OperationConverter(IVariables variables, IOperationFactory operatio
                 continue;
             }
 
-            operationInstance.Parameters[property.Name] = operationInstance.Parameters[property.Name] with { Value = _dynamicValueConverter.ReadElement(property.Value) ?? new DynamicValue() };
+            operationInstance.Parameters[property.Name] = operationInstance.Parameters[property.Name] with { OriginalValue = _dynamicValueConverter.ReadElement(property.Value) ?? new DynamicValue() };
         }
     }
 

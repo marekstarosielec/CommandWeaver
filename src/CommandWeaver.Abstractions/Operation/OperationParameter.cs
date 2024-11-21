@@ -9,6 +9,8 @@ public record OperationParameter
     /// <remarks>This value holds the current input or setting for the parameter.</remarks>
     public DynamicValue Value { get; set; } = new DynamicValue();
 
+    public DynamicValue OriginalValue { get; set; } = new DynamicValue();
+
     /// <summary>
     /// Gets an optional description of the operation parameter.
     /// </summary>
