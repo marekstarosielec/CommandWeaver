@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Reflection;
 using System.Text.Json;
 
@@ -16,7 +17,7 @@ public class OperationConverter(IVariableService variables, IOperationFactory op
         var rootElement = document.RootElement;
         var operationName = GetOperationName(rootElement);
         var operationInstance = GetOperationInstance(operationName);
-        SetOperationProperties(operationName, operationInstance, rootElement);
+        operationInstance = SetOperationProperties(operationName, operationInstance, rootElement);
         return operationInstance;
     }
 
@@ -58,8 +59,10 @@ public class OperationConverter(IVariableService variables, IOperationFactory op
     /// <param name="operationName">The name of the operation.</param>
     /// <param name="operationInstance">The <see cref="Operation"/> instance to configure.</param>
     /// <param name="rootElement">The root JSON element containing property values.</param>
-    private void SetOperationProperties(string operationName, Operation operationInstance, JsonElement rootElement)
+    private Operation SetOperationProperties(string operationName, Operation operationInstance, JsonElement rootElement)
     {
+        var result = operationInstance;
+        var parameters = result.Parameters.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         foreach (var property in rootElement.EnumerateObject())
         {
             // Skip operation name. 
@@ -78,13 +81,16 @@ public class OperationConverter(IVariableService variables, IOperationFactory op
                 && operationInstance is OperationAggregate operationAggregateInstance
                 && property.Value.ValueKind == JsonValueKind.Array)
             {
+                var subOperations = new List<Operation>();
                 foreach (var subOperation in property.Value.EnumerateArray())
                 {
                     var subOperationName = GetOperationName(subOperation);
                     var subOperationInstance = GetOperationInstance(subOperationName);
-                    SetOperationProperties(subOperationName, subOperationInstance, subOperation);
-                    operationAggregateInstance.Operations.Add(subOperationInstance);
+                    var subResult = SetOperationProperties(subOperationName, subOperationInstance, subOperation);
+                    subOperations.Add(subResult);
                 }
+
+                result = operationAggregateInstance with { Operations = subOperations.ToImmutableList() };
                 continue;
             }
 
@@ -92,15 +98,17 @@ public class OperationConverter(IVariableService variables, IOperationFactory op
             if (property.Name.StartsWith("_", StringComparison.CurrentCultureIgnoreCase))
                 continue;
 
-            if (!operationInstance.Parameters.ContainsKey(property.Name))
+            if (!operationInstance.Parameters.TryGetValue(property.Name, out var parameter))
             {
                 // Property defined in JSON is not defined in operation class.
                 flow.Terminate($"Property {property.Name} is invalid in operation {operationName} in {variables.CurrentlyLoadRepositoryElement}");
                 continue;
             }
-
-            operationInstance.Parameters[property.Name] = operationInstance.Parameters[property.Name] with { OriginalValue = _dynamicValueConverter.ReadElement(property.Value) ?? new DynamicValue() };
+            
+            parameters[property.Name] = parameters[property.Name] with { OriginalValue = _dynamicValueConverter.ReadElement(property.Value) ?? new DynamicValue() };
         }
+
+        return result with { Parameters = parameters.ToImmutableDictionary() };
     }
 
     /// <summary>

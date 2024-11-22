@@ -1,4 +1,6 @@
 ﻿
+using System.Collections.Immutable;
+
 /// <inheritdoc />
 public class CommandService(IOutputService output, IFlowService flow, IConditionsService conditionsService, IVariableService variables, IRepositoryElementStorage repositoryElementStorage, IOutputSettings outputSettings) : ICommandService
 {
@@ -103,38 +105,40 @@ public class CommandService(IOutputService output, IFlowService flow, ICondition
 
     internal async Task ExecuteOperation(Operation operation, CancellationToken cancellationToken)
     {
-        PrepareOperationParameters(operation);
-        await operation.Run(cancellationToken);
+        var preparedOperation = PrepareOperationParameters(operation);
+        await preparedOperation.Run(cancellationToken);
     }
 
-    private void PrepareOperationParameters(Operation operation)
+    private Operation PrepareOperationParameters(Operation operation)
     {
+        var parameters = operation.Parameters.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         foreach (var parameterKey in operation.Parameters.Keys)
         {
             //Evaluate all operation parameters.
-            operation.Parameters[parameterKey] = operation.Parameters[parameterKey] with { Value = variables.ReadVariableValue(operation.Parameters[parameterKey].OriginalValue) ?? new DynamicValue() };
-            if (operation.Parameters[parameterKey].Required && operation.Parameters[parameterKey].Value.IsNull())
+            parameters[parameterKey] = operation.Parameters[parameterKey] with { Value = variables.ReadVariableValue(operation.Parameters[parameterKey].OriginalValue) ?? new DynamicValue() };
+            if (parameters[parameterKey].Required && parameters[parameterKey].Value.IsNull())
                 flow.Terminate($"Parameter {parameterKey} is required in operation {operation.Name}.");
-            if (operation.Parameters[parameterKey].RequiredText && string.IsNullOrWhiteSpace(operation.Parameters[parameterKey].Value.TextValue))
+            if (parameters[parameterKey].RequiredText && string.IsNullOrWhiteSpace(parameters[parameterKey].Value.TextValue))
                 flow.Terminate($"Parameter {parameterKey} requires text value in operation {operation.Name}.");
-            if (operation.Parameters[parameterKey].RequiredList && operation.Parameters[parameterKey].Value.ListValue == null)
+            if (parameters[parameterKey].RequiredList && parameters[parameterKey].Value.ListValue == null)
                 flow.Terminate($"Parameter {parameterKey} requires list value in operation {operation.Name}.");
 
-            if (operation.Parameters[parameterKey].AllowedEnumValues != null)
+            if (parameters[parameterKey].AllowedEnumValues != null)
             {
                 //TODO: This should be checked by unit test.
-                if (!operation.Parameters[parameterKey].AllowedEnumValues!.IsEnum)
+                if (!parameters[parameterKey].AllowedEnumValues!.IsEnum)
                     flow.Terminate($"Parameter {parameterKey} contains invalid AllowedEnumValues in operation {operation.Name}.");
 
-                if (!string.IsNullOrWhiteSpace(operation.Parameters[parameterKey].Value.TextValue) && !Enum.GetNames(operation.Parameters[parameterKey].AllowedEnumValues!).Any(name => string.Equals(name, operation.Parameters[parameterKey].Value.TextValue!, StringComparison.OrdinalIgnoreCase)))
+                if (!string.IsNullOrWhiteSpace(parameters[parameterKey].Value.TextValue) && !Enum.GetNames(parameters[parameterKey].AllowedEnumValues!).Any(name => string.Equals(name, parameters[parameterKey].Value.TextValue!, StringComparison.OrdinalIgnoreCase)))
                     flow.Terminate($"Parameter {parameterKey} has invalid value in operation {operation.Name}.");
             }
-            if (operation.Parameters[parameterKey].AllowedValues != null)
+            if (parameters[parameterKey].AllowedValues != null)
             {
-                if (!string.IsNullOrWhiteSpace(operation.Parameters[parameterKey].Value.TextValue) && !operation.Parameters[parameterKey].AllowedValues!.Any(v => string.Equals(operation.Parameters[parameterKey].Value.TextValue!,v, StringComparison.OrdinalIgnoreCase)))
+                if (!string.IsNullOrWhiteSpace(parameters[parameterKey].Value.TextValue) && !parameters[parameterKey].AllowedValues!.Any(v => string.Equals(parameters[parameterKey].Value.TextValue!,v, StringComparison.OrdinalIgnoreCase)))
                     flow.Terminate($"Parameter {parameterKey} has invalid value in operation {operation.Name}.");
             }
         }
+        return operation with { Parameters = parameters.ToImmutableDictionary() };
     }
 }
 

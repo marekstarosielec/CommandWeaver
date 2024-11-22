@@ -1,15 +1,17 @@
+using System.Collections.Immutable;
+
 namespace CommandWeaver.Operations;
 
 public record ForEach(ICommandService ICommandService, IVariableService variables) : OperationAggregate
 {
     public override string Name => nameof(ForEach);
 
-    public override Dictionary<string, OperationParameter> Parameters { get; } =
+    public override ImmutableDictionary<string, OperationParameter> Parameters { get; init; } =
         new Dictionary<string, OperationParameter>
         {
             {"list", new OperationParameter { Description = "List to enumerate through", RequiredList = true}},
             {"element", new OperationParameter { Description = "Name of variable where each element of list will be placed", RequiredText = true}}
-        };
+        }.ToImmutableDictionary();
 
     public override async Task Run(CancellationToken cancellationToken)
     {

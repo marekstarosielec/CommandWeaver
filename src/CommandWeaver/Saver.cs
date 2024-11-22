@@ -43,7 +43,7 @@ public class Saver(IVariableService variables, IRepositoryElementStorage reposit
                 continue;
             }
 
-            await repository.SaveList(name, serializedContent!, cancellationToken);
+            await repository.SaveRepositoryElement(name, serializedContent!, cancellationToken);
             continue;
         }
     }

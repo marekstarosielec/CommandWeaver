@@ -19,15 +19,15 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
         }
     }
 
-    public async Task SaveList(string repositoryElementId, string content, CancellationToken cancellationToken)
+    public async Task SaveRepositoryElement(string repositoryElementId, string content, CancellationToken cancellationToken)
     {
         var directoryPath = Path.GetDirectoryName(repositoryElementId);
 
         if (directoryPath != null)
             Directory.CreateDirectory(directoryPath);
 
-        using var stream = new FileStream(repositoryElementId, FileMode.Create, FileAccess.Write);
-        using var writer = new StreamWriter(stream);
+        await using var stream = new FileStream(repositoryElementId, FileMode.Create, FileAccess.Write);
+        await using var writer = new StreamWriter(stream);
         await writer.WriteAsync(content.AsMemory(), cancellationToken);
     }
   

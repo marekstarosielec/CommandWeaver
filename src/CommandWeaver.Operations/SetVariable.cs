@@ -1,14 +1,16 @@
+using System.Collections.Immutable;
+
 public record SetVariable(IVariableService variables) : Operation
 {
     public override string Name => nameof(SetVariable);
 
-    public override Dictionary<string, OperationParameter> Parameters { get; } = new Dictionary<string, OperationParameter>
+    public override ImmutableDictionary<string, OperationParameter> Parameters { get; init; } = new Dictionary<string, OperationParameter>
     {
         { "key", new OperationParameter { Description = "Key of variable to set value to.", RequiredText = true } },
         { "value", new OperationParameter { Description = "Value which should be set.", Required = true } },
         { "scope", new OperationParameter { Description = "Optional scope for variable.", AllowedEnumValues = typeof(VariableScope) } },
         { "id", new OperationParameter { Description = "Optional name of file where variable should be stored." } },
-    };
+    }.ToImmutableDictionary();
 
     public override Task Run(CancellationToken cancellationToken)
     {

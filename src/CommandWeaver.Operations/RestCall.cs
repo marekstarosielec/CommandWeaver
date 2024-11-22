@@ -1,10 +1,11 @@
+using System.Collections.Immutable;
 using System.Text;
 
 public record RestCall(IConditionsService conditionsService, IVariableService variables, ISerializerFactory serializerFactory) : Operation
 {
     public override string Name => nameof(RestCall);
 
-    public override Dictionary<string, OperationParameter> Parameters { get; } = new Dictionary<string, OperationParameter>
+    public override ImmutableDictionary<string, OperationParameter> Parameters { get; init;  } = new Dictionary<string, OperationParameter>
     {
         {"url", new OperationParameter { Description = "The endpoint of the API to call", RequiredText = true} },
         {"method", new OperationParameter { Description = "Operation to perform", RequiredText = true, AllowedValues = [HttpMethod.Get.ToString(), HttpMethod.Post.ToString(), HttpMethod.Put.ToString(), HttpMethod.Delete.ToString(), HttpMethod.Patch.ToString() ] } },
@@ -13,7 +14,7 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         {"timeout", new OperationParameter { Description = "Seconds to wait for a response before failing"} },
         {"certificate", new OperationParameter { Description = "Path to certificate file"} },
         {"certificatePassword", new OperationParameter { Description = "Certificate password if any"} }
-    };
+    }.ToImmutableDictionary();
     
     public override async Task Run(CancellationToken cancellationToken)
     {

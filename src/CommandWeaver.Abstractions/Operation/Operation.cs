@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+
 /// <summary>
 /// Represents an abstract base record for an operation that can be executed within a command.
 /// </summary>
@@ -18,7 +20,7 @@ public abstract record Operation
     /// Each parameter is defined by a key and an <see cref="OperationParameter"/> object, which provides details
     /// about the parameter's type, constraints, and requirement status.
     /// </remarks>
-    public abstract Dictionary<string, OperationParameter> Parameters { get; }
+    public abstract ImmutableDictionary<string, OperationParameter> Parameters { get; init; }
 
     /// <summary>
     /// Executes the operation asynchronously.

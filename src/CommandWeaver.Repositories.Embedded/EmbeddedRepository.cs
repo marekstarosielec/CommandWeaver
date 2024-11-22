@@ -34,7 +34,7 @@ public class EmbeddedRepository : IEmbeddedRepository
     }
 
     /// <summary>
-    /// Extract aprt after last dot - it should be extension.
+    /// Extract part after last dot - it should be extension.
     /// </summary>
     /// <param name="resourceName"></param>
     /// <returns></returns>
