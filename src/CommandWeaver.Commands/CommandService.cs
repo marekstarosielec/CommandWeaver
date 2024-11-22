@@ -1,6 +1,6 @@
 ﻿
 /// <inheritdoc />
-public class Commands(IOutput output, IFlow flow, IConditionsService conditionsService, IVariables variables, IRepositoryElementStorage repositoryElementStorage, IOutputSettings outputSettings) : ICommands
+public class CommandService(IOutputService output, IFlowService flow, IConditionsService conditionsService, IVariableService variables, IRepositoryElementStorage repositoryElementStorage, IOutputSettings outputSettings) : ICommandService
 {
     private List<Command> _commands = [];
 
@@ -57,24 +57,24 @@ public class Commands(IOutput output, IFlow flow, IConditionsService conditionsS
     {
         var allNames = new List<KeyValuePair<string, string>>();
         foreach (var repositoryElement in repositoryElementStorage.Get())
-            if (repositoryElement.content?.Commands != null)
-                foreach (var command in repositoryElement.content.Commands)
+            if (repositoryElement.Content?.Commands != null)
+                foreach (var command in repositoryElement.Content.Commands)
                 {
                     //Find commands where name is not defined.
                     if (string.IsNullOrWhiteSpace(command.Name))
                     {
-                        output.Warning($"There is a command with missing name in {repositoryElement.id}");
+                        output.Warning($"There is a command with missing name in {repositoryElement.Id}");
                         continue;
                     }
-                    allNames.Add(new KeyValuePair<string, string>(command.Name, repositoryElement.id));
+                    allNames.Add(new KeyValuePair<string, string>(command.Name, repositoryElement.Id));
                     if (command.OtherNames != null)
                         foreach (var otherName in command.OtherNames)
-                            allNames.Add(new KeyValuePair<string, string>(otherName, repositoryElement.id));
+                            allNames.Add(new KeyValuePair<string, string>(otherName, repositoryElement.Id));
 
                     //Find duplicated command parameters within command.
                     var duplicatedParameters = command.Parameters.GroupBy(p => p.Key).Where(g => g.Count() > 1).Select(p => p.Key).ToList();
                     foreach (var duplicatedParameter in duplicatedParameters)
-                        output.Warning($"More than one parameter named {duplicatedParameter} is defined in command {command.Name} in {repositoryElement.id}");
+                        output.Warning($"More than one parameter named {duplicatedParameter} is defined in command {command.Name} in {repositoryElement.Id}");
 
 
                 }
@@ -96,7 +96,7 @@ public class Commands(IOutput output, IFlow flow, IConditionsService conditionsS
     public async Task ExecuteOperations(List<Operation> operations, CancellationToken cancellationToken)
     {
         foreach (var operation in operations)
-            if (!conditionsService.ShouldBeSkipped(operation.Conditions, variables)
+            if (!conditionsService.ConditionsAreMet(operation.Conditions)
                 && !cancellationToken.IsCancellationRequested)
                 await ExecuteOperation(operation, cancellationToken);
     }

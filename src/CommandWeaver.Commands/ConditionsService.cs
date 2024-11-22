@@ -1,6 +1,6 @@
-﻿public class ConditionsService(IOutput output, IFlow flow) : IConditionsService
+﻿public class ConditionsService(IOutputService output, IFlowService flow, IVariableService variables) : IConditionsService
 {
-    public bool ShouldBeSkipped(Condition? condition, IVariables variables)
+    public bool ConditionsAreMet(Condition? condition)
     {
         if (condition?.IsNull != null)
         {

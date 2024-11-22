@@ -5,7 +5,7 @@ public interface ISaver
     Task Execute(CancellationToken cancellationToken);
 }
 
-public class Saver(IVariables variables, IRepositoryElementStorage repositoryElementStorage, ISerializerFactory serializerFactory, IFlow flow, IRepository repository, IOutput output) : ISaver
+public class Saver(IVariableService variables, IRepositoryElementStorage repositoryElementStorage, ISerializerFactory serializerFactory, IFlowService flow, IRepository repository, IOutputService output) : ISaver
 {
     public async Task Execute(CancellationToken cancellationToken)
     {
@@ -16,21 +16,21 @@ public class Saver(IVariables variables, IRepositoryElementStorage repositoryEle
         var repositoriesWithUpdatedVariables = variables.GetRepositoryElementStorage().Get();
         foreach (var repositoryWithUpdatedVariables in repositoriesWithUpdatedVariables)
         {
-            if (repositoryWithUpdatedVariables.content == null)
+            if (repositoryWithUpdatedVariables.Content == null)
             {
                 flow.Terminate("Failed to get changes in variables");
                 continue;
             }
 
-            var name = repositoryWithUpdatedVariables.id;
+            var name = repositoryWithUpdatedVariables.Id;
             if (name == string.Empty)
                 name = defaultFileName;
-            var originalReporitory = originalRepositories.FirstOrDefault(r => r.id == name);
+            var originalReporitory = originalRepositories.FirstOrDefault(r => r.Id == name);
             RepositoryElementContent? content = null;
-            if (originalReporitory?.content != null)
-                content = originalReporitory.content with { Variables = repositoryWithUpdatedVariables.content.Variables?.Select(v => v with { RepositoryElementId = null}).ToImmutableList() };
+            if (originalReporitory?.Content != null)
+                content = originalReporitory.Content with { Variables = repositoryWithUpdatedVariables.Content.Variables?.Select(v => v with { RepositoryElementId = null}).ToImmutableList() };
             else if (originalReporitory == null)
-                content = repositoryWithUpdatedVariables.content with { Variables = repositoryWithUpdatedVariables.content.Variables?.Select(v => v with { RepositoryElementId = null }).ToImmutableList() };
+                content = repositoryWithUpdatedVariables.Content with { Variables = repositoryWithUpdatedVariables.Content.Variables?.Select(v => v with { RepositoryElementId = null }).ToImmutableList() };
             else
             {
                 //Avoid overwriting file if its contents could not be read - this could lead to loosing previous data.

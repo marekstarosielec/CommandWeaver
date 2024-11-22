@@ -1,4 +1,4 @@
-﻿public class Output(IOutputWriter outputWriter, IOutputSettings outputSettings) : IOutput
+﻿public class Output(IOutputWriter outputWriter, IOutputSettings outputSettings) : IOutputService
 {
     public void Trace(string message)=> Write(new DynamicValue(message), LogLevel.Trace, Styling.Default);
     public void Debug(string message) => Write(new DynamicValue(message), LogLevel.Debug, Styling.Default);

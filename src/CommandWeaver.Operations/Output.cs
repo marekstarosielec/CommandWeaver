@@ -1,4 +1,4 @@
-public record Output(IOutput output) : Operation
+public record Output(IOutputService output) : Operation
 {
     public override string Name => nameof(Output);
 

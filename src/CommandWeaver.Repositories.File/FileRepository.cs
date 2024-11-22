@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 
-public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutput output) : IRepository
+public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputService output) : IRepository
 {
     /// <inheritdoc />
     public IAsyncEnumerable<RepositoryElementSerialized> GetList(RepositoryLocation repositoryLocation, string? sessionName, CancellationToken cancellationToken)

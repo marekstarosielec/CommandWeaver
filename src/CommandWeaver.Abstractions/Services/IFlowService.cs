@@ -1,7 +1,7 @@
 ﻿/// <summary>
 /// Defines a service that allows influence execution flow.
 /// </summary>
-public interface IFlow
+public interface IFlowService
 {
     /// <summary>
     /// Terminates execution, optionally providing an exit message and code.

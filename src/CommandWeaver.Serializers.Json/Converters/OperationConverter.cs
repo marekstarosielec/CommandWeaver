@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 
 /// <inheritdoc />
-public class OperationConverter(IVariables variables, IOperationFactory operationFactory, IFlow flow, IConditionsService conditionsService) : IOperationConverter
+public class OperationConverter(IVariableService variables, IOperationFactory operationFactory, IFlowService flow, IConditionsService conditionsService) : IOperationConverter
 {
     /// <summary>
     /// A converter for dynamic values within JSON data.

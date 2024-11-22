@@ -3,7 +3,7 @@
     void WriteVariableValue(VariableScope scope, string? sessionName, string path, DynamicValue value, string? repositoryElementId);
 }
 
-public class Writer(IFlow flow, Storage variableStorage, IRepository repository) : IWriter
+public class Writer(IFlowService flow, Storage variableStorage, IRepository repository) : IWriter
 {
     public void WriteVariableValue(VariableScope scope, string? sessionName, string path, DynamicValue value, string? repositoryElementId)
     {
@@ -101,7 +101,7 @@ public class Writer(IFlow flow, Storage variableStorage, IRepository repository)
         if (existingChange != null)
         {
             //When given list element was already edited - remove previous value and add new one.
-            var newList = (existingChange.Value.ListValue?.RemoveAll(v => v["key"].TextValue == key) ?? new DynamicValueList()).Add(value.ObjectValue);
+            var newList = (existingChange.Value.ListValue?.RemoveAll(v => v.ObjectValue?["key"].TextValue == key) ?? new DynamicValueList()).Add(value);
             existingChange.Value = new DynamicValue(newList);
                     
             return;
@@ -116,7 +116,7 @@ public class Writer(IFlow flow, Storage variableStorage, IRepository repository)
         var resolvedRepositoryElementId = repositoryElementId ?? existingVariable?.RepositoryElementId;
 
         //When given list element was not yet edited.
-        var newVariable = new Variable { Key = variableName, Value = new DynamicValue(new DynamicValueList([value.ObjectValue])), RepositoryElementId = resolvedRepositoryElementId };
+        var newVariable = new Variable { Key = variableName, Value = new DynamicValue(new DynamicValueList([value])), RepositoryElementId = resolvedRepositoryElementId };
         if (scope == VariableScope.Command) variableStorage.Command.Add(newVariable);
         if (scope == VariableScope.Session) variableStorage.Session.Add(newVariable);
         if (scope == VariableScope.Application) variableStorage.Application.Add(newVariable);

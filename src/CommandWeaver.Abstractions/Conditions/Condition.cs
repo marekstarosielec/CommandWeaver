@@ -1,5 +1,5 @@
 ﻿/// <summary>
-/// Represents conditions for executing an operation,.
+/// Represents conditions for executing an operation.
 /// </summary>
 public record Condition
 {
@@ -9,7 +9,7 @@ public record Condition
     /// <remarks>
     /// When this condition is set, the operation will execute only if the associated value is <c>null</c>.
     /// </remarks>
-    public DynamicValue? IsNull { get; set; }
+    public DynamicValue? IsNull { get; init; }
 
     /// <summary>
     /// Gets or sets the condition specifying that the operation should execute if a value is not <c>null</c>.
@@ -17,5 +17,5 @@ public record Condition
     /// <remarks>
     /// When this condition is set, the operation will execute only if the associated value is not <c>null</c>.
     /// </remarks>
-    public DynamicValue? IsNotNull { get; set; }
+    public DynamicValue? IsNotNull { get; init; }
 }

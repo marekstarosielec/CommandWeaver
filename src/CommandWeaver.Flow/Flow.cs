@@ -1,5 +1,5 @@
 ﻿/// <inheritdoc />
-public class Flow(IOutput output) : IFlow
+public class Flow(IOutputService output) : IFlowService
 {
     /// <inheritdoc />
     public void Terminate(string? message = null, int exitCode = 1)

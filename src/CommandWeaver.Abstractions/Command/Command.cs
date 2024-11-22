@@ -1,6 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
+
 /// <summary>
 /// Represents a command consisting of a name, a list of operations to be executed, and a set of parameters.
 /// </summary>
+[SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public record Command
 {
     /// <summary>
@@ -9,8 +14,20 @@ public record Command
     /// <remarks>This is a required field and uniquely identifies the command.</remarks>
     public required string Name { get; init; }
 
+    /// <summary>
+    /// Gets or sets the description of the command.
+    /// </summary>
+    /// <remarks>
+    /// The description provides additional information about the purpose or usage of the command.
+    /// </remarks>
     public string Description { get; init; } = string.Empty;
-    
+
+    /// <summary>
+    /// Gets or sets a list of alternative names for the command.
+    /// </summary>
+    /// <remarks>
+    /// These alternative names can be used to execute the command and provide additional flexibility in usage.
+    /// </remarks>
     public List<string>? OtherNames { get; init; }
 
     /// <summary>

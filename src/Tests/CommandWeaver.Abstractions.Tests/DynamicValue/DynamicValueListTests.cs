@@ -1,144 +1,183 @@
 ﻿public class DynamicValueListTests
 {
     [Fact]
-    public void Constructor_ShouldInitializeEmptyList_WhenNoParametersProvided()
+    public void Constructor_WithEmptyList_ShouldInitializeCorrectly()
     {
-        // Arrange & Act
-        var list = new DynamicValueList();
+        // Act
+        var dynamicValueList = new DynamicValueList();
 
         // Assert
-        Assert.Empty(list);
+        Assert.Equal(0, dynamicValueList.Count);
     }
 
     [Fact]
-    public void Constructor_ShouldInitializeWithGivenItems()
+    public void Constructor_WithValidList_ShouldInitializeCorrectly()
     {
         // Arrange
-        var items = new List<DynamicValueObject>
+        var items = new List<DynamicValue>
         {
-            new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key1", new DynamicValue("value1") } }),
-            new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key2", new DynamicValue("value2") } })
+            new ("value1"),
+            new (42)
         };
 
         // Act
-        var list = new DynamicValueList(items);
+        var dynamicValueList = new DynamicValueList(items);
 
         // Assert
-        Assert.Equal(2, list.Count());
-        Assert.Equal(items[0], list[0]);
-        Assert.Equal(items[1], list[1]);
+        Assert.Equal(2, dynamicValueList.Count);
+        Assert.Equal("value1", dynamicValueList[0].TextValue);
+        Assert.Equal(42, dynamicValueList[1].NumericValue);
     }
 
     [Fact]
-    public void Indexer_ShouldReturnItemAtIndex()
+    public void Add_ShouldReturnNewInstanceWithItemAdded()
     {
         // Arrange
-        var item = new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key", new DynamicValue("value") } });
-        var list = new DynamicValueList(new List<DynamicValueObject> { item });
+        var dynamicValueList = new DynamicValueList();
+        var newValue = new DynamicValue("newItem");
+
+        // Act
+        var updatedList = dynamicValueList.Add(newValue);
+
+        // Assert
+        Assert.Equal(0, dynamicValueList.Count); // Original list should remain unchanged
+        Assert.Equal(1, updatedList.Count);
+        Assert.Equal("newItem", updatedList[0].TextValue);
+    }
+
+    [Fact]
+    public void AddRange_ShouldReturnNewInstanceWithItemsAdded()
+    {
+        // Arrange
+        var dynamicValueList = new DynamicValueList();
+        var newItems = new List<DynamicValue>
+        {
+            new ("item1"),
+            new (100)
+        };
+
+        // Act
+        var updatedList = dynamicValueList.AddRange(newItems);
+
+        // Assert
+        Assert.Equal(0, dynamicValueList.Count); // Original list should remain unchanged
+        Assert.Equal(2, updatedList.Count);
+        Assert.Equal("item1", updatedList[0].TextValue);
+        Assert.Equal(100, updatedList[1].NumericValue);
+    }
+
+    [Fact]
+    public void AddRange_WithNullItems_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        var dynamicValueList = new DynamicValueList();
 
         // Act & Assert
-        Assert.Equal(item, list[0]);
+        var exception = Assert.Throws<ArgumentNullException>(() => dynamicValueList.AddRange(null!));
+        Assert.Contains("Items cannot be null", exception.Message);
     }
 
     [Fact]
-    public void Add_ShouldReturnNewListWithItemAdded()
+    public void Indexer_ShouldReturnCorrectItem()
     {
         // Arrange
-        var initialList = new DynamicValueList();
-        var newItem = new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key", new DynamicValue("value") } });
+        var items = new List<DynamicValue>
+        {
+            new ("value1"),
+            new (42)
+        };
+        var dynamicValueList = new DynamicValueList(items);
 
         // Act
-        var updatedList = initialList.Add(newItem);
+        var item = dynamicValueList[1];
 
         // Assert
-        Assert.Empty(initialList); // Ensure immutability
-        Assert.Single(updatedList);
-        Assert.Equal(newItem, updatedList[0]);
+        Assert.Equal(42, item.NumericValue);
     }
 
     [Fact]
-    public void FirstOrDefault_ShouldReturnFirstItem_WhenListIsNotEmpty()
+    public void FirstOrDefault_WithMatchingPredicate_ShouldReturnCorrectItem()
     {
         // Arrange
-        var item = new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key", new DynamicValue("value") } });
-        var list = new DynamicValueList(new List<DynamicValueObject> { item });
+        var items = new List<DynamicValue>
+        {
+            new DynamicValue("value1"),
+            new DynamicValue("value2"),
+            new DynamicValue(42)
+        };
+        var dynamicValueList = new DynamicValueList(items);
 
         // Act
-        var result = list.FirstOrDefault();
+        var result = dynamicValueList.FirstOrDefault(x => x.TextValue == "value2");
 
         // Assert
-        Assert.Equal(item, result);
+        Assert.NotNull(result);
+        Assert.Equal("value2", result.TextValue);
     }
 
     [Fact]
-    public void FirstOrDefault_ShouldReturnNull_WhenListIsEmpty()
+    public void FirstOrDefault_WithNonMatchingPredicate_ShouldReturnNull()
     {
         // Arrange
-        var list = new DynamicValueList();
+        var items = new List<DynamicValue>
+        {
+            new DynamicValue("value1"),
+            new DynamicValue("value2"),
+            new DynamicValue(42)
+        };
+        var dynamicValueList = new DynamicValueList(items);
 
         // Act
-        var result = list.FirstOrDefault();
+        var result = dynamicValueList.FirstOrDefault(x => x.TextValue == "value3");
 
         // Assert
         Assert.Null(result);
     }
 
     [Fact]
-    public void FirstOrDefault_WithPredicate_ShouldReturnMatchingItem()
+    public void RemoveAll_ShouldReturnNewInstanceWithoutMatchingItems()
     {
         // Arrange
-        var item1 = new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key", new DynamicValue("value1") } });
-        var item2 = new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key", new DynamicValue("value2") } });
-        var list = new DynamicValueList(new List<DynamicValueObject> { item1, item2 });
+        var items = new List<DynamicValue>
+        {
+            new DynamicValue("value1"),
+            new DynamicValue("value2"),
+            new DynamicValue(42)
+        };
+        var dynamicValueList = new DynamicValueList(items);
 
         // Act
-        var result = list.FirstOrDefault(obj => obj["key"]?.TextValue == "value2");
+        var updatedList = dynamicValueList.RemoveAll(x => x.TextValue == "value2");
 
         // Assert
-        Assert.Equal(item2, result);
+        Assert.Equal(3, dynamicValueList.Count); // Original list should remain unchanged
+        Assert.Equal(2, updatedList.Count);
+        Assert.Equal("value1", updatedList[0].TextValue);
+        Assert.Equal(42, updatedList[1].NumericValue);
     }
 
     [Fact]
-    public void FirstOrDefault_WithPredicate_ShouldReturnNull_WhenNoMatchFound()
+    public void Enumerator_ShouldIterateOverItems()
     {
         // Arrange
-        var item = new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key", new DynamicValue("value") } });
-        var list = new DynamicValueList(new List<DynamicValueObject> { item });
+        var items = new List<DynamicValue>
+        {
+            new ("value1"),
+            new (42)
+        };
+        var dynamicValueList = new DynamicValueList(items);
 
         // Act
-        var result = list.FirstOrDefault(obj => obj["key"]?.TextValue == "abc");
+        using var enumerator = dynamicValueList.GetEnumerator();
+        var enumeratedItems = new List<DynamicValue>();
+        while (enumerator.MoveNext())
+        {
+            enumeratedItems.Add(enumerator.Current);
+        }
 
         // Assert
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public void RemoveAll_ShouldReturnNewListWithoutMatchingItems()
-    {
-        // Arrange
-        var item1 = new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key", new DynamicValue("value1") } });
-        var item2 = new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key", new DynamicValue("value2") } });
-        var list = new DynamicValueList(new List<DynamicValueObject> { item1, item2 });
-
-        // Act
-        var updatedList = list.RemoveAll(obj => obj["key"].TextValue == item1["key"].TextValue);
-
-        // Assert
-        Assert.Single(updatedList);
-        Assert.Equal(item2, updatedList[0]);
-    }
-
-    [Fact]
-    public void GetEnumerator_ShouldEnumerateItems()
-    {
-        // Arrange
-        var item1 = new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key1", new DynamicValue("value1") } });
-        var item2 = new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key2", new DynamicValue("value2") } });
-        var list = new DynamicValueList(new List<DynamicValueObject> { item1, item2 });
-
-        // Act & Assert
-        Assert.Collection(list,
-            i => Assert.Equal(item1, i),
-            i => Assert.Equal(item2, i));
+        Assert.Equal(2, enumeratedItems.Count);
+        Assert.Equal("value1", enumeratedItems[0].TextValue);
+        Assert.Equal(42, enumeratedItems[1].NumericValue);
     }
 }

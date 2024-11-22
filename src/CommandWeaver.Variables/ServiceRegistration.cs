@@ -7,6 +7,6 @@ public static class ServiceRegistration
         services.AddTransient<IReader, Reader>();
         services.AddTransient<IWriter, Writer>();
         services.AddSingleton<Storage>(); //Variable storage is single instance for whole execution.
-        services.AddTransient<IVariables, Variables>();
+        services.AddTransient<IVariableService, Variables>();
     }
 }

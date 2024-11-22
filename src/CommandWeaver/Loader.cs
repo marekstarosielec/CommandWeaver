@@ -6,12 +6,12 @@ public interface ILoader
 }
 
 public class Loader(
-    IVariables variables, 
+    IVariableService variables, 
     IEmbeddedRepository embeddedRepository, 
     IRepository repository,
-    IOutput output, 
+    IOutputService output, 
     IOutputSettings outputSettings,
-    ICommands commands,
+    ICommandService iCommandService,
     ISerializerFactory serializerFactory,
     IRepositoryElementStorage repositoryElementStorage) : ILoader
 {
@@ -98,7 +98,7 @@ public class Loader(
             if (repositoryContent.Commands != null)
             {
                 var allCommands = repositoryContent.Commands.Where(c => c != null)!.ToList();
-                commands.Add(allCommands);
+                iCommandService.Add(allCommands);
 
                 //Add information about command into variables, so that they can be part of commands.
                 using var doc = JsonDocument.Parse(repositoryElementSerialized.Content);
@@ -117,13 +117,13 @@ public class Loader(
                         commandInformation["json"] = new DynamicValue(serializedCommand, true);
                         commandInformation["id"] = new DynamicValue(repositoryElementSerialized.Id);
 
-                        var commandParameterValues = new List<DynamicValueObject>();
+                        var commandParameterValues = new List<DynamicValue>();
                         foreach (var commandParameter in command.Parameters)
                         {
                             var commandParameterValue = new Dictionary<string, DynamicValue?>();
                             commandParameterValue["key"] = new DynamicValue(commandParameter.Key);
                             commandParameterValue["description"] = new DynamicValue(commandParameter.Description);
-                            commandParameterValues.Add(new DynamicValueObject(commandParameterValue));;
+                            commandParameterValues.Add(new DynamicValue(commandParameterValue));
                         }
 
                         commandInformation["parameters"] = new DynamicValue(commandParameterValues);

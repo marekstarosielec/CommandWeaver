@@ -1,4 +1,4 @@
-public record SetVariable(IVariables variables) : Operation
+public record SetVariable(IVariableService variables) : Operation
 {
     public override string Name => nameof(SetVariable);
 

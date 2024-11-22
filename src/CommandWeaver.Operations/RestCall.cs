@@ -1,6 +1,6 @@
 using System.Text;
 
-public record RestCall(IConditionsService conditionsService, IVariables variables, ISerializerFactory serializerFactory) : Operation
+public record RestCall(IConditionsService conditionsService, IVariableService variables, ISerializerFactory serializerFactory) : Operation
 {
     public override string Name => nameof(RestCall);
 
@@ -49,7 +49,7 @@ public record RestCall(IConditionsService conditionsService, IVariables variable
         var t = variables.ReadVariableValue(new DynamicValue("lastRestCall"), true);
     }
 
-    private string? GetContentType() => Parameters["headers"].Value.ListValue?.FirstOrDefault(h => string.Equals(h["key"]?.TextValue, "content-type", StringComparison.InvariantCultureIgnoreCase))?["value"].TextValue;
+    private string? GetContentType() => Parameters["headers"].Value.ListValue?.FirstOrDefault(h => string.Equals(h.ObjectValue?["key"]?.TextValue, "content-type", StringComparison.InvariantCultureIgnoreCase))?.ObjectValue?["value"].TextValue;
 
     private void AddHeaders(HttpClient httpClient)
     {

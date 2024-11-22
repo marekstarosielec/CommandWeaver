@@ -14,7 +14,7 @@ public interface IReader
 }
 
 /// <inheritdoc />
-public class Reader(IFlow flow, Storage variableStorage) : IReader
+public class Reader(IFlowService flow, Storage variableStorage) : IReader
 {
     /// <inheritdoc />
     public DynamicValue ReadVariableValue(DynamicValue? variableValue, bool treatTextValueAsVariable = false)
@@ -126,15 +126,15 @@ public class Reader(IFlow flow, Storage variableStorage) : IReader
         if (key == null)
             return null;
 
-        var result = new List<DynamicValueObject>();
+        var result = new List<DynamicValue>();
 
         foreach (var listElement in key)
         {
-            var resolvedElement = new Dictionary<string, DynamicValue?>();
-            foreach (var keyProperty in listElement.Keys)
-                resolvedElement[keyProperty] = ReadVariableValue(listElement[keyProperty], false, depth);
-
-            result.Add(new DynamicValueObject(resolvedElement));
+            // var resolvedElement = new Dictionary<string, DynamicValue?>();
+            // foreach (var keyProperty in listElement)
+            //     resolvedElement[keyProperty] = ReadVariableValue(listElement[keyProperty], false, depth);
+            var resolvedElement = ReadVariableValue(listElement, false, depth);
+            result.Add(resolvedElement);
         }
 
         return new DynamicValue(result);
@@ -160,7 +160,7 @@ public class Reader(IFlow flow, Storage variableStorage) : IReader
             || command?.ListValue != null))
         {
             // If the whole variable value is requested and it is a list, values from all locations will be combined.
-            var result = new List<DynamicValueObject>();
+            var result = new List<DynamicValue>();
 
             if (command?.ListValue != null)
                 foreach (var item in command.ListValue)
@@ -168,17 +168,17 @@ public class Reader(IFlow flow, Storage variableStorage) : IReader
 
             if (session?.ListValue != null)
                 foreach (var item in session.ListValue)
-                    if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
+                    if (item.ObjectValue?["key"] != null && !result.Any(r => r.ObjectValue?["key"]?.TextValue?.Equals(item.ObjectValue["key"]) == true))
                         result.Add(item);
 
             if (application?.ListValue != null)
                 foreach (var item in application.ListValue)
-                    if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
+                    if (item.ObjectValue?["key"] != null && !result.Any(r => r.ObjectValue?["key"]?.TextValue?.Equals(item.ObjectValue["key"]) == true))
                         result.Add(item);
 
             if (builtIn?.ListValue != null)
                 foreach (var item in builtIn.ListValue)
-                    if (!result.Any(r => r["key"]?.TextValue?.Equals(item["key"]) == true))
+                    if (item.ObjectValue?["key"] != null && !result.Any(r => r.ObjectValue?["key"]?.TextValue?.Equals(item.ObjectValue["key"]) == true))
                         result.Add(item);
 
             return new DynamicValue(result);
@@ -232,13 +232,13 @@ public class Reader(IFlow flow, Storage variableStorage) : IReader
             else if (i > 0 && pathSections[i].Groups[2].Success)
             {
                 var listElement = result?.ListValue?.FirstOrDefault(v =>
-                    v["key"].TextValue?.Equals(pathSections[i].Groups[2].Value) == true);
+                    v.ObjectValue?["key"].TextValue?.Equals(pathSections[i].Groups[2].Value) == true);
                 if (listElement == null)
                 {
                     flow.Terminate($"List does not contain element with key {pathSections[i].Groups[2].Value}");
                     return null;
                 }
-                result = new DynamicValue(listElement);
+                result =listElement;
             }
 
             if (result == null)

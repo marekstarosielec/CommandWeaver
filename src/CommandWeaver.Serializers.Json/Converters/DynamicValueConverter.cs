@@ -70,13 +70,14 @@ public class DynamicValueConverter : IDynamicValueConverter
     /// <returns>A <see cref="DynamicValue"/> containing the array.</returns>
     private DynamicValue ReadArray(JsonElement element)
     {
-        var list = new List<DynamicValueObject>();
+        var list = new List<DynamicValue>();
         foreach (var arrayElement in element.EnumerateArray())
         {
             var arrayElementContents = ReadElement(arrayElement);
             var dictionary = arrayElementContents?.ObjectValue;
             dictionary ??= new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key", arrayElementContents } });
-            list.Add(dictionary);
+            var value = new DynamicValue(dictionary);
+            list.Add(value);
         }
         return new DynamicValue(list);
     }
@@ -134,7 +135,7 @@ public class DynamicValueConverter : IDynamicValueConverter
         writer.WriteStartArray();
         if (array != null)
             foreach (var element in array)
-                WriteObject(writer, element, options);
+                Write(writer, element, options);
         writer.WriteEndArray();
     }
 }

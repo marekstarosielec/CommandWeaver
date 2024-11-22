@@ -2,8 +2,8 @@
 using System.Globalization;
 
 /// <summary>
-/// Represents a dynamic value that can store various types, including text, date-time, boolean, numeric, precision,
-/// object, or list values.
+/// Represents a dynamic value capable of storing multiple types, including text, date-time, boolean, numeric, 
+/// precision, object, or list values.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public record DynamicValue
@@ -17,7 +17,7 @@ public record DynamicValue
     /// Initializes a new instance of the <see cref="DynamicValue"/> class with a text value.
     /// </summary>
     /// <param name="textValue">The string value to be assigned.</param>
-    /// <param name="noResolving">Determines whether resolving stops here.</param>
+    /// <param name="noResolving">Indicates whether resolving stops for this value.</param>
     public DynamicValue(string? textValue, bool noResolving = false)
     {
         TextValue = textValue;
@@ -45,7 +45,7 @@ public record DynamicValue
     /// <summary>
     /// Initializes a new instance of the <see cref="DynamicValue"/> class with a precision value.
     /// </summary>
-    /// <param name="precisionValue">The double precision value to be assigned.</param>
+    /// <param name="precisionValue">The double-precision value to be assigned.</param>
     public DynamicValue(double precisionValue) => PrecisionValue = precisionValue;
 
     /// <summary>
@@ -57,73 +57,81 @@ public record DynamicValue
     /// <summary>
     /// Initializes a new instance of the <see cref="DynamicValue"/> class with a <see cref="DynamicValueObject"/> value.
     /// </summary>
-    /// <param name="objectValue">The <see cref="DynamicValueObject"/> to be assigned.</param>
+    /// <param name="objectValue">The <see cref="DynamicValueObject"/> instance to be assigned.</param>
     public DynamicValue(DynamicValueObject? objectValue) => ObjectValue = objectValue;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DynamicValue"/> class with a list of <see cref="DynamicValueObject"/> values.
+    /// Initializes a new instance of the <see cref="DynamicValue"/> class with a list of <see cref="DynamicValue"/> values.
     /// </summary>
-    /// <param name="listValue">The list of <see cref="DynamicValueObject"/> values to be assigned.</param>
-    public DynamicValue(List<DynamicValueObject> listValue) => ListValue = new DynamicValueList(listValue);
+    /// <param name="listValue">The list of <see cref="DynamicValue"/> items to be assigned.</param>
+    public DynamicValue(List<DynamicValue> listValue) => ListValue = new DynamicValueList(listValue);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DynamicValue"/> class with a <see cref="DynamicValueList"/> value.
     /// </summary>
-    /// <param name="listValue">The <see cref="DynamicValueList"/> value to be assigned.</param>
+    /// <param name="listValue">The <see cref="DynamicValueList"/> instance to be assigned.</param>
     public DynamicValue(DynamicValueList listValue) => ListValue = listValue;
 
-
     /// <summary>
-    /// Gets or sets the text value of the dynamic value.
+    /// Gets the text value of the dynamic value.
     /// </summary>
     public string? TextValue { get; }
 
     /// <summary>
-    /// Informs that value should not be resolved anymore. It is useful when text contains {{ }} and we don't
-    /// want to have it rosolved, e.g. when printing raw command json.
-    /// </summary>
-    public bool NoResolving { get; set; }
-
-    /// <summary>
-    /// Gets or sets the date-time value of the dynamic value.
+    /// Gets the date-time value of the dynamic value.
     /// </summary>
     public DateTimeOffset? DateTimeValue { get; }
 
     /// <summary>
-    /// Gets or sets the boolean value of the dynamic value.
+    /// Gets the boolean value of the dynamic value.
     /// </summary>
     public bool? BoolValue { get; }
 
     /// <summary>
-    /// Gets or sets the numeric value of the dynamic value.
+    /// Gets the numeric value of the dynamic value.
     /// </summary>
     public long? NumericValue { get; }
 
     /// <summary>
-    /// Gets or sets the precision value of the dynamic value.
+    /// Gets the precision value of the dynamic value.
     /// </summary>
     public double? PrecisionValue { get; }
 
     /// <summary>
-    /// Gets or sets the object value of the dynamic value.
+    /// Gets the object value of the dynamic value.
     /// </summary>
     public DynamicValueObject? ObjectValue { get; }
 
     /// <summary>
-    /// Gets or sets the list value of the dynamic value.
+    /// Gets the list value of the dynamic value.
     /// </summary>
     public DynamicValueList? ListValue { get; }
 
     /// <summary>
-    /// Gets a value indicating whether the dynamic value is null (i.e., all properties are unassigned).
+    /// Indicates that the value may contain unresolved metatags (e.g., {{ name }}) but they should not be replaced 
+    /// or resolved. This is useful for cases where the raw value needs to be preserved, such as when exporting or 
+    /// displaying the original data.
     /// </summary>
-    public bool IsNull() => string.IsNullOrEmpty(TextValue) && DateTimeValue == null && BoolValue == null && NumericValue == null && PrecisionValue == null && ObjectValue == null && ListValue == null;
+    public bool NoResolving { get; set; }
+    
+    /// <summary>
+    /// Determines whether the dynamic value is null, meaning all properties are unassigned.
+    /// </summary>
+    /// <returns><c>true</c> if the dynamic value is null; otherwise, <c>false</c>.</returns>
+    public bool IsNull() =>
+        TextValue is null &&
+        DateTimeValue is null &&
+        BoolValue is null &&
+        NumericValue is null &&
+        PrecisionValue is null &&
+        ObjectValue is null &&
+        ListValue is null;
 
     /// <summary>
     /// Attempts to retrieve an enum value from the stored text value if it matches the specified enum type.
     /// </summary>
     /// <typeparam name="T">The enum type to attempt parsing.</typeparam>
-    /// <returns>The parsed enum value if successful; otherwise, null.</returns>
+    /// <returns>The parsed enum value if successful; otherwise, <c>null</c>.</returns>
     public T? GetEnumValue<T>() where T : struct, Enum =>
         !string.IsNullOrWhiteSpace(TextValue) && Enum.TryParse(TextValue, true, out T result)
         ? result
@@ -132,7 +140,7 @@ public record DynamicValue
     /// <summary>
     /// Provides a debug string representation of the dynamic value for debugging purposes.
     /// </summary>
-    internal string? DebuggerDisplay
+    internal string DebuggerDisplay
     {
         get
         {
@@ -141,13 +149,14 @@ public record DynamicValue
             if (BoolValue != null) return $"Bool: {BoolValue}";
             if (NumericValue != null) return $"Numeric: {NumericValue}";
             if (PrecisionValue != null) return $"Precision: {PrecisionValue.Value.ToString(CultureInfo.InvariantCulture)}";
-            if (ObjectValue != null) {
-                var value = ObjectValue.Keys.FirstOrDefault(k => k=="key") != null ? ObjectValue["key"].TextValue : "no key";
-                return $"Object: {value}";
+            if (ObjectValue != null)
+            {
+                var preview = ObjectValue.Keys.Contains("key") && ObjectValue["key"].TextValue != null
+                    ? ObjectValue["key"].TextValue
+                    : "no key";
+                return $"Object: {preview}";
             }
-            if (ListValue != null) return $"List (Count: {ListValue.ToList().Count})";
-
-            return "No values";
+            return ListValue != null ? $"List (Count: {ListValue.ToList().Count})" : "No values";
         }
     }
 }

@@ -1,6 +1,6 @@
 namespace CommandWeaver.Operations;
 
-public record ForEach(ICommands commands, IVariables variables) : OperationAggregate
+public record ForEach(ICommandService ICommandService, IVariableService variables) : OperationAggregate
 {
     public override string Name => nameof(ForEach);
 
@@ -16,8 +16,8 @@ public record ForEach(ICommands commands, IVariables variables) : OperationAggre
         var path = Parameters["element"].Value.TextValue!;
         foreach (var element in Parameters["list"].Value.ListValue!)
         {
-            variables.WriteVariableValue(VariableScope.Command, path, new DynamicValue(element));
-            await commands.ExecuteOperations(Operations, cancellationToken);
+            variables.WriteVariableValue(VariableScope.Command, path, new DynamicValue(element.ObjectValue));
+            await ICommandService.ExecuteOperations(Operations.ToList(), cancellationToken);
         }
     }
 }
