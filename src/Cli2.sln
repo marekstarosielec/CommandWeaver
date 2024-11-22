@@ -53,6 +53,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestBrowser", "RestBrowser\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver.Operations", "CommandWeaver.Operations\CommandWeaver.Operations.csproj", "{BFC1AD5E-06A8-4DC1-B754-7DD5256DB8D0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver.Repositories.Embedded.Tests", "Tests\CommandWeaver.Repositories.Embedded.Tests\CommandWeaver.Repositories.Embedded.Tests.csproj", "{B7B27B30-5397-4686-8C69-AEB2020BB460}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -141,6 +143,10 @@ Global
 		{BFC1AD5E-06A8-4DC1-B754-7DD5256DB8D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BFC1AD5E-06A8-4DC1-B754-7DD5256DB8D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BFC1AD5E-06A8-4DC1-B754-7DD5256DB8D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7B27B30-5397-4686-8C69-AEB2020BB460}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7B27B30-5397-4686-8C69-AEB2020BB460}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7B27B30-5397-4686-8C69-AEB2020BB460}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7B27B30-5397-4686-8C69-AEB2020BB460}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -167,6 +173,7 @@ Global
 		{EBA32D56-38C8-472A-AD2C-806084E963BA} = {BCA91B36-E5CD-48B8-810A-0F3245D89B7E}
 		{28C88C2C-EDB4-4D45-A1A9-ADE3DCA28DAF} = {BCA91B36-E5CD-48B8-810A-0F3245D89B7E}
 		{BFC1AD5E-06A8-4DC1-B754-7DD5256DB8D0} = {BCA91B36-E5CD-48B8-810A-0F3245D89B7E}
+		{B7B27B30-5397-4686-8C69-AEB2020BB460} = {F9AD6CE4-D9C4-49AB-BFB1-4CB6BCFC0191}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9B522DBE-B32A-492B-9F23-430E5CBF100B}
