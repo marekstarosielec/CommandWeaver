@@ -35,7 +35,7 @@ public class Variables(IReader reader, IWriter writer, Storage storage) : IVaria
     public DynamicValue ReadVariableValue(DynamicValue variableValue, bool treatTextValueAsVariable = false)
     =>   reader.ReadVariableValue(variableValue, treatTextValueAsVariable);
 
-    public void Add(RepositoryLocation repositoryLocation, IEnumerable<Variable> variables, string repositoryElementId)
+    public void Add(RepositoryLocation repositoryLocation, string repositoryElementId, IEnumerable<Variable> variables)
     {
         //Add repository element id, it will be useful to save changes back.
         var elementsToImport = variables.Select(v => v with { RepositoryElementId = repositoryElementId });

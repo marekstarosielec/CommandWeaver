@@ -32,4 +32,6 @@ public interface IOutputWriter
     /// This method ensures the JSON data is correctly formatted and output as-is, suitable for structured or machine-readable logs.
     /// </remarks>
     void WriteJson(string json);
+
+    void WriteException(Exception exception);
 }

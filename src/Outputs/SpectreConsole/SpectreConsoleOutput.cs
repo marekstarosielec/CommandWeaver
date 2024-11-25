@@ -26,5 +26,9 @@ public class SpectreConsoleOutput : IOutputWriter
             AnsiConsole.Console.Write(json);
         }
     }
-    
+
+    public void WriteException(Exception exception)
+    {
+        AnsiConsole.WriteException(exception, ExceptionFormats.ShortenEverything | ExceptionFormats.ShowLinks);
+    }
 }

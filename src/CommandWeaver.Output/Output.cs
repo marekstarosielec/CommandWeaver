@@ -62,6 +62,11 @@
             outputWriter.WriteRaw("false");
     }
 
+    public void WriteException(Exception exception)
+    {
+        outputWriter.WriteException(exception);
+    }
+
     private string TraceStyle => outputSettings.Styles?["trace"] ?? "#c0c0c0";
     private string DebugStyle => outputSettings.Styles?["debug"] ?? "#808080";
     private string InformationStyle => outputSettings.Styles?["information"] ?? "#ffffff";

@@ -10,4 +10,8 @@ public interface IFlowService
     /// <param name="exitCode">An exit code representing the reason for termination; defaults to <c>1</c>.</param>
     /// <remarks>This is typically used to end the flow due to an error.</remarks>
     void Terminate(string? message = null, int exitCode = 1);
+    
+    void NonFatalException(Exception? exception);
+    
+    void FatalException(Exception? exception, int exitCode = 1);
 }

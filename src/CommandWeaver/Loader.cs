@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Collections.Immutable;
+using System.Text.Json;
 
 /// <summary>
 /// Service responsible for loading variables and commands from repository (e.g. from files).
@@ -14,35 +15,36 @@ public interface ILoader
 }
 
 public class Loader(
-    IVariableService variables, 
+    IVariableService variableService, 
     IEmbeddedRepository embeddedRepository, 
     IRepository repository,
-    IOutputService output, 
+    IOutputService outputService, 
     IOutputSettings outputSettings,
     ICommandService iCommandService,
     IJsonSerializer serializer,
+    IFlowService flowService,
     IRepositoryElementStorage repositoryElementStorage) : ILoader
 {
     public async Task Execute(CancellationToken cancellationToken)
     {
-        variables.CurrentlyLoadRepository = "built-in";
+        variableService.CurrentlyLoadRepository = "built-in";
         var elements = embeddedRepository.GetList(cancellationToken);
         await LoadRepositoryElements(RepositoryLocation.BuiltIn, null, elements);
-        outputSettings.SetStyles(variables.ReadVariableValue(new DynamicValue("{{ styles }}")));
+        outputSettings.SetStyles(variableService.ReadVariableValue(new DynamicValue("{{ styles }}")));
 
-        variables.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Application);
+        variableService.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Application);
         elements = repository.GetList(RepositoryLocation.Application, null, cancellationToken);
         await LoadRepositoryElements(RepositoryLocation.Application, null, elements);
-        outputSettings.SetStyles(variables.ReadVariableValue(new DynamicValue("{{ styles }}")));
+        outputSettings.SetStyles(variableService.ReadVariableValue(new DynamicValue("{{ styles }}")));
 
-        variables.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Session, variables.CurrentSessionName);
-        elements = repository.GetList(RepositoryLocation.Session, variables.CurrentSessionName, cancellationToken);
-        await LoadRepositoryElements(RepositoryLocation.Session, variables.CurrentSessionName, elements);
-        variables.CurrentlyLoadRepository = null;
-        outputSettings.SetStyles(variables.ReadVariableValue(new DynamicValue("{{ styles }}")));
+        variableService.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Session, variableService.CurrentSessionName);
+        elements = repository.GetList(RepositoryLocation.Session, variableService.CurrentSessionName, cancellationToken);
+        await LoadRepositoryElements(RepositoryLocation.Session, variableService.CurrentSessionName, elements);
+        variableService.CurrentlyLoadRepository = null;
+        outputSettings.SetStyles(variableService.ReadVariableValue(new DynamicValue("{{ styles }}")));
 
-        variables.WriteVariableValue(VariableScope.Command, "LocalPath", new DynamicValue(repository.GetPath(RepositoryLocation.Application)));
-        variables.WriteVariableValue(VariableScope.Command, "SessionPath", new DynamicValue(repository.GetPath(RepositoryLocation.Session, variables.CurrentSessionName)));
+        variableService.WriteVariableValue(VariableScope.Command, "LocalPath", new DynamicValue(repository.GetPath(RepositoryLocation.Application)));
+        variableService.WriteVariableValue(VariableScope.Command, "SessionPath", new DynamicValue(repository.GetPath(RepositoryLocation.Session, variableService.CurrentSessionName)));
         
         outputSettings.Serializer = serializer;
     }
@@ -58,70 +60,97 @@ public class Loader(
     {
         await foreach (var repositoryElementSerialized in repositoryElementsSerialized)
         {
-            variables.CurrentlyLoadRepositoryElement = repositoryElementSerialized.FriendlyName;
-            output.Debug($"Processing element {variables.CurrentlyLoadRepository}\\{variables.CurrentlyLoadRepositoryElement}");
-
-            if (string.IsNullOrWhiteSpace(repositoryElementSerialized.Content))
-            {
-                output.Warning($"Element {variables.CurrentlyLoadRepositoryElement} is empty");
-                continue;
-            }
+            variableService.CurrentlyLoadRepositoryElement = repositoryElementSerialized.FriendlyName;
+            outputService.Debug($"Processing element {variableService.CurrentlyLoadRepository}\\{variableService.CurrentlyLoadRepositoryElement}");
 
             if (!string.Equals(serializer.Extension, repositoryElementSerialized.Format, StringComparison.OrdinalIgnoreCase))
                 continue;
 
+            if (string.IsNullOrWhiteSpace(repositoryElementSerialized.Content))
+            {
+                outputService.Warning($"Element {variableService.CurrentlyLoadRepositoryElement} is empty");
+                continue;
+            }
+            
             if (!serializer.TryDeserialize(repositoryElementSerialized.Content, out RepositoryElementContent? repositoryContent, out var exception) || repositoryContent == null)
             {
                 //Still save information about repository, to avoid overriding it with partial content.
                 repositoryElementStorage.Add(new RepositoryElement(repositoryLocation, repositoryElementSerialized.Id, repositoryContent));
-
-                output.Warning($"Element {variables.CurrentlyLoadRepositoryElement} failed to deserialize");
+                
+                flowService.NonFatalException(exception);
+                
+                outputService.Warning($"Element {variableService.CurrentlyLoadRepositoryElement} failed to deserialize");
                 continue;
             }
 
             repositoryElementStorage.Add(new RepositoryElement(repositoryLocation, repositoryElementSerialized.Id, repositoryContent));
 
-            if (repositoryContent.Variables != null)
-                variables.Add(repositoryLocation, repositoryContent.Variables, repositoryElementSerialized.Id);
-            if (repositoryContent.Commands != null)
-            {
-                var allCommands = repositoryContent.Commands.Where(c => c != null)!.ToList();
-                iCommandService.Add(allCommands);
-
-                //Add information about command into variables, so that they can be part of commands.
-                using var doc = JsonDocument.Parse(repositoryElementSerialized.Content);
-                var root = doc.RootElement.GetProperty("commands");
-                if (root.ValueKind == JsonValueKind.Array)
-                {
-                    for (var x = 0; x < allCommands.Count(); x++)
-                    {
-                        var command = allCommands[x];
-                        var serializedCommand = root[x].GetRawText();
-                        var commandInformation = new Dictionary<string, DynamicValue?>();
-                        commandInformation["key"] = new DynamicValue(command.Name);
-                        commandInformation["name"] = new DynamicValue(command.Name);
-                        commandInformation["description"] = new DynamicValue(command.Description);
-                        commandInformation["repositoryElementId"] = new DynamicValue(repositoryElementSerialized.Id);
-                        commandInformation["json"] = new DynamicValue(serializedCommand, true);
-                        commandInformation["id"] = new DynamicValue(repositoryElementSerialized.Id);
-
-                        var commandParameterValues = new List<DynamicValue>();
-                        foreach (var commandParameter in command.Parameters)
-                        {
-                            var commandParameterValue = new Dictionary<string, DynamicValue?>();
-                            commandParameterValue["key"] = new DynamicValue(commandParameter.Key);
-                            commandParameterValue["description"] = new DynamicValue(commandParameter.Description);
-                            commandParameterValues.Add(new DynamicValue(commandParameterValue));
-                        }
-
-                        commandInformation["parameters"] = new DynamicValue(commandParameterValues);
-                        variables.WriteVariableValue(VariableScope.Command, $"commands[{command.Name}]", new DynamicValue(new DynamicValueObject(commandInformation)));
-                    }
-                }
-            }
+            AddVariables(repositoryLocation, repositoryElementSerialized.Id, repositoryContent.Variables);
+            AddCommands(repositoryContent.Commands, repositoryElementSerialized);
         }
 
-        variables.CurrentlyLoadRepositoryElement = null;
+        variableService.CurrentlyLoadRepositoryElement = null;
+    }
+
+    /// <summary>
+    /// Make variables from repository accessible in CommandWeaver.
+    /// </summary>
+    /// <param name="repositoryLocation"></param>
+    /// <param name="repositoryElementId"></param>
+    /// <param name="variables"></param>
+    void AddVariables(RepositoryLocation repositoryLocation, string repositoryElementId,
+        ImmutableList<Variable?>? variables)
+    {
+        if (variables == null)
+            return;
+        
+        var allVariables = variables.Where(c => c != null).Cast<Variable>().ToList();
+        variableService.Add(repositoryLocation, repositoryElementId, allVariables);
+    }
+    
+    /// <summary>
+    /// Make commands from repository accessible in CommandWeaver.
+    /// </summary>
+    /// <param name="commands"></param>
+    /// <param name="repositoryElementSerialized"></param>
+    private void AddCommands(ImmutableList<Command?>? commands, RepositoryElementSerialized repositoryElementSerialized)
+    {
+        if (commands == null)
+            return;
+        
+        var allCommands = commands.Where(c => c != null).Cast<Command>().ToList();
+        iCommandService.Add(allCommands);
+
+        //Add information about command into variables, so that they can be part of commands.
+        using var doc = JsonDocument.Parse(repositoryElementSerialized.Content!);
+        var root = doc.RootElement.GetProperty("commands");
+        if (root.ValueKind == JsonValueKind.Array)
+        {
+            for (var x = 0; x < allCommands.Count; x++)
+            {
+                var command = allCommands[x];
+                var serializedCommand = root[x].GetRawText();
+                
+                //Deserialize command again, but as a DynamicValue - so it can be accessed from variables.
+                if (!serializer.TryDeserialize(serializedCommand, out DynamicValue? dynamicCommandDefinition,
+                        out Exception? exception))
+                {
+                    flowService.NonFatalException(exception);
+                    outputService.Warning($"Element {variableService.CurrentlyLoadRepositoryElement} failed to deserialize");
+                    continue;
+                }
+                
+                //Prepare information about command.
+                var commandInformation = new Dictionary<string, DynamicValue?>();
+                commandInformation["key"] = new DynamicValue(command.Name);
+                commandInformation["json"] = new DynamicValue(serializedCommand, true);
+                commandInformation["id"] = new DynamicValue(repositoryElementSerialized.Id);
+                commandInformation["definition"] = dynamicCommandDefinition! with { NoResolving = true };
+              
+                //Add command information to variables.
+                variableService.WriteVariableValue(VariableScope.Command, $"commands[{command.Name}]", new DynamicValue(new DynamicValueObject(commandInformation)));
+            }
+        }
     }
 }
 

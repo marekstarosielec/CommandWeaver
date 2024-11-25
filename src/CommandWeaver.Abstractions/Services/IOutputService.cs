@@ -58,4 +58,6 @@ public interface IOutputService
     /// This method allows flexible output of dynamic values with additional logging context and styling options.
     /// </remarks>
     void Write(DynamicValue value, LogLevel? logLevel, Styling styling);
+    
+    void WriteException(Exception exception);
 }

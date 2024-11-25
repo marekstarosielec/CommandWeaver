@@ -4,6 +4,6 @@ public static class ServiceRegistration
 {
     public static void AddCommandWeaverFlow(this IServiceCollection services)
     {
-        services.AddTransient<IFlowService, Flow>();
+        services.AddTransient<IFlowService, FlowService>();
     }
 }

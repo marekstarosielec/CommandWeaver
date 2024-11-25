@@ -39,9 +39,9 @@ public interface IVariableService
     /// Adds a set of variables to a specific repository location.
     /// </summary>
     /// <param name="repositoryLocation">The location of the repository where variables will be stored.</param>
-    /// <param name="variables">The list of variables to add to the specified repository location.</param>
     /// <param name="repositoryElementId">The identifier for the specific element within the repository where variables will be stored.</param>
-    void Add(RepositoryLocation repositoryLocation, IEnumerable<Variable> variables, string repositoryElementId);
+    /// <param name="variables">The list of variables to add to the specified repository location.</param>
+    void Add(RepositoryLocation repositoryLocation, string repositoryElementId, IEnumerable<Variable> variables);
 
     /// <summary>
     /// Retrieves the current repository element storage containing the variable values.
