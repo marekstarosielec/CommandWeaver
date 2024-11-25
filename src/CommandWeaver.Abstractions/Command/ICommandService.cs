@@ -6,8 +6,10 @@ public interface ICommandService
     /// <summary>
     /// Adds a set of commands to the service that can be executed.
     /// </summary>
+    /// <param name="repositoryElementId">The unique identifier of the repository element.</param>
+    /// <param name="content">Raw repository content.</param>
     /// <param name="commands">The collection of <see cref="Command"/> objects to add.</param>
-    void Add(IEnumerable<Command> commands);
+    void Add(string repositoryElementId, string content, IEnumerable<Command> commands);
 
     /// <summary>
     /// Validates the commands and their associated operations and parameters.

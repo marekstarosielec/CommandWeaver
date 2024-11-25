@@ -224,7 +224,8 @@ public class Reader(IFlowService flow, Storage variableStorage) : IReader
             {
                 if (result?.ObjectValue == null || !result.ObjectValue.Keys.Contains(pathSections[i].Groups[1].Value))
                 {
-                    flow.Terminate($"Invalid property {pathSections[i].Groups[1].Value}");
+                    //When listing commands, it does not contain some optional properties (e.g. description). But we don't want to fail because of that.
+                   // flow.Terminate($"Invalid property {pathSections[i].Groups[1].Value}");
                     return null;
                 }
                 result = result?.ObjectValue?[pathSections[i].Groups[1].Value];

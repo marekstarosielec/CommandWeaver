@@ -24,15 +24,15 @@
           "operations": [
             {
               "operation": "output",
-              "value": "  [[{{styles[focused].value}}]]{{ currentCommand.name }}[[/]]",
+              "value": "  [[{{styles[focused].value}}]]{{ currentCommand.definition.name }}[[/]]",
               "styling": "Markup"
             },
             {
               "operation": "output",
-              "value": " - {{ currentCommand.description }}",
+              "value": " - {{ currentCommand.definition.description }}",
               "styling": "Markup",
               "conditions": {
-                "isNotNull": "{{ currentCommand.description }}"
+                "isNotNull": "{{ currentCommand.definition.description }}"
               }
             },
             {
@@ -52,7 +52,7 @@
         },
         {
           "operation": "output",
-          "value": "Usage: [[{{styles[focused].value}}]] {{ commands[{{command}}].name }}",
+          "value": "Usage: [[{{styles[focused].value}}]] {{ commands[{{command}}].definition.name }}",
           "styling": "Markup",
           "conditions": {
             "isNotNull": "{{ command }}"
