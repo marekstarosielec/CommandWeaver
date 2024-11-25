@@ -49,6 +49,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver.Operations", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver.Repositories.Embedded.Tests", "Tests\CommandWeaver.Repositories.Embedded.Tests\CommandWeaver.Repositories.Embedded.Tests.csproj", "{B7B27B30-5397-4686-8C69-AEB2020BB460}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver.Tests", "Tests\CommandWeaver.Tests\CommandWeaver.Tests.csproj", "{C40BF167-16CA-404D-9E5F-5911941A414A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -127,6 +129,10 @@ Global
 		{B7B27B30-5397-4686-8C69-AEB2020BB460}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7B27B30-5397-4686-8C69-AEB2020BB460}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7B27B30-5397-4686-8C69-AEB2020BB460}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C40BF167-16CA-404D-9E5F-5911941A414A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C40BF167-16CA-404D-9E5F-5911941A414A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C40BF167-16CA-404D-9E5F-5911941A414A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C40BF167-16CA-404D-9E5F-5911941A414A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -152,6 +158,7 @@ Global
 		{28C88C2C-EDB4-4D45-A1A9-ADE3DCA28DAF} = {BCA91B36-E5CD-48B8-810A-0F3245D89B7E}
 		{BFC1AD5E-06A8-4DC1-B754-7DD5256DB8D0} = {BCA91B36-E5CD-48B8-810A-0F3245D89B7E}
 		{B7B27B30-5397-4686-8C69-AEB2020BB460} = {F9AD6CE4-D9C4-49AB-BFB1-4CB6BCFC0191}
+		{C40BF167-16CA-404D-9E5F-5911941A414A} = {F9AD6CE4-D9C4-49AB-BFB1-4CB6BCFC0191}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9B522DBE-B32A-492B-9F23-430E5CBF100B}

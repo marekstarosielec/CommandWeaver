@@ -1,18 +1,19 @@
 ﻿using System.Collections.Immutable;
 
 /// <summary>
-/// Service responsible for loading variables and commands from repository (e.g. from files).
+/// Service responsible for loading variables and commands from repository (e.g., from files).
 /// </summary>
 public interface ILoader
 {
     /// <summary>
-    /// Load variables and commands from repository.
+    /// Load variables and commands from repositories.
     /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A task that represents the asynchronous execution.</returns>
     Task Execute(CancellationToken cancellationToken);
 }
 
+/// <inheritdoc />
 public class Loader(
     IVariableService variableService, 
     IEmbeddedRepository embeddedRepository, 
@@ -24,60 +25,111 @@ public class Loader(
     IFlowService flowService,
     IRepositoryElementStorage repositoryElementStorage) : ILoader
 {
+    private const string BuiltInRepositoryName = "built-in";
+    private const string StylesKey = "{{ styles }}";
+
+    /// <inheritdoc />
     public async Task Execute(CancellationToken cancellationToken)
     {
-        variableService.CurrentlyLoadRepository = "built-in";
+        outputService.Debug("Execution started: Loading variables and commands from repositories.");
+        await LoadBuiltInRepository(cancellationToken);
+        await LoadApplicationRepository(cancellationToken);
+        await LoadSessionRepository(cancellationToken);
+        SetCommonVariables();
+        outputSettings.Serializer = serializer;
+        outputService.Debug("Execution completed: Variables and commands successfully loaded.");
+    }
+
+    /// <summary>
+    /// Loads commands and variables from the built-in repository.
+    /// </summary>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    private async Task LoadBuiltInRepository(CancellationToken cancellationToken)
+    {
+        outputService.Debug($"Loading built-in repository: {BuiltInRepositoryName}");
+        variableService.CurrentlyLoadRepository = BuiltInRepositoryName;
         var elements = embeddedRepository.GetList(cancellationToken);
-        await LoadRepositoryElements(RepositoryLocation.BuiltIn, elements);
-        outputSettings.SetStyles(variableService.ReadVariableValue(new DynamicValue("{{ styles }}")));
-
-        variableService.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Application);
-        elements = repository.GetList(RepositoryLocation.Application, null, cancellationToken);
-        await LoadRepositoryElements(RepositoryLocation.Application, elements);
-        outputSettings.SetStyles(variableService.ReadVariableValue(new DynamicValue("{{ styles }}")));
-
-        variableService.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Session, variableService.CurrentSessionName);
-        elements = repository.GetList(RepositoryLocation.Session, variableService.CurrentSessionName, cancellationToken);
-        await LoadRepositoryElements(RepositoryLocation.Session, elements);
+        await LoadRepositoryElements(RepositoryLocation.BuiltIn, elements, cancellationToken);
         variableService.CurrentlyLoadRepository = null;
-        outputSettings.SetStyles(variableService.ReadVariableValue(new DynamicValue("{{ styles }}")));
+        ApplyStyles();
+    }
 
+    /// <summary>
+    /// Loads commands and variables from the application repository.
+    /// </summary>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    private async Task LoadApplicationRepository(CancellationToken cancellationToken)
+    {
+        outputService.Debug("Loading application repository.");
+        variableService.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Application);
+        var elements = repository.GetList(RepositoryLocation.Application, null, cancellationToken);
+        await LoadRepositoryElements(RepositoryLocation.Application, elements, cancellationToken);
+        variableService.CurrentlyLoadRepository = null;
+        ApplyStyles();
+    }
+
+    /// <summary>
+    /// Loads commands and variables from the session repository.
+    /// </summary>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    private async Task LoadSessionRepository(CancellationToken cancellationToken)
+    {
+        outputService.Debug("Loading session repository.");
+        variableService.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Session, variableService.CurrentSessionName);
+        var elements = repository.GetList(RepositoryLocation.Session, variableService.CurrentSessionName, cancellationToken);
+        await LoadRepositoryElements(RepositoryLocation.Session, elements, cancellationToken);
+        variableService.CurrentlyLoadRepository = null;
+        ApplyStyles();
+    }
+
+    /// <summary>
+    /// Applies styles based on the variables read from the repository.
+    /// </summary>
+    private void ApplyStyles()
+    {
+        var styles = variableService.ReadVariableValue(new DynamicValue(StylesKey));
+        outputService.Trace("Applying styles from variables.");
+        outputSettings.SetStyles(styles);
+    }
+
+    /// <summary>
+    /// Sets common variables for the application.
+    /// </summary>
+    private void SetCommonVariables()
+    {
+        outputService.Trace("Setting common variables.");
         variableService.WriteVariableValue(VariableScope.Command, "LocalPath", new DynamicValue(repository.GetPath(RepositoryLocation.Application)));
         variableService.WriteVariableValue(VariableScope.Command, "SessionPath", new DynamicValue(repository.GetPath(RepositoryLocation.Session, variableService.CurrentSessionName)));
-        
-        outputSettings.Serializer = serializer;
     }
-    
+
     /// <summary>
-    /// Loads commands and variables from repository.
+    /// Loads commands and variables from repository elements.
     /// </summary>
-    /// <param name="repositoryLocation"></param>
-    /// <param name="repositoryElementsSerialized"></param>
-    /// <returns></returns>
-    private async Task LoadRepositoryElements(RepositoryLocation repositoryLocation, IAsyncEnumerable<RepositoryElementSerialized> repositoryElementsSerialized)
+    /// <param name="repositoryLocation">The location of the repository (e.g., built-in, application, session).</param>
+    /// <param name="repositoryElementsSerialized">The serialized repository elements to process.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    private async Task LoadRepositoryElements(RepositoryLocation repositoryLocation, IAsyncEnumerable<RepositoryElementSerialized> repositoryElementsSerialized, CancellationToken cancellationToken)
     {
-        await foreach (var repositoryElementSerialized in repositoryElementsSerialized)
+        await foreach (var repositoryElementSerialized in repositoryElementsSerialized.WithCancellation(cancellationToken))
         {
             variableService.CurrentlyLoadRepositoryElement = repositoryElementSerialized.FriendlyName;
             outputService.Debug($"Processing element {variableService.CurrentlyLoadRepository}\\{variableService.CurrentlyLoadRepositoryElement}");
 
             if (!string.Equals(serializer.Extension, repositoryElementSerialized.Format, StringComparison.OrdinalIgnoreCase))
+            {
+                outputService.Trace($"Skipped element {variableService.CurrentlyLoadRepositoryElement} due to unsupported format: {repositoryElementSerialized.Format}");
                 continue;
+            }
 
             if (string.IsNullOrWhiteSpace(repositoryElementSerialized.Content))
             {
-                outputService.Warning($"Element {variableService.CurrentlyLoadRepositoryElement} is empty");
+                outputService.Warning($"Element '{variableService.CurrentlyLoadRepositoryElement}' is empty in repository '{repositoryLocation}'");
                 continue;
             }
-            
+
             if (!serializer.TryDeserialize(repositoryElementSerialized.Content, out RepositoryElementContent? repositoryContent, out var exception) || repositoryContent == null)
             {
-                //Still save information about repository, to avoid overriding it with partial content.
-                repositoryElementStorage.Add(new RepositoryElement(repositoryLocation, repositoryElementSerialized.Id, repositoryContent));
-                
-                flowService.NonFatalException(exception);
-                
-                outputService.Warning($"Element {variableService.CurrentlyLoadRepositoryElement} failed to deserialize");
+                HandleDeserializationError(repositoryLocation, repositoryElementSerialized, exception);
                 continue;
             }
 
@@ -91,33 +143,44 @@ public class Loader(
     }
 
     /// <summary>
-    /// Make variables from repository accessible in CommandWeaver.
+    /// Adds variables from the repository to the variable service.
     /// </summary>
-    /// <param name="repositoryLocation"></param>
-    /// <param name="repositoryElementId"></param>
-    /// <param name="variables"></param>
-    void AddVariables(RepositoryLocation repositoryLocation, string repositoryElementId,
-        ImmutableList<Variable?>? variables)
+    /// <param name="repositoryLocation">The location of the repository.</param>
+    /// <param name="repositoryElementId">The ID of the repository element.</param>
+    /// <param name="variables">The variables to add.</param>
+    private void AddVariables(RepositoryLocation repositoryLocation, string repositoryElementId, ImmutableList<Variable?>? variables)
     {
         if (variables == null)
             return;
-        
-        var allVariables = variables.Where(c => c != null).Cast<Variable>().ToList();
-        variableService.Add(repositoryLocation, repositoryElementId, allVariables);
+
+        variableService.Add(repositoryLocation, repositoryElementId, variables.OfType<Variable>().ToList());
+        outputService.Trace($"Added variables from repository location: {repositoryLocation}, element: {repositoryElementId}");
     }
-    
+
     /// <summary>
-    /// Make commands from repository accessible in CommandWeaver.
+    /// Adds commands from the repository to the command service.
     /// </summary>
-    /// <param name="commands"></param>
-    /// <param name="repositoryElementSerialized"></param>
+    /// <param name="repositoryElementSerialized">The serialized repository element containing commands.</param>
+    /// <param name="commands">The list of commands to add.</param>
     private void AddCommands(RepositoryElementSerialized repositoryElementSerialized, ImmutableList<Command?>? commands)
     {
         if (commands == null)
             return;
-        
-        var allCommands = commands.Where(c => c != null).Cast<Command>().ToList();
-        commandService.Add(repositoryElementSerialized.Id, repositoryElementSerialized.Content!, allCommands);
+
+        commandService.Add(repositoryElementSerialized.Id, repositoryElementSerialized.Content!, commands.OfType<Command>().ToList());
+        outputService.Trace($"Added commands from repository element: {repositoryElementSerialized.FriendlyName}");
+    }
+
+    /// <summary>
+    /// Handles errors during deserialization of repository elements.
+    /// </summary>
+    /// <param name="repositoryLocation">The location of the repository.</param>
+    /// <param name="element">The repository element that failed deserialization.</param>
+    /// <param name="exception">The exception encountered during deserialization, if any.</param>
+    private void HandleDeserializationError(RepositoryLocation repositoryLocation, RepositoryElementSerialized element, Exception? exception)
+    {
+        repositoryElementStorage.Add(new RepositoryElement(repositoryLocation, element.Id, null));
+        flowService.NonFatalException(exception);
+        outputService.Warning($"Failed to deserialize element '{variableService.CurrentlyLoadRepositoryElement}' in repository '{variableService.CurrentlyLoadRepository}'");
     }
 }
-
