@@ -1,10 +1,27 @@
+using System.Collections.Immutable;
+
+/// <inheritdoc />
 public class OutputSettings : IOutputSettings
 {
-    public string? TraceStyle { get; set; }
-    public string? DebugStyle { get; set; }
-    public string? InformationStyle { get; set; }
-    public string? WarningStyle { get; set; }
-    public string? ErrorStyle { get; set; }
+    /// <inheritdoc />
+    public ImmutableDictionary<string, string>? Styles { get; set; }
+    
+    /// <inheritdoc />
+    public void SetStyles(DynamicValue styles)
+    {
+        if (styles.ListValue == null)
+            return;
+
+        Styles = styles.ListValue
+            .Where(style => !string.IsNullOrWhiteSpace(style.ObjectValue?["key"].TextValue) &&
+                            !string.IsNullOrWhiteSpace(style.ObjectValue?["value"].TextValue))
+            .ToDictionary(style => style.ObjectValue!["key"].TextValue!.ToLower(),
+                style => style.ObjectValue!["value"].TextValue!).ToImmutableDictionary();
+    }
+
+    /// <inheritdoc />
     public LogLevel CurrentLogLevel { get; set; }
+    
+    /// <inheritdoc />
     public ISerializer? Serializer { get; set; }
 }

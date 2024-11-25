@@ -1,7 +1,15 @@
 ﻿using System.Text.Json;
 
+/// <summary>
+/// Service responsible for loading variables and commands from repository (e.g. from files).
+/// </summary>
 public interface ILoader
 {
+    /// <summary>
+    /// Load variables and commands from repository.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task Execute(CancellationToken cancellationToken);
 }
 
@@ -15,49 +23,30 @@ public class Loader(
     ISerializerFactory serializerFactory,
     IRepositoryElementStorage repositoryElementStorage) : ILoader
 {
-    public Task Execute(CancellationToken cancellationToken)
-    {
-        return LoadRepositories(cancellationToken);
-    }
-
-    /// <summary>
-    /// Loads commands and variables from all defined repositories.
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    private async Task LoadRepositories(CancellationToken cancellationToken)
+    public async Task Execute(CancellationToken cancellationToken)
     {
         variables.CurrentlyLoadRepository = "built-in";
         var elements = embeddedRepository.GetList(cancellationToken);
         await LoadRepositoryElements(RepositoryLocation.BuiltIn, null, elements);
-        SetupStyles();
+        outputSettings.SetStyles(variables.ReadVariableValue(new DynamicValue("{{ styles }}")));
 
         variables.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Application);
         elements = repository.GetList(RepositoryLocation.Application, null, cancellationToken);
         await LoadRepositoryElements(RepositoryLocation.Application, null, elements);
-        SetupStyles();
+        outputSettings.SetStyles(variables.ReadVariableValue(new DynamicValue("{{ styles }}")));
 
         variables.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Session, variables.CurrentSessionName);
         elements = repository.GetList(RepositoryLocation.Session, variables.CurrentSessionName, cancellationToken);
         await LoadRepositoryElements(RepositoryLocation.Session, variables.CurrentSessionName, elements);
         variables.CurrentlyLoadRepository = null;
-        SetupStyles();
+        outputSettings.SetStyles(variables.ReadVariableValue(new DynamicValue("{{ styles }}")));
 
         variables.WriteVariableValue(VariableScope.Command, "LocalPath", new DynamicValue(repository.GetPath(RepositoryLocation.Application)));
         variables.WriteVariableValue(VariableScope.Command, "SessionPath", new DynamicValue(repository.GetPath(RepositoryLocation.Session, variables.CurrentSessionName)));
         
         outputSettings.Serializer = serializerFactory.GetDefaultSerializer(out _);
     }
-
-    private void SetupStyles()
-    {
-        outputSettings.TraceStyle = variables.ReadVariableValue(new DynamicValue("styles[trace].value"), true).TextValue;
-        outputSettings.DebugStyle = variables.ReadVariableValue(new DynamicValue("styles[debug].value"), true).TextValue;
-        outputSettings.InformationStyle = variables.ReadVariableValue(new DynamicValue("styles[information].value"), true).TextValue;
-        outputSettings.WarningStyle = variables.ReadVariableValue(new DynamicValue("styles[warning].value"), true).TextValue;
-        outputSettings.ErrorStyle = variables.ReadVariableValue(new DynamicValue("styles[error].value"), true).TextValue;
-    }
-
+    
     /// <summary>
     /// Loads commands and variables from repository.
     /// </summary>

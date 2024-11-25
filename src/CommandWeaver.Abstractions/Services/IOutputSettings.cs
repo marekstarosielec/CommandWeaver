@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+
 /// <summary>
 /// Defines settings for output formatting and logging levels, storing values from a variable service.
 /// </summary>
@@ -9,45 +11,16 @@
 public interface IOutputSettings
 {
     /// <summary>
-    /// Gets or sets the style applied to trace-level messages.
+    /// Contains list of styles defined in "styles" variable.
     /// </summary>
-    /// <remarks>
-    /// The style determines how trace-level messages are formatted in the output.
-    /// </remarks>
-    string? TraceStyle { get; set; }
-
+    ImmutableDictionary<string, string>? Styles { get; set; }
+    
     /// <summary>
-    /// Gets or sets the style applied to debug-level messages.
+    /// Sets a <see cref="Styles"/> dictionary from "styles" variable.
     /// </summary>
-    /// <remarks>
-    /// The style determines how debug-level messages are formatted in the output.
-    /// </remarks>
-    string? DebugStyle { get; set; }
-
-    /// <summary>
-    /// Gets or sets the style applied to informational messages.
-    /// </summary>
-    /// <remarks>
-    /// The style determines how informational messages are formatted in the output.
-    /// </remarks>
-    string? InformationStyle { get; set; }
-
-    /// <summary>
-    /// Gets or sets the style applied to warning messages.
-    /// </summary>
-    /// <remarks>
-    /// The style determines how warning messages are formatted in the output.
-    /// </remarks>
-    string? WarningStyle { get; set; }
-
-    /// <summary>
-    /// Gets or sets the style applied to error messages.
-    /// </summary>
-    /// <remarks>
-    /// The style determines how error messages are formatted in the output.
-    /// </remarks>
-    string? ErrorStyle { get; set; }
-
+    /// <param name="styles"></param>
+    void SetStyles(DynamicValue styles);
+    
     /// <summary>
     /// Gets or sets the current log level for filtering messages.
     /// </summary>

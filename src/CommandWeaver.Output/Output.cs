@@ -45,11 +45,11 @@
             //Styling == Default
             var text = logLevel switch
             {
-                LogLevel.Trace => $"[[{outputSettings.TraceStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
-                LogLevel.Debug => $"[[{outputSettings.DebugStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
-                LogLevel.Information => $"[[{outputSettings.InformationStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
-                LogLevel.Warning => $"[[{outputSettings.WarningStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
-                LogLevel.Error => $"[[{outputSettings.ErrorStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
+                LogLevel.Trace => $"[[{TraceStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
+                LogLevel.Debug => $"[[{DebugStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
+                LogLevel.Information => $"[[{InformationStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
+                LogLevel.Warning => $"[[{WarningStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
+                LogLevel.Error => $"[[{ErrorStyle}]]{value.TextValue}[[/]]{Environment.NewLine}",
                 _ => $"{value.TextValue}{Environment.NewLine}"
             };
             
@@ -62,6 +62,10 @@
             outputWriter.WriteRaw("false");
     }
 
-    
+    private string TraceStyle => outputSettings.Styles?["trace"] ?? "#c0c0c0";
+    private string DebugStyle => outputSettings.Styles?["debug"] ?? "#808080";
+    private string InformationStyle => outputSettings.Styles?["information"] ?? "#ffffff";
+    private string WarningStyle => outputSettings.Styles?["warning"] ?? "#af8700";
+    private string ErrorStyle => outputSettings.Styles?["error"] ?? "#af0000";
 }
 
