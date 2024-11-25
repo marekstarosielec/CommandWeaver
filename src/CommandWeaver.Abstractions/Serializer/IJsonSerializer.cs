@@ -1,7 +1,7 @@
 /// <summary>
 /// Interface for serialization operations.
 /// </summary>
-public interface ISerializer
+public interface IJsonSerializer
 {
     /// <summary>
     /// Attempts to deserialize the specified content to an object of type <typeparamref name="T"/>.
@@ -22,4 +22,9 @@ public interface ISerializer
     /// <param name="exception">The exception if serialization fails; otherwise, <c>null</c>.</param>
     /// <returns><c>true</c> if serialization is successful; otherwise, <c>false</c>.</returns>
     bool TrySerialize<T>(T? value, out string? result, out Exception? exception) where T : class;
+    
+    /// <summary>
+    /// Default file extension for serializer.
+    /// </summary>
+    string Extension { get; }
 }

@@ -6,6 +6,6 @@ public static class ServiceRegistration
     {
         services.AddTransient<IDynamicValueConverter, DynamicValueConverter>();
         services.AddTransient<IOperationConverter, OperationConverter>();
-        services.AddTransient<IJsonSerializer, Serializer>();
+        services.AddTransient<IJsonSerializer, JsonSerializer>();
     }
 }

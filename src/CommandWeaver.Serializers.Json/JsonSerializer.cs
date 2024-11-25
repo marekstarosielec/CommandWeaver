@@ -1,17 +1,15 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-public interface IJsonSerializer : ISerializer { }
-
 /// <inheritdoc />
-public class Serializer(IOperationConverter operationConverter, IDynamicValueConverter dynamicValueConverter) : IJsonSerializer
+public class JsonSerializer(IOperationConverter operationConverter, IDynamicValueConverter dynamicValueConverter) : IJsonSerializer
 {
     /// <inheritdoc />
     public bool TryDeserialize<T>(string content, out T? result, out Exception? exception) where T : class
     {
         try
         {
-            result = JsonSerializer.Deserialize<T>(content,
+            result = System.Text.Json.JsonSerializer.Deserialize<T>(content,
                 new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true,
@@ -33,7 +31,7 @@ public class Serializer(IOperationConverter operationConverter, IDynamicValueCon
     {
         try
         {
-            result = JsonSerializer.Serialize(value, 
+            result = System.Text.Json.JsonSerializer.Serialize(value, 
                 new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -51,4 +49,7 @@ public class Serializer(IOperationConverter operationConverter, IDynamicValueCon
             return false;
         }
     }
+
+    /// <inheritdoc />
+    public string Extension => "json";
 }

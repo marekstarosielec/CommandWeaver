@@ -15,8 +15,7 @@
     <ProjectReference Include="..\CommandWeaver.Repositories.Abstraction\CommandWeaver.Repositories.Abstraction.csproj" />
     <ProjectReference Include="..\CommandWeaver.Repositories.Embedded\CommandWeaver.Repositories.Embedded.csproj" />
     <ProjectReference Include="..\CommandWeaver.Repositories.File\CommandWeaver.Repositories.File.csproj" />
-    <ProjectReference Include="..\CommandWeaver.Serializers.Abstraction\CommandWeaver.Serializers.Abstraction.csproj" />
-    <ProjectReference Include="..\CommandWeaver.Serializers.Default\CommandWeaver.Serializers.Default.csproj" />
+    <ProjectReference Include="..\CommandWeaver.Serializers.Json\CommandWeaver.Serializers.Json.csproj" />
     <ProjectReference Include="..\CommandWeaver.Variables\CommandWeaver.Variables.csproj" />
     <ProjectReference Include="..\Outputs\SpectreConsole\SpectreConsole.csproj" />
   </ItemGroup>

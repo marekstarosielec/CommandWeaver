@@ -6,8 +6,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\CommandWeaver.Serializers.Abstraction\CommandWeaver.Serializers.Abstraction.csproj" />
-  </ItemGroup>
-
 </Project>

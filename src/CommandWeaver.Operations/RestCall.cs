@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 using System.Text;
 
-public record RestCall(IConditionsService conditionsService, IVariableService variables, ISerializerFactory serializerFactory) : Operation
+public record RestCall(IConditionsService conditionsService, IVariableService variables, IJsonSerializer serializer) : Operation
 {
     public override string Name => nameof(RestCall);
 
@@ -24,7 +24,6 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         request.Method = HttpMethod.Parse(Parameters["method"].Value.TextValue!);
         request.RequestUri = new Uri(Parameters["url"].Value.TextValue!);
         httpClient.Timeout = TimeSpan.FromSeconds(Parameters["timeout"].Value.NumericValue ?? 60);
-        var serializer = serializerFactory.GetDefaultSerializer(out _);
         if (Parameters["body"].Value.TextValue != null)
             request.Content = new StringContent(Parameters["body"].Value.TextValue!, Encoding.UTF8, GetContentType() ?? "application/json");
         if (Parameters["body"].Value.ObjectValue != null || Parameters["body"].Value.ListValue != null)

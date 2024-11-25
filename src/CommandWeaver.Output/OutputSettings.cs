@@ -23,5 +23,5 @@ public class OutputSettings : IOutputSettings
     public LogLevel CurrentLogLevel { get; set; }
     
     /// <inheritdoc />
-    public ISerializer? Serializer { get; set; }
+    public IJsonSerializer? Serializer { get; set; }
 }

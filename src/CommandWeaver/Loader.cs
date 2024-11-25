@@ -20,7 +20,7 @@ public class Loader(
     IOutputService output, 
     IOutputSettings outputSettings,
     ICommandService iCommandService,
-    ISerializerFactory serializerFactory,
+    IJsonSerializer serializer,
     IRepositoryElementStorage repositoryElementStorage) : ILoader
 {
     public async Task Execute(CancellationToken cancellationToken)
@@ -44,7 +44,7 @@ public class Loader(
         variables.WriteVariableValue(VariableScope.Command, "LocalPath", new DynamicValue(repository.GetPath(RepositoryLocation.Application)));
         variables.WriteVariableValue(VariableScope.Command, "SessionPath", new DynamicValue(repository.GetPath(RepositoryLocation.Session, variables.CurrentSessionName)));
         
-        outputSettings.Serializer = serializerFactory.GetDefaultSerializer(out _);
+        outputSettings.Serializer = serializer;
     }
     
     /// <summary>
@@ -67,8 +67,7 @@ public class Loader(
                 continue;
             }
 
-            var serializer = GetSerializer(repositoryElementSerialized);
-            if (serializer == null)
+            if (!string.Equals(serializer.Extension, repositoryElementSerialized.Format, StringComparison.OrdinalIgnoreCase))
                 continue;
 
             if (!serializer.TryDeserialize(repositoryElementSerialized.Content, out RepositoryElementContent? repositoryContent, out var exception) || repositoryContent == null)
@@ -123,28 +122,6 @@ public class Loader(
         }
 
         variables.CurrentlyLoadRepositoryElement = null;
-    }
-
-    /// <summary>
-    /// Gets serializer depending on repository element format.
-    /// </summary>
-    /// <param name="repositoryElementSerialized"></param>
-    /// <returns></returns>
-    private ISerializer? GetSerializer(RepositoryElementSerialized repositoryElementSerialized)
-    {
-        if (repositoryElementSerialized.Format == null)
-        {
-            output.Warning($"Failed to determine format of {variables.CurrentlyLoadRepositoryElement}");
-            return null;
-        }
-        var serializer = serializerFactory.GetSerializer(repositoryElementSerialized.Format);
-        if (serializer == null)
-        {
-            output.Warning($"Failed to deserialize {variables.CurrentlyLoadRepositoryElement} - unknown format {repositoryElementSerialized.Format}");
-            return null;
-        }
-
-        return serializer;
     }
 }
 

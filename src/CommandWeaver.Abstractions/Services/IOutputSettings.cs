@@ -35,5 +35,5 @@ public interface IOutputSettings
     /// <remarks>
     /// The serializer is used to convert objects to strings, such as when formatting JSON output or other complex data.
     /// </remarks>
-    ISerializer? Serializer { get; set; }
+    IJsonSerializer? Serializer { get; set; }
 }

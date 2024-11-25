@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 /// <summary>
 /// A wrapper for an <see cref="IConverter{TType}"/> implementation, enabling the use of custom converters 
-/// within <see cref="JsonSerializer"/> operations.
+/// within <see cref="System.Text.Json.JsonSerializer"/> operations.
 /// </summary>
 /// <typeparam name="TType">The type of object to be serialized or deserialized.</typeparam>
 internal class ConverterWrapper<TType>(IConverter<TType> converterInstance) : JsonConverter<TType>

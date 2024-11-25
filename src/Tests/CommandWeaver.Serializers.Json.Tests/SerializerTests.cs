@@ -3,7 +3,7 @@
 //
 // public class SerializerTests
 // {
-//     private readonly Serializer _serializer;
+//     private readonly JsonSerializer _serializer;
 //
 //     public SerializerTests()
 //     {
@@ -11,8 +11,8 @@
 //         var operationConverter = Substitute.For<IOperationConverter>();
 //         var dynamicValueConverter = Substitute.For<IDynamicValueConverter>();
 //
-//         // Initialize Serializer with custom converters
-//         _serializer = new Serializer(operationConverter, dynamicValueConverter);
+//         // Initialize JsonSerializer with custom converters
+//         _serializer = new JsonSerializer(operationConverter, dynamicValueConverter);
 //     }
 //
 //     [Fact]
