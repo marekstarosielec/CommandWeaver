@@ -45,8 +45,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommandWeaver.Output", "Com
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommandWeaver.Flow", "CommandWeaver.Flow\CommandWeaver.Flow.csproj", "{28C88C2C-EDB4-4D45-A1A9-ADE3DCA28DAF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestBrowser", "RestBrowser\RestBrowser.csproj", "{22952BF4-3804-4843-941C-DB1DBE290C1F}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver.Operations", "CommandWeaver.Operations\CommandWeaver.Operations.csproj", "{BFC1AD5E-06A8-4DC1-B754-7DD5256DB8D0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver.Repositories.Embedded.Tests", "Tests\CommandWeaver.Repositories.Embedded.Tests\CommandWeaver.Repositories.Embedded.Tests.csproj", "{B7B27B30-5397-4686-8C69-AEB2020BB460}"
@@ -121,12 +119,6 @@ Global
 		{28C88C2C-EDB4-4D45-A1A9-ADE3DCA28DAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28C88C2C-EDB4-4D45-A1A9-ADE3DCA28DAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{28C88C2C-EDB4-4D45-A1A9-ADE3DCA28DAF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{22952BF4-3804-4843-941C-DB1DBE290C1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{22952BF4-3804-4843-941C-DB1DBE290C1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{22952BF4-3804-4843-941C-DB1DBE290C1F}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{22952BF4-3804-4843-941C-DB1DBE290C1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{22952BF4-3804-4843-941C-DB1DBE290C1F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{22952BF4-3804-4843-941C-DB1DBE290C1F}.Release|Any CPU.Deploy.0 = Release|Any CPU
 		{BFC1AD5E-06A8-4DC1-B754-7DD5256DB8D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BFC1AD5E-06A8-4DC1-B754-7DD5256DB8D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BFC1AD5E-06A8-4DC1-B754-7DD5256DB8D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
