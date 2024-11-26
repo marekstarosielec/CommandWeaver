@@ -1,7 +1,5 @@
 using System.Collections.Immutable;
 
-namespace CommandWeaver.Operations;
-
 public record ForEach(ICommandService ICommandService, IVariableService variables) : OperationAggregate
 {
     public override string Name => nameof(ForEach);

@@ -1,5 +1,4 @@
-﻿using CommandWeaver.Operations;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceRegistration
 {
