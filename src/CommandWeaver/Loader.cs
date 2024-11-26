@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
 
 /// <summary>
-/// Service responsible for loading variables and commands from repository (e.g., from files).
+/// Service responsible for loading variables and commands from repositories (e.g. from files).
 /// </summary>
 public interface ILoader
 {

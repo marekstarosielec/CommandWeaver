@@ -13,5 +13,5 @@ public interface IFlowService
     
     void NonFatalException(Exception? exception);
     
-    void FatalException(Exception? exception, int exitCode = 1);
+    void FatalException(Exception? exception, string? message = null, int exitCode = 1);
 }

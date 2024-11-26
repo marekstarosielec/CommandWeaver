@@ -44,12 +44,6 @@ public interface IVariableService
     void Add(RepositoryLocation repositoryLocation, string repositoryElementId, IEnumerable<Variable> variables);
 
     /// <summary>
-    /// Retrieves the current repository element storage containing the variable values.
-    /// </summary>
-    /// <returns>A <see cref="RepositoryElementStorage"/> instance with the current variable values.</returns>
-    RepositoryElementStorage GetRepositoryElementStorage();
-
-    /// <summary>
     /// Resolves all variable tags within the specified value.
     /// </summary>
     /// <param name="variableValue">The value to resolve, which may contain variable tags or placeholders.</param>

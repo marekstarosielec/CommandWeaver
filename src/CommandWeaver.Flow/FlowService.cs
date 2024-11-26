@@ -16,11 +16,10 @@ public class FlowService(IOutputService outputService) : IFlowService
         outputService.WriteException(exception);
     }
 
-    public void FatalException(Exception? exception, int exitCode = 1)
+    public void FatalException(Exception? exception, string? message = null, int exitCode = 1)
     {
         if (exception == null)
             return;
-        outputService.WriteException(exception);
-        Environment.Exit(exitCode);
+        Terminate(message, exitCode);
     }
 }

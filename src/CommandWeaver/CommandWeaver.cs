@@ -1,5 +1,5 @@
 ﻿/// <inheritdoc />
-public class CommandWeaver(ILoader loader, ICommandService iCommandService, IFlowService flow, ISaver saver) : ICommandWeaver
+public class CommandWeaver(ILoader loader, ICommandService commandService, IFlowService flow, ISaver saver) : ICommandWeaver
 {
     /// <inheritdoc />
     public async Task Run(string commandName, Dictionary<string, string> arguments, CancellationToken cancellationToken)
@@ -11,19 +11,17 @@ public class CommandWeaver(ILoader loader, ICommandService iCommandService, IFlo
         }
         
         await loader.Execute(cancellationToken);
-        iCommandService.Validate();
+        commandService.Validate();
         
-        var commandToExecute = iCommandService.Get(commandName);
+        var commandToExecute = commandService.Get(commandName);
         if (commandToExecute == null)
         {
             flow.Terminate($"Unknown command {commandName}");
             return;
         }
-        iCommandService.PrepareCommandParameters(commandToExecute, arguments);
-        await iCommandService.ExecuteOperations(commandToExecute.Operations, cancellationToken);
+        commandService.PrepareCommandParameters(commandToExecute, arguments);
+        await commandService.ExecuteOperations(commandToExecute.Operations, cancellationToken);
         await saver.Execute(cancellationToken);
     }
-
-    
 }
 

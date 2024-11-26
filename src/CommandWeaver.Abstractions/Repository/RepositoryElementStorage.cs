@@ -15,7 +15,7 @@ public interface IRepositoryElementStorage
     void Add(RepositoryElement repository);
 
     /// <summary>
-    /// Retrieves all repository elements stored, including their original values and any changes.
+    /// Retrieves all repository elements stored in its original form, as they were loaded.
     /// </summary>
     /// <returns>An immutable list of repository elements.</returns>
     ImmutableList<RepositoryElement> Get();

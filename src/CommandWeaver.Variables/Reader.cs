@@ -1,6 +1,6 @@
 ﻿/// <summary>
 /// Reads context variables value from different repository locations, using the provided
-/// <see cref="Storage"/> to access built-in, local, session, and changes lists.
+/// <see cref="VariableStorage"/> to access built-in, local, session, and changes lists.
 /// </summary>
 public interface IReader
 {
@@ -14,7 +14,7 @@ public interface IReader
 }
 
 /// <inheritdoc />
-public class Reader(IFlowService flow, Storage variableStorage) : IReader
+public class Reader(IFlowService flow, IVariableStorage variableStorage) : IReader
 {
     /// <inheritdoc />
     public DynamicValue ReadVariableValue(DynamicValue? variableValue, bool treatTextValueAsVariable = false)

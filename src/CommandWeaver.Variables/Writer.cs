@@ -3,7 +3,7 @@
     void WriteVariableValue(VariableScope scope, string? sessionName, string path, DynamicValue value, string? repositoryElementId);
 }
 
-public class Writer(IFlowService flow, Storage variableStorage, IRepository repository) : IWriter
+public class Writer(IFlowService flow, IVariableStorage variableStorage, IRepository repository) : IWriter
 {
     public void WriteVariableValue(VariableScope scope, string? sessionName, string path, DynamicValue value, string? repositoryElementId)
     {

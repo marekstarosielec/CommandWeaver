@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-public class Variables(IReader reader, IWriter writer, Storage storage) : IVariableService
+public class Variables(IReader reader, IWriter writer, IVariableStorage variableStorage) : IVariableService
 {
     public string CurrentSessionName
     {
@@ -27,10 +27,10 @@ public class Variables(IReader reader, IWriter writer, Storage storage) : IVaria
     }
 
     public Variable? FindVariable(string variableName) 
-            => storage.Command.FirstOrDefault(v => v.Key == variableName)
-            ?? storage.Session.FirstOrDefault(v => v.Key == variableName)
-            ?? storage.Application.FirstOrDefault(v => v.Key == variableName)
-            ?? storage.BuiltIn.FirstOrDefault(v => v.Key == variableName);
+            => variableStorage.Command.FirstOrDefault(v => v.Key == variableName)
+            ?? variableStorage.Session.FirstOrDefault(v => v.Key == variableName)
+            ?? variableStorage.Application.FirstOrDefault(v => v.Key == variableName)
+            ?? variableStorage.BuiltIn.FirstOrDefault(v => v.Key == variableName);
 
     public DynamicValue ReadVariableValue(DynamicValue variableValue, bool treatTextValueAsVariable = false)
     =>   reader.ReadVariableValue(variableValue, treatTextValueAsVariable);
@@ -43,30 +43,17 @@ public class Variables(IReader reader, IWriter writer, Storage storage) : IVaria
         switch (repositoryLocation)
         {
             case RepositoryLocation.BuiltIn:
-                storage.BuiltIn = storage.BuiltIn.AddRange(elementsToImport).ToImmutableList();
+                variableStorage.BuiltIn = variableStorage.BuiltIn.AddRange(elementsToImport).ToImmutableList();
                 break;
             case RepositoryLocation.Application:
-                storage.Application.AddRange(elementsToImport);
+                variableStorage.Application.AddRange(elementsToImport);
                 break;
             case RepositoryLocation.Session:
-                storage.Session.AddRange(elementsToImport);
+                variableStorage.Session.AddRange(elementsToImport);
                 break;
             default:
                 throw new InvalidOperationException($"Unknown repository location: {repositoryLocation}");
         }
-    }
-
-    public RepositoryElementStorage GetRepositoryElementStorage()
-    {
-        var result = new RepositoryElementStorage();
-        var repositoryElements = storage.Session.GroupBy(v => v?.RepositoryElementId ?? string.Empty).ToDictionary(g => g.Key, g => g.ToList());
-        foreach (var repositoryElement in repositoryElements)
-            result.Add(new RepositoryElement(RepositoryLocation.Session, repositoryElement.Key, new RepositoryElementContent { Variables = repositoryElement.Value.ToImmutableList() }));
-        repositoryElements = storage.Application.GroupBy(v => v?.RepositoryElementId ?? string.Empty).ToDictionary(g => g.Key, g => g.ToList());
-        foreach (var repositoryElement in repositoryElements)
-            result.Add(new RepositoryElement(RepositoryLocation.Application, repositoryElement.Key, new RepositoryElementContent { Variables = repositoryElement.Value.ToImmutableList() }));
-        return result;
-
     }
 
     public void WriteVariableValue(VariableScope scope, string path, DynamicValue value, string? respositoryElementId = null) => writer.WriteVariableValue(scope, CurrentSessionName, path, value, respositoryElementId);
