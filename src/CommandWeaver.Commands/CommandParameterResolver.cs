@@ -30,7 +30,6 @@ public class CommandParameterResolver(
             variableService.WriteVariableValue(VariableScope.Command, parameter.Key, resolvedValue);
         }
         
-        outputSettings.CurrentLogLevel = variableService.LogLevel;
         outputService.Trace($"Parameters for command '{command.Name}' prepared successfully.");
     }
     
@@ -87,21 +86,24 @@ public class CommandParameterResolver(
     private void Validate(CommandParameter parameter, string? argumentValue)
     {
         if (parameter.Required && string.IsNullOrWhiteSpace(argumentValue))
+        {
             flowService.Terminate($"Parameter {parameter.Key} requires a value.");
-        
+            return;
+        }
+
         // Validate against AllowedValues if specified
         if (parameter.AllowedValues != null && argumentValue != null && !parameter.AllowedValues.Contains(argumentValue))
         {
-            outputService.Warning($"Invalid value for argument '{parameter.Key}'. Allowed values: {string.Join(", ", parameter.AllowedValues)}.");
-            flowService.Terminate($"Argument '{parameter.Key}' has an invalid value.");
+            flowService.Terminate($"Invalid value for argument '{parameter.Key}'. Allowed values: {string.Join(", ", parameter.AllowedValues)}.");
+            return;
         }
 
         // Validate against AllowedEnumValues if specified
         if (parameter.AllowedEnumValues != null && argumentValue != null &&
             !Enum.GetNames(parameter.AllowedEnumValues).Any(name => name.Equals(argumentValue, StringComparison.OrdinalIgnoreCase)))
         {
-            outputService.Warning($"Invalid value for argument '{parameter.Key}'. Allowed enum values: {string.Join(", ", Enum.GetNames(parameter.AllowedEnumValues))}.");
-            flowService.Terminate($"Argument '{parameter.Key}' has an invalid value.");
+            flowService.Terminate($"Invalid value for argument '{parameter.Key}'. Allowed enum values: {string.Join(", ", Enum.GetNames(parameter.AllowedEnumValues))}.");
+            return;
         }
     }
 }
