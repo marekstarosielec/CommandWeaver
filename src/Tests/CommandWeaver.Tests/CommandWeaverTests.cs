@@ -1,3 +1,4 @@
+using Castle.Core.Logging;
 using NSubstitute;
 
 public class CommandWeaverTests
@@ -7,8 +8,10 @@ public class CommandWeaverTests
     private readonly ILoader _loader;
     private readonly ISaver _saver;
     private readonly IOutputService _outputService;
+    private readonly ICommandParameterResolver _commandParameterResolver;
+    private readonly ICommandValidator _commandValidator;
+    private readonly IRepositoryElementStorage _repositoryElementStorage;
     private readonly CommandWeaver _commandWeaver;
-
     public CommandWeaverTests()
     {
         _commandService = Substitute.For<ICommandService>();
@@ -16,13 +19,19 @@ public class CommandWeaverTests
         _loader = Substitute.For<ILoader>();
         _saver = Substitute.For<ISaver>();
         _outputService = Substitute.For<IOutputService>();
-
+        _commandParameterResolver = Substitute.For<ICommandParameterResolver>();
+        _commandValidator = Substitute.For<ICommandValidator>();
+        _repositoryElementStorage = Substitute.For<IRepositoryElementStorage>();
+        
         _commandWeaver = new CommandWeaver(
             _commandService,
             _flowService,
             _loader,
             _saver,
-            _outputService
+            _outputService,
+            _commandParameterResolver,
+            _commandValidator,
+            _repositoryElementStorage
         );
     }
 
@@ -35,7 +44,7 @@ public class CommandWeaverTests
         // Assert
         _flowService.Received(1).Terminate("Command not provided.");
         await _loader.DidNotReceive().Execute(Arg.Any<CancellationToken>());
-        _commandService.DidNotReceive().Validate();
+        _commandValidator.DidNotReceive().ValidateCommands(Arg.Any<IEnumerable<RepositoryElement>>());
     }
 
     [Fact]
@@ -49,7 +58,7 @@ public class CommandWeaverTests
 
         // Assert
         _flowService.Received(1).Terminate("Unknown command unknown-command");
-        _commandService.DidNotReceive().PrepareCommandParameters(Arg.Any<Command>(), Arg.Any<Dictionary<string, string>>());
+        _commandParameterResolver.DidNotReceive().PrepareCommandParameters(Arg.Any<Command>(), Arg.Any<Dictionary<string, string>>());
         await _saver.DidNotReceive().Execute(Arg.Any<CancellationToken>());
     }
 
@@ -69,8 +78,8 @@ public class CommandWeaverTests
 
         // Assert
         await _loader.Received(1).Execute(Arg.Any<CancellationToken>());
-        _commandService.Received(1).Validate();
-        _commandService.Received(1).PrepareCommandParameters(command, Arg.Any<Dictionary<string, string>>());
+        _commandValidator.Received(1).ValidateCommands(Arg.Any<IEnumerable<RepositoryElement>>());
+        _commandParameterResolver.Received(1).PrepareCommandParameters(command, Arg.Any<Dictionary<string, string>>());
         await _commandService.Received(1).ExecuteOperations(command.Operations, Arg.Any<CancellationToken>());
         await _saver.Received(1).Execute(Arg.Any<CancellationToken>());
     }

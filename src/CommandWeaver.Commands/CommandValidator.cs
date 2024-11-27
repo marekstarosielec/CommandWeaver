@@ -1,7 +1,7 @@
 /// <summary>
 /// Interface defining validation services for commands and parameters.
 /// </summary>
-public interface IValidator
+public interface ICommandValidator
 {
     /// <summary>
     /// Validates all commands within the given repository elements.
@@ -12,7 +12,7 @@ public interface IValidator
 
 
 /// <inheritdoc />
-public class Validator(IOutputService outputService) : IValidator
+public class CommandValidator(IOutputService outputService) : ICommandValidator
 {
     /// <inheritdoc />
     public void ValidateCommands(IEnumerable<RepositoryElement> repositoryElements)
