@@ -7,8 +7,7 @@
             var result = variables.ReadVariableValue(condition.IsNull);
             if (!result.IsNull())
             {
-                //TODO: Conditions are also used for rest headers - need to adjust message
-               // output.Trace($"Skipping operation because of IsNull condition.");
+                output.Trace($"Condition 'IsNull' not met for variable: {condition.IsNull}");
                 return false;
             }
         }
@@ -17,7 +16,7 @@
             var result = variables.ReadVariableValue(condition.IsNotNull);
             if (result.IsNull())
             {
-             //   output.Trace($"Skipping operation because of IsNotNull condition.");
+                output.Trace($"Condition 'IsNotNull' not met for variable: {condition.IsNotNull}");
                 return false;
             }
         }
@@ -31,16 +30,18 @@
 
         DynamicValue? isNull = null;
         DynamicValue? isNotNull = null;
+        
         foreach (var property in dynamicValue.ObjectValue!.Keys)
-            //TODO: unify StringComparison
             if (string.Equals(property, "IsNull", StringComparison.OrdinalIgnoreCase))
                 isNull = dynamicValue.ObjectValue![property];
             else if (string.Equals(property, "IsNotNull", StringComparison.OrdinalIgnoreCase))
                 isNotNull = dynamicValue.ObjectValue![property];
-            else 
-                //TODO: provide as much information as possible
-                flow.Terminate($"Unknown condition {property}");
+            else
+            {
+                flow.Terminate($"Unknown condition property: {property}");
+                return null;
+            }
+
         return new Condition{ IsNull = isNull, IsNotNull = isNotNull };
     }
 }
-

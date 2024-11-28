@@ -100,7 +100,7 @@ public class SaverTests
 
         // Assert
         _outputService.Received().Warning(Arg.Is<string>(msg => msg.Contains("Skipping saving to session1 as its content was not loaded.")));
-        await _repository.DidNotReceiveWithAnyArgs().SaveRepositoryElement(default, default, default);
+        await _repository.DidNotReceiveWithAnyArgs().SaveRepositoryElement(default!, default!,default!);
     }
 
 
@@ -160,7 +160,7 @@ public class SaverTests
 
         // Assert
         _outputService.Received().Warning(Arg.Is<string>(msg => msg.Contains("Skipping saving to session1 as its content was not loaded.")));
-        await _repository.DidNotReceiveWithAnyArgs().SaveRepositoryElement(default, default, default);
+        await _repository.DidNotReceiveWithAnyArgs().SaveRepositoryElement(default!, default!, default);
     }
 
     [Fact]
@@ -174,7 +174,7 @@ public class SaverTests
         await _saver.Execute(CancellationToken.None);
 
         // Assert
-        await _repository.DidNotReceiveWithAnyArgs().SaveRepositoryElement(default, default, default);
+        await _repository.DidNotReceiveWithAnyArgs().SaveRepositoryElement(default!, default!, default);
     }
 
 }
