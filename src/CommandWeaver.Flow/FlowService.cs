@@ -9,6 +9,7 @@ public class FlowService(IOutputService outputService) : IFlowService
         Environment.Exit(exitCode);
     }
 
+    /// <inheritdoc />
     public void NonFatalException(Exception? exception)
     {
         if (exception == null)
@@ -16,6 +17,7 @@ public class FlowService(IOutputService outputService) : IFlowService
         outputService.WriteException(exception);
     }
 
+    /// <inheritdoc />
     public void FatalException(Exception? exception, string? message = null, int exitCode = 1)
     {
         if (exception == null)
