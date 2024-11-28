@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-public record Terminate(IFlowService flow) : Operation
+public record Terminate(IFlowService flowService) : Operation
 {
     public override string Name => nameof(Terminate);
 
@@ -12,7 +12,7 @@ public record Terminate(IFlowService flow) : Operation
 
     public override Task Run(CancellationToken cancellationToken)
     {
-        flow.Terminate(Parameters["message"].Value.TextValue);
+        flowService.Terminate(Parameters["message"].Value.TextValue);
         return Task.CompletedTask;
     }
 }

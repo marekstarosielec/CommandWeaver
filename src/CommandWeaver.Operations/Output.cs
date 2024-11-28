@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-public record Output(IOutputService output) : Operation
+public record Output(IOutputService outputService) : Operation
 {
     public override string Name => nameof(Output);
 
@@ -13,7 +13,7 @@ public record Output(IOutputService output) : Operation
   
     public override Task Run(CancellationToken cancellationToken)
     {
-        output.Write(
+        outputService.Write(
             Parameters["value"].Value,
             Parameters["logLevel"].GetEnumValue<LogLevel>(),
             Parameters["styling"].GetEnumValue<Styling>() ?? Styling.Default

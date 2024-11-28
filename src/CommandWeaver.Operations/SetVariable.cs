@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-public record SetVariable(IVariableService variables) : Operation
+public record SetVariable(IVariableService variableService) : Operation
 {
     public override string Name => nameof(SetVariable);
 
@@ -14,7 +14,7 @@ public record SetVariable(IVariableService variables) : Operation
 
     public override Task Run(CancellationToken cancellationToken)
     {
-        variables.WriteVariableValue(
+        variableService.WriteVariableValue(
             Parameters["scope"].GetEnumValue<VariableScope>() ?? VariableScope.Command, 
             Parameters["key"].Value.TextValue!, 
             Parameters["value"].Value,

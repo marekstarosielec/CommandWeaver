@@ -25,5 +25,5 @@ public interface IOperationFactory
     /// <remarks>
     /// This property provides access to all operations currently managed by the factory, allowing inspection or iteration over the available operations.
     /// </remarks>
-    Dictionary<string, Operation> Operations { get; }
+    Dictionary<string, Operation> GetOperations();
 }

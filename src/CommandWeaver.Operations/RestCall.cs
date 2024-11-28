@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 using System.Text;
 
-public record RestCall(IConditionsService conditionsService, IVariableService variables, IJsonSerializer serializer) : Operation
+public record RestCall(IConditionsService conditionsService, IVariableService variableServices, IJsonSerializer serializer) : Operation
 {
     public override string Name => nameof(RestCall);
 
@@ -45,8 +45,8 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         
         var lastRestCall = new Dictionary<string, DynamicValue?>();
         lastRestCall["response"] = new DynamicValue(dynamicValueResponse);
-        variables.WriteVariableValue(VariableScope.Command, "lastRestCall", new DynamicValue(lastRestCall));
-        var t = variables.ReadVariableValue(new DynamicValue("lastRestCall"), true);
+        variableServices.WriteVariableValue(VariableScope.Command, "lastRestCall", new DynamicValue(lastRestCall));
+        var t = variableServices.ReadVariableValue(new DynamicValue("lastRestCall"), true);
     }
 
     private string? GetContentType() => Parameters["headers"].Value.ListValue?.FirstOrDefault(h => string.Equals(h.ObjectValue?["key"]?.TextValue, "content-type", StringComparison.InvariantCultureIgnoreCase))?.ObjectValue?["value"].TextValue;
