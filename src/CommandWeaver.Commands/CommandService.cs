@@ -30,7 +30,7 @@ public class CommandService(
     public async Task ExecuteOperations(List<Operation> operations, CancellationToken cancellationToken)
     {
         foreach (var operation in operations)
-            if (!conditionsService.ConditionsAreMet(operation.Conditions) && !cancellationToken.IsCancellationRequested)
+            if (conditionsService.ConditionsAreMet(operation.Conditions) && !cancellationToken.IsCancellationRequested)
                 await operationParameterResolver.PrepareOperationParameters(operation).Run(cancellationToken);
     }
 }

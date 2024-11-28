@@ -20,7 +20,7 @@ public class OutputSettings : IOutputSettings
     }
 
     /// <inheritdoc />
-    public LogLevel CurrentLogLevel { get; set; }
+    public LogLevel CurrentLogLevel { get; set; } = LogLevel.Information;
     
     /// <inheritdoc />
     public IJsonSerializer? Serializer { get; set; }

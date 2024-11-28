@@ -5,11 +5,11 @@
       "value": [
         {
           "key": "trace",
-          "value": "#c0c0c0"
+          "value": "#808080"
         },
         {
           "key": "debug",
-          "value": "#808080"
+          "value": "#c0c0c0"
         },
         {
           "key": "information",

@@ -9,7 +9,7 @@
             {
                 //TODO: Conditions are also used for rest headers - need to adjust message
                // output.Trace($"Skipping operation because of IsNull condition.");
-                return true;
+                return false;
             }
         }
         if (condition?.IsNotNull != null)
@@ -18,10 +18,10 @@
             if (result.IsNull())
             {
              //   output.Trace($"Skipping operation because of IsNotNull condition.");
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     public Condition? GetFromDynamicValue(DynamicValue dynamicValue)

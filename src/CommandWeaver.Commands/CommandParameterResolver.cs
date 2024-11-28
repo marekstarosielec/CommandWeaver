@@ -15,8 +15,7 @@ public interface ICommandParameterResolver
 public class CommandParameterResolver(
     IFlowService flowService,
     IOutputService outputService,
-    IVariableService variableService,
-    IOutputSettings outputSettings) : ICommandParameterResolver
+    IVariableService variableService) : ICommandParameterResolver
 {
     /// <inheritdoc />
     public void PrepareCommandParameters(Command command, Dictionary<string, string> arguments)

@@ -8,6 +8,17 @@ using System.Diagnostics.CodeAnalysis;
 [SuppressMessage("ReSharper", "ClassWithVirtualMembersNeverInherited.Global")]
 public record CommandParameter
 {
+    public CommandParameter()
+    {
+    }
+
+    [SetsRequiredMembers]
+    public CommandParameter(string key, Type? allowedEnumValues)
+    {
+        Key = key;
+        AllowedEnumValues = allowedEnumValues;
+    }
+
     /// <summary>
     /// Gets or sets the key for the command parameter.
     /// </summary>
