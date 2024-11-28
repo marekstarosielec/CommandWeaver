@@ -27,7 +27,7 @@ public class CommandService(
     public Command? Get(string name) =>
         _commands.FirstOrDefault(c => c.Name == name || c.OtherNames?.Any(n => n == name) == true);
     
-    public async Task ExecuteOperations(List<Operation> operations, CancellationToken cancellationToken)
+    public async Task ExecuteOperations(IEnumerable<Operation> operations, CancellationToken cancellationToken)
     {
         foreach (var operation in operations)
             if (conditionsService.ConditionsAreMet(operation.Conditions) && !cancellationToken.IsCancellationRequested)

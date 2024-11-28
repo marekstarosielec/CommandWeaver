@@ -23,11 +23,11 @@ public interface ICommandService
     /// <summary>
     /// Executes a list of operations as part of command execution.
     /// </summary>
-    /// <param name="operations">The list of <see cref="Operation"/> objects to execute.</param>
+    /// <param name="operations">The enumerable of <see cref="Operation"/> objects to execute.</param>
     /// <param name="cancellationToken">A token to observe for cancellation requests.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     /// <remarks>
     /// Executes the specified operations in sequence or as defined by their dependencies, respecting the provided cancellation token.
     /// </remarks>
-    Task ExecuteOperations(List<Operation> operations, CancellationToken cancellationToken);
+    Task ExecuteOperations(IEnumerable<Operation> operations, CancellationToken cancellationToken);
 }
