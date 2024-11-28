@@ -18,7 +18,6 @@ public record Output(IOutputService outputService) : Operation
             Parameters["logLevel"].GetEnumValue<LogLevel>(),
             Parameters["styling"].GetEnumValue<Styling>() ?? Styling.Default
         );
-
         return Task.CompletedTask;
     }
 }

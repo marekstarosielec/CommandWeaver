@@ -10,7 +10,8 @@ public class CommandServiceTests
         var conditionsService = Substitute.For<IConditionsService>();
         var commandMetadataService = Substitute.For<ICommandMetadataService>();
         var operationParameterResolver = Substitute.For<IOperationParameterResolver>();
-        var commandService = new CommandService(conditionsService, commandMetadataService, operationParameterResolver);
+        var outputService = Substitute.For<IOutputService>();
+        var commandService = new CommandService(conditionsService, commandMetadataService, operationParameterResolver, outputService);
         const string repositoryElementId = "repo-123";
         const string content = "{ \"commands\": [{ \"Name\": \"cmd1\" }, { \"Name\": \"cmd2\" }] }";
         var commands = new List<Command>
@@ -43,7 +44,8 @@ public class CommandServiceTests
         var conditionsService = Substitute.For<IConditionsService>();
         var commandMetadataService = Substitute.For<ICommandMetadataService>();
         var operationParameterResolver = Substitute.For<IOperationParameterResolver>();
-        var commandService = new CommandService(conditionsService, commandMetadataService, operationParameterResolver);
+        var outputService = Substitute.For<IOutputService>();
+        var commandService = new CommandService(conditionsService, commandMetadataService, operationParameterResolver, outputService);
         const string repositoryElementId = "repo-123";
         const string content = "{ \"commands\": [{ \"Name\": \"cmd1\", \"OtherNames\": [\"alias1\"] }] }";
         var commands = new List<Command>
@@ -60,8 +62,8 @@ public class CommandServiceTests
         // Assert
         Assert.NotNull(commandByName);
         Assert.NotNull(commandByAlias);
-        Assert.Equal("cmd1", commandByName!.Name);
-        Assert.Equal("cmd1", commandByAlias!.Name);
+        Assert.Equal("cmd1", commandByName.Name);
+        Assert.Equal("cmd1", commandByAlias.Name);
     }
 
     [Fact]
@@ -71,7 +73,8 @@ public class CommandServiceTests
         var conditionsService = Substitute.For<IConditionsService>();
         var commandMetadataService = Substitute.For<ICommandMetadataService>();
         var operationParameterResolver = Substitute.For<IOperationParameterResolver>();
-        var commandService = new CommandService(conditionsService, commandMetadataService, operationParameterResolver);
+        var outputService = Substitute.For<IOutputService>();
+        var commandService = new CommandService(conditionsService, commandMetadataService, operationParameterResolver, outputService);
         var operations = new List<Operation>
         {
             new TestOperation("Op1"),
@@ -96,7 +99,8 @@ public class CommandServiceTests
         var conditionsService = Substitute.For<IConditionsService>();
         var commandMetadataService = Substitute.For<ICommandMetadataService>();
         var operationParameterResolver = Substitute.For<IOperationParameterResolver>();
-        var commandService = new CommandService(conditionsService, commandMetadataService, operationParameterResolver);
+        var outputService = Substitute.For<IOutputService>();
+        var commandService = new CommandService(conditionsService, commandMetadataService, operationParameterResolver, outputService);
         var cts = new CancellationTokenSource();
         cts.Cancel();
         var operations = new List<Operation>

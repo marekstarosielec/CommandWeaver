@@ -4,7 +4,8 @@
 public class CommandService(
     IConditionsService conditionsService,
     ICommandMetadataService commandMetadataService,
-    IOperationParameterResolver operationParameterResolver) : ICommandService
+    IOperationParameterResolver operationParameterResolver,
+    IOutputService outputService) : ICommandService
 {
     private readonly List<Command> _commands = [];
 
@@ -31,6 +32,10 @@ public class CommandService(
     {
         foreach (var operation in operations)
             if (conditionsService.ConditionsAreMet(operation.Conditions) && !cancellationToken.IsCancellationRequested)
-                await operationParameterResolver.PrepareOperationParameters(operation).Run(cancellationToken);
+            {
+                var resolvedOperation = operationParameterResolver.PrepareOperationParameters(operation);
+                outputService.Trace($"Executing operation: {resolvedOperation.Name}");
+                await resolvedOperation.Run(cancellationToken);
+            }
     }
 }

@@ -13,7 +13,6 @@ public record ForEach(ICommandService commandService, IVariableService variableS
 
     public override async Task Run(CancellationToken cancellationToken)
     {
-        outputService.Trace("Starting execution of ForEach operation.");
         var path = Parameters["element"].Value.TextValue!;
         foreach (var element in Parameters["list"].Value.ListValue!)
         {
@@ -21,6 +20,5 @@ public record ForEach(ICommandService commandService, IVariableService variableS
             variableService.WriteVariableValue(VariableScope.Command, path, new DynamicValue(element.ObjectValue));
             await commandService.ExecuteOperations(Operations, cancellationToken);
         }
-        outputService.Trace("ForEach operation completed.");
     }
 }
