@@ -1,98 +1,184 @@
-﻿// using System.Text.Json;
-// using NSubstitute;
-//
-// public class OperationConverterTests
-// {
-//     private readonly IOutput _mockOutput;
-//     private readonly IVariables _variables;
-//     private readonly IOperationFactory _mockFactory;
-//     private readonly JsonSerializerOptions _options;
-//
-//     public OperationConverterTests()
-//     {
-//         _mockOutput = Substitute.For<IOutput>();
-//         _mockFactory = Substitute.For<IOperationFactory>();
-//         _variables = Substitute.For<IVariables>();
-//         _variables.CurrentlyLoadRepositoryElement.Returns("TestElement");
-//
-//         _options = new JsonSerializerOptions
-//         {
-//             Converters = { new ConverterWrapper<Operation>(new OperationConverter(_mockOutput, _variables,  _mockFactory)) }
-//         };
-//     }
-//
-//     [Fact]
-//     public void Read_MissingOperationName_ShouldReturnNull()
-//     {
-//         string json = "{\"parameter1\": \"value1\"}";
-//
-//         var result = JsonSerializer.Deserialize<Operation>(json, _options);
-//
-//         Assert.Null(result);
-//         _mockOutput.Received(1).Warning(Arg.Is<string>(msg => msg.Contains("TestElement")));
-//     }
-//
-//     [Fact]
-//     public void Read_InvalidOperationName_ShouldReturnNull()
-//     {
-//         string json = "{\"operation\": \"invalidOperation\"}";
-//
-//         _mockFactory.GetOperation("invalidOperation").Returns((Operation)null);
-//
-//         var result = JsonSerializer.Deserialize<Operation>(json, _options);
-//
-//         Assert.Null(result);
-//         _mockOutput.Received(1).Warning(
-//             Arg.Is<string>(msg => msg.Contains("invalidOperation") && msg.Contains("TestElement")));
-//     }
-//
-//     [Fact]
-//     public void Read_ValidOperation_ShouldPopulateParameters()
-//     {
-//         string json = "{\"operation\": \"testOperation\", \"parameter1\": \"value1\", \"parameter2\": 42}";
-//
-//         var testOperation = new TestOperation();
-//         testOperation.Parameters["parameter1"] = new OperationParameter { Description = "description" };
-//         testOperation.Parameters["parameter2"] = new OperationParameter { Description = "description" };
-//
-//         _mockFactory.GetOperation("testOperation").Returns(testOperation);
-//
-//         var result = JsonSerializer.Deserialize<Operation>(json, _options);
-//
-//         Assert.NotNull(result);
-//         Assert.Equal("value1", result.Parameters["parameter1"]?.Value.TextValue);
-//         Assert.Equal(42, result.Parameters["parameter2"]?.Value.NumericValue);
-//     }
-//
-//     [Fact]
-//     public void Read_InvalidParameter_ShouldLogWarningAndContinue()
-//     {
-//         string json = "{\"operation\": \"testOperation\", \"invalidParameter\": \"value1\"}";
-//
-//         var testOperation = new TestOperation();
-//
-//         _mockFactory.GetOperation("testOperation").Returns(testOperation);
-//
-//         var result = JsonSerializer.Deserialize<Operation>(json, _options);
-//
-//         Assert.NotNull(result);
-//         _mockOutput.Received(1).Warning(
-//             Arg.Is<string>(msg => msg.Contains("invalidParameter") && msg.Contains("testOperation") && msg.Contains("TestElement")));
-//     }
-//
-//     [Fact]
-//     public void Read_Conditions_ShouldSetCorrectly()
-//     {
-//         string json = "{\"operation\": \"testOperation\", \"conditions\": { \"IsNull\": true, \"IsNotNull\": false }}";
-//
-//         var testOperation = new TestOperation();
-//
-//         _mockFactory.GetOperation("testOperation").Returns(testOperation);
-//
-//         var result = JsonSerializer.Deserialize<Operation>(json, _options);
-//
-//         Assert.NotNull(result);
-//         Assert.True(result.Conditions?.IsNull?.BoolValue);
-//         Assert.False(result.Conditions?.IsNotNull?.BoolValue);
-//     }
-// }
+﻿using System.Collections.Immutable;
+using System.Text;
+using System.Text.Json;
+using NSubstitute;
+
+public class OperationConverterTests
+{
+    private readonly IOperationFactory _operationFactory;
+    private readonly OperationConverter _converter;
+
+    public OperationConverterTests()
+    {
+        _operationFactory = Substitute.For<IOperationFactory>();
+        var outputService = Substitute.For<IOutputService>();
+        var variableService = Substitute.For<IVariableService>();
+        var flowService = Substitute.For<IFlowService>();
+        var conditionsService = Substitute.For<IConditionsService>();
+        _converter = new OperationConverter(
+            outputService,
+            variableService,
+            _operationFactory,
+            flowService,
+            conditionsService);
+    }
+
+    [Fact]
+    public void Read_ShouldReturnOperation_WhenValidJson()
+    {
+        // Arrange
+        var operationName = "TestOperation";
+        var testOperation = new TestOperation
+        {
+            Parameters = ImmutableDictionary<string, OperationParameter>.Empty
+                .Add("param1", new OperationParameter { Description = "Test parameter" })
+        };
+
+        _operationFactory.GetOperation(operationName).Returns(testOperation);
+
+        var json = @"{
+            ""operation"": ""TestOperation"",
+            ""param1"": ""value1""
+        }";
+        var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json));
+
+        // Act
+        var result = _converter.Read(ref reader, typeof(Operation), null);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<TestOperation>(result);
+        Assert.Equal("value1", result.Parameters["param1"].OriginalValue.TextValue);
+    }
+
+    [Fact]
+    public void Read_ShouldThrow_WhenOperationNameIsMissing()
+    {
+        // Arrange
+        var json = @"{ ""param1"": ""value1"" }";
+        var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json));
+
+        // Act
+        Exception? exception = null;
+
+        try
+        {
+            _converter.Read(ref reader, typeof(Operation), null);
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+
+        // Assert
+        Assert.NotNull(exception);
+        Assert.Contains("Operation name cannot be null or empty.", exception.Message);
+    }
+    
+    [Fact]
+    public void Read_ShouldThrow_WhenOperationIsUnknown()
+    {
+        // Arrange
+        var operationName = "UnknownOperation";
+        _operationFactory.GetOperation(operationName).Returns((Operation)null!);
+    
+        var json = @"{ ""operation"": ""UnknownOperation"" }";
+        var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json));
+    
+        // Act
+        Exception? exception = null;
+
+        try
+        {
+            _converter.Read(ref reader, typeof(Operation), null);
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+    
+        // Assert
+        Assert.NotNull(exception);
+        Assert.Contains("could not be resolved.", exception.Message);
+    }
+
+    [Fact]
+    public void Read_ShouldConfigureSubOperations_WhenAggregateOperation()
+    {
+        // Arrange
+        var parentOperation = new TestAggregateOperation
+        {
+            Parameters = ImmutableDictionary<string, OperationParameter>.Empty
+        };
+        var subOperation = new TestOperation
+        {
+            Parameters = ImmutableDictionary<string, OperationParameter>.Empty
+        };
+
+        _operationFactory.GetOperation("ParentOperation").Returns(parentOperation);
+        _operationFactory.GetOperation("SubOperation").Returns(subOperation);
+
+        var json = @"{
+            ""operation"": ""ParentOperation"",
+            ""operations"": [
+                { ""operation"": ""SubOperation"" }
+            ]
+        }";
+        var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json));
+
+        // Act
+        var result = _converter.Read(ref reader, typeof(Operation), null);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<TestAggregateOperation>(result);
+        var aggregate = (TestAggregateOperation)result;
+        Assert.Single(aggregate.Operations);
+        Assert.IsType<TestOperation>(aggregate.Operations[0]);
+    }
+
+    [Fact]
+    public void ConfigureParameter_ShouldSetCorrectParameterValues()
+    {
+        // Arrange
+        var operation = new TestOperation
+        {
+            Parameters = ImmutableDictionary<string, OperationParameter>.Empty
+                .Add("param1", new OperationParameter { Description = "Test parameter" })
+        };
+
+        var json = @"{
+            ""operation"": ""TestOperation"",
+            ""param1"": ""value1""
+        }";
+        var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json));
+        _operationFactory.GetOperation("TestOperation").Returns(operation);
+
+        // Act
+        var result = _converter.Read(ref reader, typeof(Operation), null);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("value1", result.Parameters["param1"].OriginalValue.TextValue);
+    }
+}
+
+// Test-specific implementations of Operation and OperationAggregate
+
+public record TestOperation : Operation
+{
+    public override string Name => "TestOperation";
+    public override ImmutableDictionary<string, OperationParameter> Parameters { get; init; } =
+        ImmutableDictionary<string, OperationParameter>.Empty;
+    
+    public override Task Run(CancellationToken cancellationToken) => Task.CompletedTask;
+}
+
+public record TestAggregateOperation : OperationAggregate
+{
+    public override string Name => "TestAggregateOperation";
+    public override ImmutableDictionary<string, OperationParameter> Parameters { get; init; } =
+        ImmutableDictionary<string, OperationParameter>.Empty;
+
+    public override Task Run(CancellationToken cancellationToken) => Task.CompletedTask;
+}

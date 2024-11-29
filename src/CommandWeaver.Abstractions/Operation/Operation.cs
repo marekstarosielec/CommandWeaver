@@ -14,6 +14,11 @@ public abstract record Operation
     public abstract string Name { get; }
 
     /// <summary>
+    /// Optional comment for an operation.
+    /// </summary>
+    public string? Comment { get; set; }
+    
+    /// <summary>
     /// Gets the dictionary of parameters associated with this operation.
     /// </summary>
     /// <remarks>

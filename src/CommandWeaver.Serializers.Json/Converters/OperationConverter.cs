@@ -1,9 +1,19 @@
 using System.Collections.Immutable;
-using System.Reflection;
 using System.Text.Json;
 
+/// <summary>
+/// A JSON converter that converts JSON data to an <see cref="Operation"/> instance using a specified context and factory.
+/// </summary>
+public interface IOperationConverter : IConverter<Operation>
+{ }
+
 /// <inheritdoc />
-public class OperationConverter(IVariableService variables, IOperationFactory operationFactory, IFlowService flow, IConditionsService conditionsService) : IOperationConverter
+public class OperationConverter(
+    IOutputService outputService, 
+    IVariableService variableService, 
+    IOperationFactory operationFactory, 
+    IFlowService flowService, 
+    IConditionsService conditionsService) : IOperationConverter
 {
     /// <summary>
     /// A converter for dynamic values within JSON data.
@@ -11,13 +21,20 @@ public class OperationConverter(IVariableService variables, IOperationFactory op
     internal readonly IDynamicValueConverter _dynamicValueConverter = new DynamicValueConverter();
 
     /// <inheritdoc />
-    public Operation? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions? options)
+    public Operation Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions? options)
     {
         using var document = JsonDocument.ParseValue(ref reader);
         var rootElement = document.RootElement;
+
+        // Get and validate operation name
         var operationName = GetOperationName(rootElement);
-        var operationInstance = GetOperationInstance(operationName);
-        operationInstance = SetOperationProperties(operationName, operationInstance, rootElement);
+
+        // Resolve the operation instance
+        var operationInstance = ResolveOperationInstance(operationName);
+
+        // Configure the operation properties from JSON
+        operationInstance = ConfigureOperation(operationInstance, rootElement);
+
         return operationInstance;
     }
 
@@ -35,100 +52,99 @@ public class OperationConverter(IVariableService variables, IOperationFactory op
         if (!element.TryGetProperty("operation", out var operationElement) || operationElement.GetString() is not { } operationName)
         {
             // Operation name is not defined.
-            flow.Terminate(
-                $"Operation without name is listed in {variables.CurrentlyLoadRepositoryElement}");
+            flowService.Terminate(
+                $"Operation without name is listed in {variableService.CurrentlyLoadRepositoryElement}");
             return null!;
         }
         return operationName;
     }
     
-    private Operation GetOperationInstance(string operationName)
+    private Operation ResolveOperationInstance(string operationName)
     {
-        var result = operationFactory.GetOperation(operationName);
-        if (result != null)
-            return result;
+        if (string.IsNullOrWhiteSpace(operationName))
+        {
+            flowService.Terminate("Operation name is null or empty in the provided JSON.");
+            throw new InvalidOperationException("Operation name cannot be null or empty.");
+        }
         
-        // There is no operation with given name.
-        flow.Terminate($"Operation {operationName} is not valid in {variables.CurrentlyLoadRepositoryElement}");
-        return default!;
+        var operationInstance = operationFactory.GetOperation(operationName);
+        if (operationInstance == null)
+        {
+            flowService.Terminate($"Unknown operation '{operationName}' in {variableService.CurrentlyLoadRepositoryElement}");
+            throw new InvalidOperationException($"Operation '{operationName}' could not be resolved.");
+        }
+
+        outputService.Trace($"Operation instance resolved for: {operationName}");
+        return operationInstance;
     }
     
-    /// <summary>
-    /// Sets the properties of an <see cref="Operation"/> instance based on JSON data.
-    /// </summary>
-    /// <param name="operationName">The name of the operation.</param>
-    /// <param name="operationInstance">The <see cref="Operation"/> instance to configure.</param>
-    /// <param name="rootElement">The root JSON element containing property values.</param>
-    private Operation SetOperationProperties(string operationName, Operation operationInstance, JsonElement rootElement)
+    private Operation ConfigureOperation(Operation operationInstance, JsonElement rootElement)
     {
         var result = operationInstance;
         var parameters = result.Parameters.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         foreach (var property in rootElement.EnumerateObject())
-        {
-            // Skip operation name. 
-            if (property.Name.Equals("operation", StringComparison.CurrentCultureIgnoreCase))
-                continue;
-
-            // Skip condition.
-            if (property.Name.Equals("conditions", StringComparison.CurrentCultureIgnoreCase))
+            switch (property.Name.ToLowerInvariant())
             {
-                SetConditions(operationName, operationInstance, property.Value);
-                continue;
-            }
+                case "operation":
+                    // Skip the "operation" property
+                    break;
+
+                case "conditions":
+                    ConfigureConditions(operationInstance, property.Value);
+                    break;
+
+                case "comment":
+                    operationInstance.Comment = property.Value.GetString();
+                    break;
+
+                case "operations":
+                    ConfigureSubOperations(operationInstance, property.Value);
+                    break;
+
+                default:
+                    ConfigureParameter(operationInstance, parameters, property);
+                    break;
             
-            // Set sub operations.
-            if (property.Name.Equals("operations", StringComparison.CurrentCultureIgnoreCase) 
-                && operationInstance is OperationAggregate operationAggregateInstance
-                && property.Value.ValueKind == JsonValueKind.Array)
-            {
-                var subOperations = new List<Operation>();
-                foreach (var subOperation in property.Value.EnumerateArray())
-                {
-                    var subOperationName = GetOperationName(subOperation);
-                    var subOperationInstance = GetOperationInstance(subOperationName);
-                    var subResult = SetOperationProperties(subOperationName, subOperationInstance, subOperation);
-                    subOperations.Add(subResult);
-                }
-
-                result = operationAggregateInstance with { Operations = subOperations.ToImmutableList() };
-                continue;
-            }
-
-            // Ignore properties starting with "_".
-            if (property.Name.StartsWith("_", StringComparison.CurrentCultureIgnoreCase))
-                continue;
-
-            if (!operationInstance.Parameters.TryGetValue(property.Name, out var parameter))
-            {
-                // Property defined in JSON is not defined in operation class.
-                flow.Terminate($"Property {property.Name} is invalid in operation {operationName} in {variables.CurrentlyLoadRepositoryElement}");
-                continue;
-            }
-            
-            parameters[property.Name] = parameters[property.Name] with { OriginalValue = _dynamicValueConverter.ReadElement(property.Value) ?? new DynamicValue() };
         }
-
         return result with { Parameters = parameters.ToImmutableDictionary() };
     }
 
-    /// <summary>
-    /// Sets the conditions of an <see cref="Operation"/> instance based on JSON data.
-    /// </summary>
-    /// <param name="operationName">The name of the operation.</param>
-    /// <param name="operationInstance">The <see cref="Operation"/> instance to configure conditions for.</param>
-    /// <param name="rootElement">The JSON element containing condition properties.</param>
-    private void SetConditions(string operationName, Operation operationInstance, JsonElement rootElement)
+    private void ConfigureConditions(Operation operationInstance, JsonElement conditionsElement)
     {
-        var conditionsElement = _dynamicValueConverter.ReadElement(rootElement);
-        if (conditionsElement == null)
+        var conditionValue = _dynamicValueConverter.ReadElement(conditionsElement);
+        if (conditionValue == null)
             return;
-        operationInstance.Conditions ??= conditionsService.GetFromDynamicValue(conditionsElement);
+        operationInstance.Conditions ??= conditionsService.GetFromDynamicValue(conditionValue);
     }
+    
+    private void ConfigureSubOperations(Operation operationInstance, JsonElement subOperationsElement)
+    {
+        if (operationInstance is not OperationAggregate aggregateInstance || subOperationsElement.ValueKind != JsonValueKind.Array)
+            return;
+        
+        var subOperations = subOperationsElement
+            .EnumerateArray()
+            .Select<JsonElement, Operation>(subOperationElement =>
+            {
+                var subOperationName = GetOperationName(subOperationElement);
+                var subOperationInstance = ResolveOperationInstance(subOperationName);
+                subOperationInstance = ConfigureOperation(subOperationInstance, subOperationElement);
+                return subOperationInstance;
+            })
+            .ToImmutableList();
 
-    /// <summary>
-    /// Cached property information for <see cref="Condition"/>, allowing case-insensitive access.
-    /// </summary>
-    private static readonly Dictionary<string, PropertyInfo> _conditionProperties = typeof(Condition)
-        .GetProperties(BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)
-        .ToDictionary(prop => prop.Name, StringComparer.OrdinalIgnoreCase);
+        aggregateInstance.Operations = subOperations;
+    }
+    
+    private void ConfigureParameter(Operation operationInstance, Dictionary<string, OperationParameter> parameters, JsonProperty property)
+    {
+        if (!parameters.TryGetValue(property.Name, out var parameter))
+        {
+            flowService.Terminate($"Unexpected property '{property.Name}' in operation '{operationInstance.Name}' in {variableService.CurrentlyLoadRepositoryElement}");
+            return; // Will never be reached due to Terminate
+        }
+
+        parameters[property.Name] = parameter with { OriginalValue = _dynamicValueConverter.ReadElement(property.Value) ?? new DynamicValue() };
+        outputService.Trace($"Parameter '{property.Name}' set for operation '{operationInstance.Name}'.");
+    }
 }

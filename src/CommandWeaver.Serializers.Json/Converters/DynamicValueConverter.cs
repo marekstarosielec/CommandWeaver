@@ -1,13 +1,26 @@
 using System.Text.Json;
 
+/// <summary>
+/// Converts a JSON value to a <see cref="DynamicValue"/> instance and vice versa.
+/// </summary>
+public interface IDynamicValueConverter : IConverter<DynamicValue?>
+{ 
+    /// <summary>
+    /// Reads a <see cref="JsonElement"/> and converts it to a <see cref="DynamicValue"/>.
+    /// </summary>
+    /// <param name="element">The JSON element to read.</param>
+    /// <returns>A <see cref="DynamicValue"/> instance representing the element data.</returns>
+    DynamicValue? ReadElement(JsonElement element);
+}
+
 /// <inheritdoc />
 public class DynamicValueConverter : IDynamicValueConverter
 {
     /// <inheritdoc />
     public DynamicValue? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        using JsonDocument document = JsonDocument.ParseValue(ref reader);
-        JsonElement element = document.RootElement;
+        using var document = JsonDocument.ParseValue(ref reader);
+        var element = document.RootElement;
         return ReadElement(element);
     }
 
@@ -24,36 +37,16 @@ public class DynamicValueConverter : IDynamicValueConverter
         _ => throw new JsonException($"Unsupported JsonValueKind {element.ValueKind}")
     };
 
-    /// <summary>
-    /// Reads a JSON string element, attempting to parse it as a <see cref="DateTimeOffset"/>.
-    /// If unsuccessful, returns the value as a string.
-    /// </summary>
-    /// <param name="element">The JSON element containing a string.</param>
-    /// <returns>A <see cref="DynamicValue"/> representing the string or date-time value.</returns>
-    private DynamicValue ReadString(JsonElement element)
-    {
-        if (element.TryGetDateTimeOffset(out DateTimeOffset dateTimeValue))
-            return new DynamicValue(dateTimeValue);
-        return new DynamicValue(element.GetString());
-    }
+    private DynamicValue ReadString(JsonElement element) 
+        => element.TryGetDateTimeOffset(out DateTimeOffset dateTimeValue) 
+            ? new DynamicValue(dateTimeValue) 
+            : new DynamicValue(element.GetString());
 
-    /// <summary>
-    /// Reads a JSON number element, attempting to parse it as <c>long</c> or <c>double</c> in that order.
-    /// </summary>
-    /// <param name="element">The JSON element containing a number.</param>
-    /// <returns>A <see cref="DynamicValue"/> representing the numeric value.</returns>
-    private DynamicValue ReadNumber(JsonElement element)
-    {
-        if (element.TryGetInt64(out long longValue))
-            return new DynamicValue(longValue);
-        return new DynamicValue(element.GetDouble());
-    }
+    private DynamicValue ReadNumber(JsonElement element) 
+        => element.TryGetInt64(out long longValue) 
+            ? new DynamicValue(longValue) 
+            : new DynamicValue(element.GetDouble());
 
-    /// <summary>
-    /// Reads a JSON object and converts it to a <see cref="DynamicValue"/> containing an object.
-    /// </summary>
-    /// <param name="element">The JSON object element.</param>
-    /// <returns>A <see cref="DynamicValue"/> containing the object.</returns>
     private DynamicValue ReadObject(JsonElement element)
     {
         var variable = new Dictionary<string, DynamicValue?>();
@@ -63,22 +56,9 @@ public class DynamicValueConverter : IDynamicValueConverter
         return new DynamicValue(variable);
     }
 
-    /// <summary>
-    /// Reads a JSON array and converts it to a <see cref="DynamicValue"/> containing a list.
-    /// </summary>
-    /// <param name="element">The JSON array element.</param>
-    /// <returns>A <see cref="DynamicValue"/> containing the array.</returns>
     private DynamicValue ReadArray(JsonElement element)
     {
-        var list = new List<DynamicValue>();
-        foreach (var arrayElement in element.EnumerateArray())
-        {
-            var arrayElementContents = ReadElement(arrayElement);
-            var dictionary = arrayElementContents?.ObjectValue;
-            dictionary ??= new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key", arrayElementContents } });
-            var value = new DynamicValue(dictionary);
-            list.Add(value);
-        }
+        var list = element.EnumerateArray().Select(arrayElement => ReadElement(arrayElement) ?? new DynamicValue()).ToList();
         return new DynamicValue(list);
     }
 
@@ -106,12 +86,6 @@ public class DynamicValueConverter : IDynamicValueConverter
         else writer.WriteNullValue();
     }
 
-    /// <summary>
-    /// Writes a <see cref="DynamicValueObject"/> to JSON as a JSON object.
-    /// </summary>
-    /// <param name="writer">The writer to which JSON data is written.</param>
-    /// <param name="obj">The <see cref="DynamicValueObject"/> to write.</param>
-    /// <param name="options">Serialization options.</param>
     private void WriteObject(Utf8JsonWriter writer, DynamicValueObject? obj, JsonSerializerOptions options)
     {
         writer.WriteStartObject();
@@ -124,12 +98,6 @@ public class DynamicValueConverter : IDynamicValueConverter
         writer.WriteEndObject();
     }
 
-    /// <summary>
-    /// Writes a <see cref="DynamicValueList"/> to JSON as a JSON array.
-    /// </summary>
-    /// <param name="writer">The writer to which JSON data is written.</param>
-    /// <param name="array">The <see cref="DynamicValueList"/> to write.</param>
-    /// <param name="options">Serialization options.</param>
     private void WriteArray(Utf8JsonWriter writer, DynamicValueList? array, JsonSerializerOptions options)
     {
         writer.WriteStartArray();

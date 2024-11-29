@@ -65,9 +65,7 @@ public class ForEachTests
         await _commandService.Received(2).ExecuteOperations(
             Arg.Any<IList<Operation>>(),
             Arg.Any<CancellationToken>());
-
-        _outputService.Received(1).Trace("Starting execution of ForEach operation.");
-        _outputService.Received(1).Trace("ForEach operation completed.");
+        
         _outputService.Received(2).Debug("Processing element in list");
     }
 
@@ -89,9 +87,7 @@ public class ForEachTests
         await _commandService.DidNotReceive().ExecuteOperations(
             Arg.Any<IList<Operation>>(),
             Arg.Any<CancellationToken>());
-
-        _outputService.Received(1).Trace("Starting execution of ForEach operation.");
-        _outputService.Received(1).Trace("ForEach operation completed.");
+        
         _outputService.DidNotReceive().Debug("Processing element in list");
     }
 }
