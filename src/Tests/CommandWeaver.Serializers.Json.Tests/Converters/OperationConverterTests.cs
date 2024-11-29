@@ -162,23 +162,3 @@ public class OperationConverterTests
         Assert.Equal("value1", result.Parameters["param1"].OriginalValue.TextValue);
     }
 }
-
-// Test-specific implementations of Operation and OperationAggregate
-
-public record TestOperation : Operation
-{
-    public override string Name => "TestOperation";
-    public override ImmutableDictionary<string, OperationParameter> Parameters { get; init; } =
-        ImmutableDictionary<string, OperationParameter>.Empty;
-    
-    public override Task Run(CancellationToken cancellationToken) => Task.CompletedTask;
-}
-
-public record TestAggregateOperation : OperationAggregate
-{
-    public override string Name => "TestAggregateOperation";
-    public override ImmutableDictionary<string, OperationParameter> Parameters { get; init; } =
-        ImmutableDictionary<string, OperationParameter>.Empty;
-
-    public override Task Run(CancellationToken cancellationToken) => Task.CompletedTask;
-}
