@@ -18,7 +18,7 @@ public class OperationConverter(
     /// <summary>
     /// A converter for dynamic values within JSON data.
     /// </summary>
-    internal readonly IDynamicValueConverter _dynamicValueConverter = new DynamicValueConverter();
+    private readonly IDynamicValueConverter _dynamicValueConverter = new DynamicValueConverter();
 
     /// <inheritdoc />
     public Operation Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions? options)
@@ -49,14 +49,12 @@ public class OperationConverter(
 
     private string GetOperationName(JsonElement element)
     {
-        if (!element.TryGetProperty("operation", out var operationElement) || operationElement.GetString() is not { } operationName)
-        {
-            // Operation name is not defined.
-            flowService.Terminate(
-                $"Operation without name is listed in {variableService.CurrentlyLoadRepositoryElement}");
-            return null!;
-        }
-        return operationName;
+        if (element.TryGetProperty("operation", out var operationElement) &&
+            operationElement.GetString() is { } operationName) return operationName;
+        
+        // Operation name is not defined.
+        flowService.Terminate($"Operation without name is listed in {variableService.CurrentlyLoadRepositoryElement}");
+        return null!;
     }
     
     private Operation ResolveOperationInstance(string operationName)

@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using System.Reflection;
+using System.Text.Json;
+using NSubstitute;
 
 public class DynamicValueConverterTests
 {
@@ -199,4 +201,89 @@ public class DynamicValueConverterTests
         var result = System.Text.Encoding.UTF8.GetString(stream.ToArray());
         Assert.Equal("[true,\"text\",42]", result);
     }
+    
+    [Fact]
+    public void Write_ShouldHandleAllDynamicValueProperties()
+    {
+         var properties = typeof(DynamicValue)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+        foreach (var property in properties)
+        {
+            if (property.Name == nameof(DynamicValue.NoResolving))
+                continue;
+            
+            // Arrange
+            var dynamicValue = new DynamicValue(); // A test instance of DynamicValue
+            using var memoryStream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(memoryStream);
+            var options = new JsonSerializerOptions();
+
+            var dynamicValueConverter = new DynamicValueConverter();
+
+            // Get the backing field for the property
+            var backingField = typeof(DynamicValue)
+                .GetField($"<{property.Name}>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance);
+
+            if (backingField == null)
+            {
+                Assert.Fail($"Backing field for property '{property.Name}' not found.");
+                continue;
+            }
+
+            // Get the test value for the property type
+            var testValue = GetTestValueForProperty(property.PropertyType);
+            if (testValue == null)
+            {
+                Assert.Fail($"No test value defined for property '{property.Name}' of type '{property.PropertyType}'.");
+                continue;
+            }
+
+            // Act
+            backingField.SetValue(dynamicValue, testValue);
+
+            memoryStream.SetLength(0); // Reset the memory stream
+            dynamicValueConverter.Write(writer, dynamicValue, options);
+            writer.Flush();
+            memoryStream.Position = 0;
+
+            // Read the result
+            var writtenJson = new StreamReader(memoryStream).ReadToEnd();
+
+            // Assert
+            var expectedJson = GetExpectedJsonForTestValue(testValue);
+            if (!writtenJson.Contains(expectedJson, StringComparison.Ordinal))
+                Assert.Fail($"Unsupported DynamicValue type {property.Name}");
+
+            // Reset the backing field value
+            backingField.SetValue(dynamicValue, null);
+        }
+    }
+
+    private static object? GetTestValueForProperty(Type propertyType)
+    {
+        // Provide test values for each property type
+        if (propertyType == typeof(string)) return "TestString";
+        if (propertyType == typeof(bool?)) return true;
+        if (propertyType == typeof(DateTimeOffset?)) return DateTimeOffset.UtcNow;
+        if (propertyType == typeof(long?)) return 123456789L;
+        if (propertyType == typeof(double?)) return 12345.6789;
+        if (propertyType == typeof(DynamicValueObject)) return new DynamicValueObject(new Dictionary<string, DynamicValue?>());
+        if (propertyType == typeof(DynamicValueList)) return new DynamicValueList(new List<DynamicValue>());
+        return null; // Return null for unsupported types
+    }
+    
+    private static string GetExpectedJsonForTestValue(object testValue) =>
+        // Generate expected JSON based on the type of the test value
+        testValue switch
+        {
+            string str => $"\"{str}\"",
+            bool boolVal => boolVal.ToString().ToLowerInvariant(),
+            DateTimeOffset dto => $"\"{dto.ToUniversalTime():O}\"",
+            long longVal => longVal.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            double doubleVal => doubleVal.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            DynamicValueObject => "{", // JSON object starts with '{'
+            DynamicValueList => "[", // JSON array starts with '['
+            _ => "null" // Unhandled types default to null
+        };
 }

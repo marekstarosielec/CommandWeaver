@@ -75,7 +75,6 @@ public class DynamicValueConverter : IDynamicValueConverter
             writer.WriteNullValue();
             return;
         }
-        //TODO: Test checking if all kind of values from DynamicValue are created.
         if (value.TextValue != null) writer.WriteStringValue(value.TextValue);
         else if (value.DateTimeValue.HasValue) writer.WriteStringValue(value.DateTimeValue.Value);
         else if (value.BoolValue.HasValue) writer.WriteBooleanValue(value.BoolValue.Value);
