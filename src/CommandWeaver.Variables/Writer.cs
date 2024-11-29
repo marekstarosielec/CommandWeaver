@@ -3,7 +3,7 @@
     void WriteVariableValue(VariableScope scope, string? sessionName, string path, DynamicValue value, string? repositoryElementId);
 }
 
-public class Writer(IFlowService flow, IVariableStorage variableStorage, IRepository repository) : IWriter
+public class Writer(IFlowService flowService, IVariableStorage variableStorage, IRepository repository) : IWriter
 {
     public void WriteVariableValue(VariableScope scope, string? sessionName, string path, DynamicValue value, string? repositoryElementId)
     {
@@ -16,7 +16,7 @@ public class Writer(IFlowService flow, IVariableStorage variableStorage, IReposi
         else if (ValuePath.PathIsTopLevelList(path))
             WriteVariableValueOnTopLevelList(scope, path, value, fullRepositoryElementId);
         else
-            flow.Terminate("Writing to sub-property is not supported");
+            flowService.Terminate("Writing to sub-property is not supported");
     }
 
     /// <summary>
@@ -65,17 +65,17 @@ public class Writer(IFlowService flow, IVariableStorage variableStorage, IReposi
         var key = ValuePath.TopLevelListKey(path);
         if (key == null)
         {
-            flow.Terminate("Error while updating variable value.");
+            flowService.Terminate("Error while updating variable value.");
             return;
         }
         if (value.ObjectValue == null)
         {
-            flow.Terminate("List can contain only objects.");
+            flowService.Terminate("List can contain only objects.");
             return;
         }
         if (value.ObjectValue["key"]?.TextValue != key)
         {
-            flow.Terminate("Object key must have same value as index of updated list.");
+            flowService.Terminate("Object key must have same value as index of updated list.");
             return;
         }
 

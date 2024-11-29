@@ -15,14 +15,14 @@ internal static class ValuePath
     /// <summary>
     /// Extracts the string between specified delimiters within a given input string.
     /// </summary>
-    /// <param name="input">The input string from which to extract the variable.</param>
+    /// <param name="path">The input string from which to extract the variable.</param>
     /// <returns>The extracted string between the delimiters, or null if the delimiters are not found.</returns>
     public static string? ExtractVariableBetweenDelimiters(string path)
     {
-        int closingIndex = path.IndexOf("}}");
+        int closingIndex = path.IndexOf("}}", StringComparison.Ordinal);
         if (closingIndex == -1) return null;
 
-        int openingIndex = path.LastIndexOf("{{", closingIndex);
+        int openingIndex = path.LastIndexOf("{{", closingIndex, StringComparison.Ordinal);
         if (openingIndex == -1) return null;
 
         return path.Substring(openingIndex + 2, closingIndex - openingIndex - 2).Trim();
@@ -35,17 +35,11 @@ internal static class ValuePath
     /// <param name="variableName"></param>
     /// <returns></returns>
     public static bool WholePathIsSingleVariable(string path, string variableName) 
-    {
-        return path.StartsWith("{{") && path.EndsWith("}}") && path.Trim('{', '}', ' ').Equals(variableName) && path.Trim().IndexOf("{{", 2, StringComparison.Ordinal) == -1;
-        // if (string.IsNullOrWhiteSpace(path) || string.IsNullOrWhiteSpace(variableName))
-        //     return false;
-        //
-        // // Remove all [[...]] patterns including their content
-        // path = Regex.Replace(path, @"\[\[.*?\]\]", "").Trim();
-        //
-        // // Check if path matches {{variableName}}
-        // return path == $"{{{{{variableName}}}}}";
-    }
+        => path.StartsWith("{{")
+           && path.EndsWith("}}") 
+           && path.Trim('{', '}', ' ').Equals(variableName) 
+           && path.Trim().IndexOf("{{", 2, StringComparison.Ordinal) == -1;
+
     /// <summary>
     /// Replaces variable tag in path with value.
     /// </summary>
@@ -90,5 +84,5 @@ internal static class ValuePath
     /// </summary>
     /// <param name="path"></param>
     /// <returns></returns>
-    public static string GetVariableName(string path) => path.Split(new[] { '.', '[' }, StringSplitOptions.RemoveEmptyEntries).First();
+    public static string GetVariableName(string path) => path.Split(['.', '['], StringSplitOptions.RemoveEmptyEntries).First();
 }

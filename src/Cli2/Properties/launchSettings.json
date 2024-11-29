@@ -14,7 +14,7 @@
     },
     "Log level": {
       "commandName": "Project",
-      "commandLineArgs": "output-test --log-level trace"
+      "commandLineArgs": "output-test"
     },
     "Variable": {
       "commandName": "Project",

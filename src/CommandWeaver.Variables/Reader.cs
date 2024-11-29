@@ -1,4 +1,6 @@
-﻿/// <summary>
+﻿using System.Text.RegularExpressions;
+
+/// <summary>
 /// Reads context variables value from different repository locations, using the provided
 /// <see cref="VariableStorage"/> to access built-in, local, session, and changes lists.
 /// </summary>
@@ -14,11 +16,17 @@ public interface IReader
 }
 
 /// <inheritdoc />
-public class Reader(IFlowService flow, IVariableStorage variableStorage) : IReader
+public class Reader(IFlowService flowService, IOutputService outputService, IVariableStorage variableStorage) : IReader
 {
     /// <inheritdoc />
     public DynamicValue ReadVariableValue(DynamicValue? variableValue, bool treatTextValueAsVariable = false)
-        => ReadVariableValue(variableValue, treatTextValueAsVariable, 0) ?? new DynamicValue();
+    {
+        outputService.Trace($"Starting variable resolution.");
+        outputService.Write(variableValue ?? new DynamicValue(), LogLevel.Trace, Styling.Raw);
+        outputService.Write(new DynamicValue(Environment.NewLine), LogLevel.Trace, Styling.Raw);
+
+        return ReadVariableValue(variableValue, treatTextValueAsVariable, 0) ?? new DynamicValue();
+    }
 
     /// <summary>
     /// Contains additional parameter for counting variables resolving depth. It allows to avoid StackOverflowException in case of self-referencing variable.
@@ -28,42 +36,54 @@ public class Reader(IFlowService flow, IVariableStorage variableStorage) : IRead
     /// <param name="depth">Current resolving depth.</param>
     /// <param name="noResolving">If reached value which has NoResolving flag set, resolving is stopped. This is useful when we have variables containing commands.</param>
     /// <returns></returns>
-    private DynamicValue? ReadVariableValue(DynamicValue? variableValue, bool treatTextValueAsVariable, int depth, bool noResolving = false)
+    private DynamicValue? ReadVariableValue(DynamicValue? variableValue, bool treatTextValueAsVariable, int depth,
+        bool noResolving = false)
     {
         if (variableValue == null)
-            return null;
-
+        {
+            outputService.Warning("Variable value is null. Returning an empty DynamicValue.");
+            return new DynamicValue();
+        }
+       
         depth++;
         if (depth > 50)
         {
-            flow.Terminate("Too deep variable resolving. Make sure that you have no circular reference.");
+            flowService.Terminate("Too deep variable resolving. Make sure that you have no circular reference.");
             return variableValue;
         }
+
         var result = variableValue with { };
-        
+
         //Allow to stop resolving at some level, e.g. when printing command json, we don't want to have variables inside resolved.
         if (result.NoResolving || noResolving)
             return result;
 
         if (result.TextValue != null)
             result = ReadTextKey(result.TextValue, treatTextValueAsVariable, depth) ?? variableValue;
-        if (result?.ObjectValue != null)
+
+        if (result.DateTimeValue.HasValue)
+            return result; // DateTime values don't require further resolution
+
+        if (result.BoolValue.HasValue)
+            return result; // Boolean values are final
+
+        if (result.NumericValue.HasValue)
+            return result; // Numeric values are final
+
+        if (result.PrecisionValue.HasValue)
+            return result; // Precision (double) values are final
+
+        if (result.ObjectValue != null)
             result = ReadObjectKey(result.ObjectValue, depth);
-        if (result?.ListValue != null)
+
+        if (result.ListValue != null)
             result = ReadListKey(result.ListValue, depth);
 
         return result;
     }
 
-    /// <summary>
-    /// Reads a text key by replacing embedded variable references with actual values.
-    /// </summary>
-    /// <param name="key">The text key containing potential variable tags.</param>
-    /// <param name="treatTextValueAsVariable">Indicates if the text should be treated as a variable name.</param>
-    /// <param name="depth">Current resolving depth.</param>
-    /// <returns>The resolved variable value, or null if the resolution fails.</returns>
     private DynamicValue? ReadTextKey(string key, bool treatTextValueAsVariable, int depth)
-     {
+    {
         if (string.IsNullOrWhiteSpace(key))
             return null;
 
@@ -77,7 +97,7 @@ public class Reader(IFlowService flow, IVariableStorage variableStorage) : IRead
 
         if (resolvedVariable == null)
             return new DynamicValue();
-            
+
         if (ValuePath.WholePathIsSingleVariable(resolvedKey, path))
             //If whole key is variable name, it can be replaced by any type.
             return ReadVariableValue(resolvedVariable, false, depth);
@@ -85,28 +105,19 @@ public class Reader(IFlowService flow, IVariableStorage variableStorage) : IRead
         if (resolvedVariable.TextValue != null)
         {
             //If variable name is just part of text, it can be replaced only by text.
-            
+
             //If variable contains styling, it is replaced here so it is not applied.
             var replacement = resolvedVariable.TextValue.Replace("[[", "/[/[").Replace("]]", "/]/]");
             resolvedKey = ValuePath.ReplaceVariableWithValue(resolvedKey, path, replacement);
             return ReadVariableValue(new DynamicValue(resolvedKey), false, depth, resolvedVariable.NoResolving);
         }
 
-        flow.Terminate($"{{{{ {path} }}}} resolved to a non-text value, it cannot be part of text.");
+        flowService.Terminate($"{{{{ {path} }}}} resolved to a non-text value, it cannot be part of text.");
         return null;
     }
 
-    /// <summary>
-    /// Reads a variable object by recursively resolving its properties.
-    /// </summary>
-    /// <param name="key">The variable object with properties containing variable tags.</param>
-    /// <param name="depth">Current resolving depth.</param>
-    /// <returns>The resolved object with resolved properties.</returns>
-    private DynamicValue? ReadObjectKey(DynamicValueObject key, int depth)
+    private DynamicValue ReadObjectKey(DynamicValueObject key, int depth)
     {
-        if (key == null)
-            return null;
-
         var result = new Dictionary<string, DynamicValue?>();
 
         foreach (var keyProperty in key.Keys)
@@ -115,132 +126,74 @@ public class Reader(IFlowService flow, IVariableStorage variableStorage) : IRead
         return new DynamicValue(new DynamicValueObject(result));
     }
 
-    /// <summary>
-    /// Read a variable list by recursively resolving each element's properties.
-    /// </summary>
-    /// <param name="key">The list containing elements with properties that might have variable tags.</param>
-    /// <param name="depth">Current resolving depth.</param>
-    /// <returns>The resolved list.</returns>
     private DynamicValue? ReadListKey(DynamicValueList key, int depth)
     {
-        if (key == null)
-            return null;
-
         var result = new List<DynamicValue>();
 
         foreach (var listElement in key)
-        {
-            // var resolvedElement = new Dictionary<string, DynamicValue?>();
-            // foreach (var keyProperty in listElement)
-            //     resolvedElement[keyProperty] = ReadVariableValue(listElement[keyProperty], false, depth);
-            var resolvedElement = ReadVariableValue(listElement, false, depth);
-            result.Add(resolvedElement);
-        }
+            result.Add(ReadVariableValue(listElement, false, depth) ?? new DynamicValue());
 
         return new DynamicValue(result);
     }
 
-    /// <summary>
-    /// Resolves a single variable value by searching across repository locations in the order: 
-    /// Changes, Session, Local, then BuiltIn.
-    /// </summary>
-    /// <param name="path">The name of the variable to resolve.</param>
-    /// <returns>The resolved variable value, or null if the variable is not found.</returns>
-    internal DynamicValue? ResolveSingleValue(string path)
+    private DynamicValue? ResolveSingleValue(string path)
     {
+        // Resolve individual storage locations
         var builtIn = ResolveSingleValueFromSingleList(variableStorage.BuiltIn, path);
         var application = ResolveSingleValueFromSingleList(variableStorage.Application, path);
         var session = ResolveSingleValueFromSingleList(variableStorage.Session, path);
         var command = ResolveSingleValueFromSingleList(variableStorage.Command, path);
 
-        if (ValuePath.PathIsTopLevel(path) &&
-            (builtIn?.ListValue != null
-            || application?.ListValue != null
-            || session?.ListValue != null
-            || command?.ListValue != null))
-        {
-            // If the whole variable value is requested and it is a list, values from all locations will be combined.
-            var result = new List<DynamicValue>();
+        if (ValuePath.PathIsTopLevel(path) && HasAnyList(builtIn, application, session, command))
+            return CombineLists(builtIn, application, session, command);
 
-            if (command?.ListValue != null)
-                foreach (var item in command.ListValue)
-                    result.Add(item);
-
-            if (session?.ListValue != null)
-                foreach (var item in session.ListValue)
-                    if (item.ObjectValue?["key"] != null && !result.Any(r => r.ObjectValue?["key"]?.TextValue?.Equals(item.ObjectValue["key"]) == true))
-                        result.Add(item);
-
-            if (application?.ListValue != null)
-                foreach (var item in application.ListValue)
-                    if (item.ObjectValue?["key"] != null && !result.Any(r => r.ObjectValue?["key"]?.TextValue?.Equals(item.ObjectValue["key"]) == true))
-                        result.Add(item);
-
-            if (builtIn?.ListValue != null)
-                foreach (var item in builtIn.ListValue)
-                    if (item.ObjectValue?["key"] != null && !result.Any(r => r.ObjectValue?["key"]?.TextValue?.Equals(item.ObjectValue["key"]) == true))
-                        result.Add(item);
-
-            return new DynamicValue(result);
-        }
         if (command?.IsNull() == false)
             return command;
         if (session?.IsNull() == false)
             return session;
         if (application?.IsNull() == false)
             return application;
+        
         return builtIn;
     }
+    
+    private bool HasAnyList(params DynamicValue?[] values) =>
+        values.Any(value => value?.ListValue != null);
+    
+    private DynamicValue CombineLists(params DynamicValue?[] storages)
+    {
+        var combinedList = new List<DynamicValue>();
 
-    /// <summary>
-    /// Finds the value of a variable by key within a list of variables. 
-    /// Supports nested access using keys with properties or list indices.
-    /// </summary>
-    /// <param name="variables">The list of variables to search within.</param>
-    /// <param name="key">The full key for the variable, in the form variable.property[listIndex].subProperty.</param>
-    /// <returns>The resolved <see cref="DynamicValue"/> or null if the key is not found.</returns>
+        foreach (var storage in storages)
+        {
+            if (storage?.ListValue == null) continue;
+
+            foreach (var item in storage.ListValue)
+            {
+                // Avoid adding duplicates by checking the "key" property
+                var key = item.ObjectValue?["key"].TextValue;
+                if (key != null && combinedList.All(existing =>
+                        existing.ObjectValue?["key"].TextValue != key))
+                    combinedList.Add(item);
+            }
+        }
+
+        return new DynamicValue(combinedList);
+    }
     private DynamicValue? ResolveSingleValueFromSingleList(IEnumerable<Variable> variables, string key)
     {
+        // Ensure variables are a list for efficient access
+        var variablesList = variables as IList<Variable> ?? variables.ToList();
         DynamicValue? result = null;
+
+        // Split the key into hierarchical sections
         var pathSections = ValuePath.GetPathSections(key);
 
-        for (int i = 0; i < pathSections.Count; i++)
+        foreach (var (section, index) in pathSections.Select((section, idx) => (section, idx)))
         {
-            if (i == 0 && pathSections[i].Groups[1].Success)
-                result = variables.FirstOrDefault(v => v.Key.Equals(pathSections[i].Groups[1].Value))?.Value;
-            else if (i == 0 && pathSections[i].Groups[2].Success)
-            {
-                // Key cannot start with an index
-                flow.Terminate($"Invalid key {key}");
-                return null;
-            }
-            else if (!pathSections[i].Groups[1].Success && !pathSections[i].Groups[2].Success)
-            {
-                // Invalid element in key
-                flow.Terminate($"Invalid key {key}");
-                return null;
-            }
-            else if (i > 0 && pathSections[i].Groups[1].Success)
-            {
-                if (result?.ObjectValue == null || !result.ObjectValue.Keys.Contains(pathSections[i].Groups[1].Value))
-                {
-                    //When listing commands, it does not contain some optional properties (e.g. description). But we don't want to fail because of that.
-                   // flow.Terminate($"Invalid property {pathSections[i].Groups[1].Value}");
-                    return null;
-                }
-                result = result?.ObjectValue?[pathSections[i].Groups[1].Value];
-            }
-            else if (i > 0 && pathSections[i].Groups[2].Success)
-            {
-                var listElement = result?.ListValue?.FirstOrDefault(v =>
-                    v.ObjectValue?["key"].TextValue?.Equals(pathSections[i].Groups[2].Value) == true);
-                if (listElement == null)
-                {
-                    flow.Terminate($"List does not contain element with key {pathSections[i].Groups[2].Value}");
-                    return null;
-                }
-                result =listElement;
-            }
+            result = index == 0 
+                ? ResolveTopLevelKey(variablesList, section, key) 
+                : ResolveNestedKey(result, section, key);
 
             if (result == null)
                 return null;
@@ -248,4 +201,45 @@ public class Reader(IFlowService flow, IVariableStorage variableStorage) : IRead
 
         return result;
     }
+    
+    private DynamicValue? ResolveTopLevelKey(IList<Variable> variablesList, Match section, string key)
+    {
+        if (section.Groups[1].Success)
+            // Find the variable by its key
+            return variablesList.FirstOrDefault(v => v.Key.Equals(section.Groups[1].Value))?.Value;
+        
+        if (section.Groups[2].Success)
+        {
+            flowService.Terminate($"Invalid key '{key}' - cannot start with an index.");
+            return null;
+        }
+
+        flowService.Terminate($"Invalid key '{key}' - no valid groups found.");
+        return null;
+    }
+
+    private DynamicValue? ResolveNestedKey(DynamicValue? currentValue, Match section, string key)
+    {
+        if (currentValue == null)
+            return null;
+
+        if (section.Groups[1].Success)
+        {
+            // Access property from object
+            var propertyName = section.Groups[1].Value;
+            return currentValue.ObjectValue?.ContainsKey(propertyName) == true ? currentValue.ObjectValue[propertyName] : null; // Gracefully skip invalid properties
+        }
+
+        if (section.Groups[2].Success)
+        {
+            // Access element from list by key
+            var indexKey = section.Groups[2].Value;
+            return currentValue.ListValue?
+                .FirstOrDefault(v => v.ObjectValue?["key"].TextValue?.Equals(indexKey) == true);
+        }
+
+        flowService.Terminate($"Invalid section in key '{key}'");
+        return null;
+    }
+
 }
