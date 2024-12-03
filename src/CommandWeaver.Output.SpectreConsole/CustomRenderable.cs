@@ -1,7 +1,5 @@
 using Spectre.Console.Rendering;
 
-namespace SpectreConsole;
-
 public class CustomRenderable : IRenderable
 {
     private readonly List<Segment> _segments;

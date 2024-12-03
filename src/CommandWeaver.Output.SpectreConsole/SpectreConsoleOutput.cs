@@ -1,8 +1,6 @@
 ﻿using Spectre.Console;
 using Spectre.Console.Json;
 
-namespace SpectreConsole;
-
 public class SpectreConsoleOutput : IOutputWriter
 {
     public void WriteRaw(string textValue)
