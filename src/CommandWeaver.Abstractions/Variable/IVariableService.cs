@@ -54,16 +54,6 @@ public interface IVariableService
     DynamicValue ReadVariableValue(DynamicValue variableValue, bool treatTextValueAsVariable = false);
 
     /// <summary>
-    /// Finds a variable by its name within the current context.
-    /// </summary>
-    /// <param name="variableName">The name of the variable to locate.</param>
-    /// <returns>The <see cref="Variable"/> if found; otherwise, <c>null</c>.</returns>
-    /// <remarks>
-    /// This method searches for a variable by its name in the current context, which may include session, command, or repository scopes.
-    /// </remarks>
-    Variable? FindVariable(string variableName);
-
-    /// <summary>
     /// Writes a specified variable value to a path within a given scope.
     /// </summary>
     /// <param name="scope">The scope within which the variable is stored (e.g., command, session, application).</param>

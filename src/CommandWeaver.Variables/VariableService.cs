@@ -26,12 +26,6 @@ public class VariableService(IReader reader, IWriter writer, IVariableStorage va
         set => WriteVariableValue(VariableScope.Command, "log-level", new DynamicValue(value.ToString()));
     }
 
-    public Variable? FindVariable(string variableName) 
-            => variableStorage.Command.FirstOrDefault(v => v.Key == variableName)
-            ?? variableStorage.Session.FirstOrDefault(v => v.Key == variableName)
-            ?? variableStorage.Application.FirstOrDefault(v => v.Key == variableName)
-            ?? variableStorage.BuiltIn.FirstOrDefault(v => v.Key == variableName);
-
     public DynamicValue ReadVariableValue(DynamicValue variableValue, bool treatTextValueAsVariable = false)
     =>   reader.ReadVariableValue(variableValue, treatTextValueAsVariable);
 

@@ -24,4 +24,40 @@ public interface IVariableStorage
     /// List of command scoped variables added during command execution. Not persisted.
     /// </summary>
     List<Variable> Command { get; }
+
+    /// <summary>
+    /// Returns first element matching the predicate, in order of hierarchy - Command, Session, Application, BuiltIn.
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <returns></returns>
+    Variable? FirstOrDefault(Func<Variable, bool> predicate);
+
+    /// <summary>
+    /// Returns first element matching the predicate.
+    /// </summary>
+    /// <param name="scope"></param>
+    /// <param name="predicate"></param>
+    /// <returns></returns>
+    Variable? FirstOrDefault(VariableScope scope, Func<Variable, bool> predicate);
+    
+    /// <summary>
+    /// Removes everything matching predicate in given scope.
+    /// </summary>
+    /// <param name="scope"></param>
+    /// <param name="predicate"></param>
+    void RemoveAllInScope(VariableScope scope, Predicate<Variable> predicate);
+    
+    /// <summary>
+    /// Removes everything matching predicate in scopes below given in hierarchy - e.g. for scope Application, removes matching in Command and Session.
+    /// </summary>
+    /// <param name="scope"></param>
+    /// <param name="predicate"></param>
+    void RemoveAllBelowScope(VariableScope scope, Predicate<Variable> predicate);
+    
+    /// <summary>
+    /// Adds variable to list.
+    /// </summary>
+    /// <param name="scope"></param>
+    /// <param name="variable"></param>
+    void Add(VariableScope scope, Variable variable);
 }

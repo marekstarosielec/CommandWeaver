@@ -47,17 +47,12 @@ public class Writer(IFlowService flowService, IVariableStorage variableStorage, 
 
     private void WriteVariableValueOnTopLevelVariable(VariableScope scope, string path, DynamicValue value, string? repositoryElementId)
     {
-        var existingVariable = variableStorage.Command.FirstOrDefault(v => v.Key == path)
-                               ?? variableStorage.Session.FirstOrDefault(v => v.Key == path)
-                               ?? variableStorage.Application.FirstOrDefault(v => v.Key == path)
-                               ?? variableStorage.BuiltIn.FirstOrDefault(v => v.Key == path);
+        variableStorage.RemoveAllInScope(VariableScope.Command, v => v.Key == path);
+        if (scope is VariableScope.Session or VariableScope.Application) variableStorage.RemoveAllInScope(VariableScope.Session, v => v.Key == path);
+        if (scope == VariableScope.Application) variableStorage.RemoveAllInScope(VariableScope.Application, v => v.Key == path);
 
-        var resolvedRepositoryElementId = existingVariable?.RepositoryElementId ?? repositoryElementId;
-
-        variableStorage.Command.RemoveAll(v => v.Key == path);
-        if (scope == VariableScope.Session) variableStorage.Session.RemoveAll(v => v.Key == path);
-        if (scope == VariableScope.Application) variableStorage.Application.RemoveAll(v => v.Key == path);
-
+        var resolvedRepositoryElementId = ResolveRepositoryElementId(repositoryElementId, path);
+        
         if (scope != VariableScope.Command && string.IsNullOrWhiteSpace(resolvedRepositoryElementId))
         {
             flowService.Terminate("Repository element ID must be specified for non-command scopes.");
@@ -65,9 +60,7 @@ public class Writer(IFlowService flowService, IVariableStorage variableStorage, 
         }
 
         var variableToInsert = new Variable { Key = path, Value = value, RepositoryElementId = resolvedRepositoryElementId };
-        if (scope == VariableScope.Command) variableStorage.Command.Add(variableToInsert);
-        if (scope == VariableScope.Session) variableStorage.Session.Add(variableToInsert);
-        if (scope == VariableScope.Application) variableStorage.Application.Add(variableToInsert);
+        variableStorage.Add(scope, variableToInsert);
     }
 
     private void WriteVariableValueOnTopLevelList(VariableScope scope, string path, DynamicValue value, string? repositoryElementId)
@@ -80,21 +73,9 @@ public class Writer(IFlowService flowService, IVariableStorage variableStorage, 
             throw new InvalidOperationException("Invalid list key.");
         }
 
-        Variable? existingChange;
-        if (scope == VariableScope.Command)
-            existingChange = variableStorage.Command.FirstOrDefault(v => v.Key == variableName);
-        else if (scope == VariableScope.Session)
-        {
-            variableStorage.Command.RemoveAll(v => v.Key == variableName);
-            existingChange = variableStorage.Session.FirstOrDefault(v => v.Key == variableName);
-        }
-        else
-        {
-            variableStorage.Command.RemoveAll(v => v.Key == variableName);
-            variableStorage.Session.RemoveAll(v => v.Key == variableName);
-            existingChange = variableStorage.Application.FirstOrDefault(v => v.Key == variableName);
-        }
-
+        var existingChange = variableStorage.FirstOrDefault(scope, v => v.Key == variableName);
+        variableStorage.RemoveAllBelowScope(scope, v => v.Key == variableName);
+        
         if (existingChange != null)
         {
             var newList = (existingChange.Value.ListValue?.RemoveAll(v => v.ObjectValue?["key"].TextValue == key) ?? new DynamicValueList()).Add(value);
@@ -102,17 +83,12 @@ public class Writer(IFlowService flowService, IVariableStorage variableStorage, 
             return;
         }
 
-        var existingVariable =
-            variableStorage.Command.FirstOrDefault(v => v.Key == variableName)
-            ?? variableStorage.Session.FirstOrDefault(v => v.Key == variableName)
-            ?? variableStorage.Application.FirstOrDefault(v => v.Key == variableName)
-            ?? variableStorage.BuiltIn.FirstOrDefault(v => v.Key == variableName);
+        var resolvedRepositoryElementId = ResolveRepositoryElementId(repositoryElementId, variableName);
 
-        var resolvedRepositoryElementId = repositoryElementId ?? existingVariable?.RepositoryElementId;
-
-        var newVariable = new Variable { Key = variableName, Value = new DynamicValue(new DynamicValueList([value])), RepositoryElementId = resolvedRepositoryElementId };
-        if (scope == VariableScope.Command) variableStorage.Command.Add(newVariable);
-        if (scope == VariableScope.Session) variableStorage.Session.Add(newVariable);
-        if (scope == VariableScope.Application) variableStorage.Application.Add(newVariable);
+        var variableToInsert = new Variable { Key = variableName, Value = new DynamicValue(new DynamicValueList([value])), RepositoryElementId = resolvedRepositoryElementId };
+        variableStorage.Add(scope, variableToInsert);
     }
+    
+    private string? ResolveRepositoryElementId(string? repositoryElementId, string key)
+        => repositoryElementId ?? variableStorage.FirstOrDefault(v => v.Key == key)?.RepositoryElementId;
 }
