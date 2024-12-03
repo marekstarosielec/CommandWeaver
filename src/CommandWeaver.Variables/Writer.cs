@@ -29,7 +29,7 @@ public class Writer(IFlowService flowService, IVariableStorage variableStorage, 
         else
         {
             flowService.Terminate("Writing to sub-property is not supported.");
-            throw new InvalidOperationException("Unsupported operation: Writing to sub-property is not allowed.");
+            throw new InvalidOperationException("Writing to sub-property is not supported.");
         }
     }
 
@@ -52,11 +52,10 @@ public class Writer(IFlowService flowService, IVariableStorage variableStorage, 
         if (scope == VariableScope.Application) variableStorage.RemoveAllInScope(VariableScope.Application, v => v.Key == path);
 
         var resolvedRepositoryElementId = ResolveRepositoryElementId(repositoryElementId, path);
-        
         if (scope != VariableScope.Command && string.IsNullOrWhiteSpace(resolvedRepositoryElementId))
         {
             flowService.Terminate("Repository element ID must be specified for non-command scopes.");
-            throw new InvalidOperationException("Repository element ID is missing for non-command scope.");
+            throw new InvalidOperationException("Repository element ID must be specified for non-command scopes.");
         }
 
         var variableToInsert = new Variable { Key = path, Value = value, RepositoryElementId = resolvedRepositoryElementId };
@@ -70,7 +69,7 @@ public class Writer(IFlowService flowService, IVariableStorage variableStorage, 
         if (key == null)
         {
             flowService.Terminate("Error while updating variable value.");
-            throw new InvalidOperationException("Invalid list key.");
+            throw new InvalidOperationException("Error while updating variable value.");
         }
 
         var existingChange = variableStorage.FirstOrDefault(scope, v => v.Key == variableName);
