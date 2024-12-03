@@ -29,13 +29,14 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         if (Parameters["body"].Value.ObjectValue != null || Parameters["body"].Value.ListValue != null)
         {
             serializer.TrySerialize(Parameters["body"].Value, out var body, out _);
-            request.Content = new StringContent(body, Encoding.UTF8,"application/json");
+            if (!string.IsNullOrEmpty(body))
+                request.Content = new StringContent(body, Encoding.UTF8,"application/json");
         }
 
         var result = await httpClient.SendAsync(request, cancellationToken);
         var resultBody = await result.Content.ReadAsStringAsync(cancellationToken);
         //try to deserialize to json
-        serializer.TryDeserialize(resultBody, out DynamicValue resultModel, out _);
+        serializer.TryDeserialize(resultBody, out DynamicValue? resultModel, out _);
         
         // 
         // lastRestCall["response"] = resultBody;

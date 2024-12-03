@@ -103,7 +103,7 @@ public class FileRepositoryTests
     }
 
     [Fact]
-    public async Task GetPath_ShouldReturnValidPath_ForApplicationLocation()
+    public void GetPath_ShouldReturnValidPath_ForApplicationLocation()
     {
         // Act
         var path = _fileRepository.GetPath(RepositoryLocation.Application);

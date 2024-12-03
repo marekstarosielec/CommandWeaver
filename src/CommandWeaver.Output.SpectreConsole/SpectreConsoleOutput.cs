@@ -19,7 +19,7 @@ public class SpectreConsoleOutput : IOutputWriter
         {
             AnsiConsole.Write(new JsonText(json));
         }
-        catch (Exception e)
+        catch
         {
             AnsiConsole.Console.Write(json);
         }

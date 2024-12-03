@@ -48,8 +48,8 @@ public class ForEachTests
         // Arrange
         var listValue = new List<DynamicValue>
         {
-            new DynamicValue(new DynamicValueObject(new Dictionary<string, DynamicValue> { { "key", new DynamicValue("value1") } })),
-            new DynamicValue(new DynamicValueObject(new Dictionary<string, DynamicValue> { { "key", new DynamicValue("value2") } }))
+            new DynamicValue(new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key", new DynamicValue("value1") } })),
+            new DynamicValue(new DynamicValueObject(new Dictionary<string, DynamicValue?> { { "key", new DynamicValue("value2") } }))
         };
 
         var forEachOperation = CreateForEachOperation(listValue, "currentElement");
