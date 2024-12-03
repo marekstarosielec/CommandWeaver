@@ -1,6 +1,4 @@
-﻿namespace CommandLine;
-
-/// <summary>
+﻿/// <summary>
 /// Internal structure for gathering results of command line parsing.
 /// </summary>
 /// <param name="name">Name of the parsed element.</param>

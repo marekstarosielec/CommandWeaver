@@ -1,7 +1,5 @@
 using System.Collections.Immutable;
 
-namespace CommandLine.Tests;
-
 public class ParserTests
 {
     [Fact]

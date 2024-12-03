@@ -1,7 +1,3 @@
-using CommandLine;
-
-namespace Cli2;
-
 // Application entry class
 public class App(ICommandWeaver commandWeaver, Parser parser)
 {
@@ -10,8 +6,8 @@ public class App(ICommandWeaver commandWeaver, Parser parser)
         var cancellationTokenSource = new CancellationTokenSource();
         cancellationTokenSource.Token.ThrowIfCancellationRequested();
 
-        Console.CancelKeyPress += (_, args) => {
-            args.Cancel = true; // Prevent default termination
+        Console.CancelKeyPress += (_, cancelArgs) => {
+            cancelArgs.Cancel = true; // Prevent default termination
             cancellationTokenSource.Cancel();       // Trigger cancellation
         };
 

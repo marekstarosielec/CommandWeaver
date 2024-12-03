@@ -1,7 +1,5 @@
 ﻿using System.Text;
 
-namespace CommandLine;
-
 public class Parser
 {
     public void ParseFullCommandLine(string commandLine, out string command, out Dictionary<string, string> arguments)

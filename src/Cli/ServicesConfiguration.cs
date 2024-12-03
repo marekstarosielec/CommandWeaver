@@ -1,7 +1,4 @@
-﻿using CommandLine;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace Cli2;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 internal static class ServicesConfiguration
 {

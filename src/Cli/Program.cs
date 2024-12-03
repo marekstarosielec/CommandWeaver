@@ -1,5 +1,4 @@
-﻿using Cli2;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 // Setup Dependency Injection
 var serviceCollection = new ServiceCollection();
@@ -15,5 +14,6 @@ if (app != null)
     await app.Run(args);
     return;
 }
+
 Console.WriteLine("Fatal error: failed to initialize application");
 Environment.Exit(1);
