@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-public class Variables(IReader reader, IWriter writer, IVariableStorage variableStorage) : IVariableService
+public class VariableService(IReader reader, IWriter writer, IVariableStorage variableStorage) : IVariableService
 {
     public string CurrentSessionName
     {
