@@ -49,7 +49,7 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         var t = variableServices.ReadVariableValue(new DynamicValue("lastRestCall"), true);
     }
 
-    private string? GetContentType() => Parameters["headers"].Value.ListValue?.FirstOrDefault(h => string.Equals(h.ObjectValue?["key"]?.TextValue, "content-type", StringComparison.InvariantCultureIgnoreCase))?.ObjectValue?["value"].TextValue;
+    private string? GetContentType() => Parameters["headers"].Value.ListValue?.FirstOrDefault(h => string.Equals(h.ObjectValue?["key"]?.TextValue, "content-type", StringComparison.OrdinalIgnoreCase))?.ObjectValue?["value"].TextValue;
 
     private void AddHeaders(HttpClient httpClient)
     {
