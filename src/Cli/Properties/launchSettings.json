@@ -1,9 +1,5 @@
 {
   "profiles": {
-    "Cli2": {
-      "commandName": "Project",
-      "commandLineArgs": "ncea -key test2 -host https://abc.com"
-    },
     "Command information": {
       "commandName": "Project",
       "commandLineArgs": "cmd -n cmd"
@@ -26,7 +22,7 @@
     },
     "Help test": {
       "commandName": "Project",
-      "commandLineArgs": "help --command \"help test\""
+      "commandLineArgs": "help test"
     },
     "RestCall test": {
       "commandName": "Project",

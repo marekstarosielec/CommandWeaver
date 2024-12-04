@@ -18,10 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="BuiltIn\nag-core\environments\add.json" />
-    <EmbeddedResource Include="BuiltIn\nag-core\environments\nag-core-environments.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </EmbeddedResource>
     <EmbeddedResource Include="BuiltIn\system\commands.json" />
     <EmbeddedResource Include="BuiltIn\system\defaultStyles.json" />
     <EmbeddedResource Include="BuiltIn\system\paths.json" />

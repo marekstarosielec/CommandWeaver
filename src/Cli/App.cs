@@ -3,6 +3,14 @@ public class App(ICommandWeaver commandWeaver, Parser parser)
 {
     public async Task Run(string[] args)
     {
+        /*
+            Support for prompts.
+            Support for sessions.
+            Add a command for setting a new log level.
+            Add support for file handling (e.g., certificates for HTTPS).
+            Add encryption support for variables.
+            Add multiline argument support. 
+        */
         var cancellationTokenSource = new CancellationTokenSource();
         cancellationTokenSource.Token.ThrowIfCancellationRequested();
 

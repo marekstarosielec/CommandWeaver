@@ -70,4 +70,9 @@ public record CommandParameter
     /// strict validation for predefined sets of values.
     /// </remarks>
     public Type? AllowedEnumValues { get; init; }
+    
+    /// <summary>
+    /// Allows to set alternative value (or values) if current value is null.
+    /// </summary>
+    public DynamicValue IfNull { get; set; } = new ();
 }

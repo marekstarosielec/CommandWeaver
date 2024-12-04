@@ -44,12 +44,23 @@ public class CommandParameterResolver(
 
         // Try to get the argument value from the main key
         var argumentValue = GetArgumentValue(parameter, arguments);
-
+        argumentValue = GetIfNullValue(argumentValue, parameter.IfNull);
         Validate(parameter, argumentValue);
         outputService.Trace($"Argument for parameter '{parameter.Key}' resolved successfully.");
         
         return new DynamicValue(argumentValue);
     }
+
+    /// <summary>
+    /// Replaces argument with alternative value if user did not provide input.
+    /// </summary>
+    /// <param name="currentArgumentValue"></param>
+    /// <param name="ifNull"></param>
+    /// <returns></returns>
+    private string? GetIfNullValue(string? currentArgumentValue, DynamicValue ifNull) =>
+        currentArgumentValue == null && ifNull.IsNull() == false
+            ? variableService.ReadVariableValue(ifNull).GetTextValue()
+            : currentArgumentValue;
 
     /// <summary>
     /// Returns value passed as argument.

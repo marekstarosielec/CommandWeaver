@@ -4,7 +4,9 @@
       "name": "help test",
       "parameters":[{
         "key": "param1",
-        "description": "description1"
+        "description": "description1",
+        "ifNull": ["{{ current-session-name1 }}", 1.34],
+        "required": true
       },{
         "key": "param2",
         "description": "description2"
@@ -13,7 +15,7 @@
       "operations": [
         {
           "operation": "output",
-          "value": "test"
+          "value": "{{param1}}"
         }
       ]
     }

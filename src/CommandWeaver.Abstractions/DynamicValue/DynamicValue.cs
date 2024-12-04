@@ -138,6 +138,32 @@ public record DynamicValue
         : null;
 
     /// <summary>
+    /// Returns first encountered value as text. 
+    /// </summary>
+    /// <returns></returns>
+    public string? GetTextValue()
+    {
+        if (!string.IsNullOrWhiteSpace(TextValue))
+            return TextValue;
+        if (BoolValue.HasValue)
+            return BoolValue.Value ? "true" : "false";
+        if (NumericValue.HasValue)
+            return NumericValue.Value.ToString(CultureInfo.InvariantCulture);
+        if (PrecisionValue.HasValue)
+            return PrecisionValue.Value.ToString(CultureInfo.InvariantCulture);
+        if (DateTimeValue.HasValue)
+            return DateTimeValue.Value.ToString(CultureInfo.InvariantCulture);
+        if (ListValue != null)
+            foreach (var value in ListValue)
+            {
+                var listTextValue = value.GetTextValue();
+                if (!string.IsNullOrWhiteSpace(listTextValue))
+                    return listTextValue;
+            }
+        return null;
+    }
+    
+    /// <summary>
     /// Provides a debug string representation of the dynamic value for debugging purposes.
     /// </summary>
     internal string DebuggerDisplay
