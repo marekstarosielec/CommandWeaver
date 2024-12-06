@@ -71,20 +71,20 @@ public class OperationFactoryTests
         var factory = new OperationFactory(serviceProvider);
 
         // Act
-        var operationTypes = GetAllOperationTypes();
+        var operationTypes = GetAllOperationTypes().ToList();
+        if (!operationTypes.Any())
+            Assert.Fail("OperationTypes list is empty");
         var operations = factory.GetOperations();
 
         // Assert
-        foreach (var operationType in operationTypes)
-            Assert.Contains(operations.Values, op => op.GetType() == operationType);
+        foreach (var operationType in operationTypes.Where(operationType => !operations.Keys.Any(op => string.Equals(op, operationType.Name, StringComparison.OrdinalIgnoreCase))))
+            Assert.Fail($"{operationType} is not registered in {nameof(OperationFactory)}");
     }
 
-    private static IEnumerable<Type> GetAllOperationTypes()
-    {
-        return Assembly.GetExecutingAssembly()
-            .GetTypes()
+    private static IEnumerable<Type> GetAllOperationTypes() =>
+        AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(assembly => assembly.GetTypes())
             .Where(t => t.IsClass && !t.IsAbstract && typeof(Operation).IsAssignableFrom(t));
-    }
 
     private static IServiceProvider CreateMockServiceProvider()
     {
@@ -106,6 +106,8 @@ public class OperationFactoryTests
             .Returns(new ForEach(Substitute.For<ICommandService>(), variableService, outputService));
         serviceProvider.GetService(typeof(RestCall))
             .Returns(new RestCall(conditionsService, variableService, jsonSerializer));
+        serviceProvider.GetService(typeof(Block))
+            .Returns(new Block(Substitute.For<ICommandService>()));
 
         return serviceProvider;
     }

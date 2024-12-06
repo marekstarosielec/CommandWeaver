@@ -9,6 +9,7 @@ public static class ServiceRegistration
         services.AddTransient<Terminate>();
         services.AddTransient<ForEach>();
         services.AddTransient<RestCall>();
+        services.AddTransient<Block>();
         services.AddTransient<IOperationFactory, OperationFactory>();
     }
 }

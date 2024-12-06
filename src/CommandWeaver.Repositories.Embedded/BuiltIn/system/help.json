@@ -24,22 +24,27 @@
           },
           "operations": [
             {
-              "operation": "output",
-              "value": " {{ currentCommand.definition.category }} [[{{styles[focused].value}}]]{{ currentCommand.definition.name }}[[/]]",
-              "styling": "Markup"
-            },
-            {
-              "operation": "output",
-              "value": " - {{ currentCommand.definition.description }}",
-              "styling": "Markup",
-              "conditions": {
-                "isNotNull": "{{ currentCommand.definition.description }}"
-              }
-            },
-            {
-              "operation": "output",
-              "value": " ",
-              "styling": "MarkupLine"
+              "operation": "block",
+              "operations": [
+                {
+                  "operation": "output",
+                  "value": " {{ currentCommand.definition.category }} [[{{styles[focused].value}}]]{{ currentCommand.definition.name }}[[/]]",
+                  "styling": "Markup"
+                },
+                {
+                  "operation": "output",
+                  "value": " - {{ currentCommand.definition.description }}",
+                  "styling": "Markup",
+                  "conditions": {
+                    "isNotNull": "{{ currentCommand.definition.description }}"
+                  }
+                },
+                {
+                  "operation": "output",
+                  "value": " ",
+                  "styling": "MarkupLine"
+                }
+              ]
             }
           ]
         },

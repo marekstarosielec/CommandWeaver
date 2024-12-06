@@ -9,7 +9,8 @@ public class OperationFactory(IServiceProvider serviceProvider) : IOperationFact
         { "setVariable", serviceProvider.GetRequiredService<SetVariable> },
         { "terminate", serviceProvider.GetRequiredService<Terminate> },
         { "forEach", serviceProvider.GetRequiredService<ForEach> },
-        { "restCall", serviceProvider.GetRequiredService<RestCall> }
+        { "restCall", serviceProvider.GetRequiredService<RestCall> },
+        { "block", serviceProvider.GetRequiredService<Block> }
     };
 
     /// <inheritdoc />
