@@ -22,6 +22,7 @@ public class FlowService(IOutputService outputService) : IFlowService
     {
         if (exception == null)
             return;
+        outputService.WriteException(exception);
         Terminate(message, exitCode);
     }
 }

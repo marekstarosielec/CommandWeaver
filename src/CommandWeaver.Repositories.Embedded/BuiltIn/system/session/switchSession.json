@@ -1,0 +1,28 @@
+{
+  "commands": [
+    {
+      "name": "switch session",
+      "otherNames": ["ss", "switch-session"],
+      "parameters": [
+        {
+          "key": "name",
+          "otherNames": ["s"],
+          "required": true
+        }
+      ],
+      "operations": [
+        {
+          "operation": "setVariable",
+          "key": "current-session-name",
+          "value": "{{name}}",
+          "scope": "Application"
+        },
+        {
+          "operation": "output",
+          "value": "Current session is [[{{styles[focused].value}}]]{{current-session-name}}",
+          "styling": "MarkupLine"
+        }
+      ]
+    }
+  ]
+}

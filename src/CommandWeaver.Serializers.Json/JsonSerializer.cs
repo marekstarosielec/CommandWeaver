@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 /// <inheritdoc />
-public class JsonSerializer(IOperationConverter operationConverter, IDynamicValueConverter dynamicValueConverter) : IJsonSerializer
+public class JsonSerializer(IOperationConverter operationConverter, IDynamicValueConverter dynamicValueConverter, ICommandConverter commandConverter) : IJsonSerializer
 {
     /// <inheritdoc />
     public bool TryDeserialize<T>(string content, out T? result, out Exception? exception) where T : class
@@ -13,7 +13,7 @@ public class JsonSerializer(IOperationConverter operationConverter, IDynamicValu
                 new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true,
-                    Converters = { new ConverterWrapper<DynamicValue?>(dynamicValueConverter), new ConverterWrapper<Operation>(operationConverter) }
+                    Converters = { new ConverterWrapper<DynamicValue?>(dynamicValueConverter), new ConverterWrapper<Operation>(operationConverter), new ConverterWrapper<Command>(commandConverter) }
                 });
             exception = null;
             return true;
@@ -36,7 +36,7 @@ public class JsonSerializer(IOperationConverter operationConverter, IDynamicValu
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                    Converters = { new ConverterWrapper<DynamicValue?>(dynamicValueConverter) },
+                    Converters = { new ConverterWrapper<DynamicValue?>(dynamicValueConverter), new ConverterWrapper<Operation>(operationConverter), new ConverterWrapper<Command>(commandConverter) },
                     WriteIndented = true,
                 });
             exception = null;

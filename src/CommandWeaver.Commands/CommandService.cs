@@ -15,13 +15,8 @@ public class CommandService(
         var commandList = commands.ToList();
         _commands.AddRange(commandList);
 
-        // Add information about command into variables, so that they can be part of commands.
-        using var doc = JsonDocument.Parse(content);
-        var root = doc.RootElement.GetProperty("commands");
-        if (root.ValueKind != JsonValueKind.Array) return;
-
-        for (var x = 0; x < commandList.Count; x++)
-            commandMetadataService.StoreCommandMetadata(repositoryElementId, commandList[x], root[x].GetRawText());
+        foreach (var command in commandList)
+            commandMetadataService.StoreCommandMetadata(repositoryElementId, command);
     }
 
     /// <inheritdoc />

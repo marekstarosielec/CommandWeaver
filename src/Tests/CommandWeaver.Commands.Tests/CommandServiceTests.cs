@@ -29,12 +29,10 @@ public class CommandServiceTests
 
         commandMetadataService.Received(1).StoreCommandMetadata(
             repositoryElementId,
-            Arg.Is<Command>(c => c.Name == "cmd1"),
-            Arg.Any<string>());
+            Arg.Is<Command>(c => c.Name == "cmd1"));
         commandMetadataService.Received(1).StoreCommandMetadata(
             repositoryElementId,
-            Arg.Is<Command>(c => c.Name == "cmd2"),
-            Arg.Any<string>());
+            Arg.Is<Command>(c => c.Name == "cmd2"));
     }
 
     [Fact]
@@ -50,7 +48,7 @@ public class CommandServiceTests
         const string content = "{ \"commands\": [{ \"Name\": \"cmd1\", \"OtherNames\": [\"alias1\"] }] }";
         var commands = new List<Command>
         {
-            new Command { Name = "cmd1", OtherNames = new List<string> { "alias1" } }
+            new Command { Name = "cmd1", OtherNames = ["alias1"] }
         };
 
         commandService.Add(repositoryElementId, content, commands);
@@ -122,14 +120,4 @@ public class CommandServiceTests
     }
 }
 
-public record TestOperation(string Name) : Operation
-{
-    public override string Name { get; } = Name;
 
-    public override ImmutableDictionary<string, OperationParameter> Parameters { get; init; } = ImmutableDictionary<string, OperationParameter>.Empty;
-    public override async Task Run(CancellationToken cancellationToken)
-    {
-        // Simulate operation execution
-        await Task.CompletedTask;
-    }
-}

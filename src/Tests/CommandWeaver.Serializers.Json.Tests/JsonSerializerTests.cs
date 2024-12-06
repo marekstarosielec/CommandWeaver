@@ -3,15 +3,14 @@ using NSubstitute;
 
 public class JsonSerializerTests
 {
-    private readonly IOperationConverter _operationConverter;
-    private readonly IDynamicValueConverter _dynamicValueConverter;
     private readonly JsonSerializer _serializer;
 
     public JsonSerializerTests()
     {
-        _operationConverter = Substitute.For<IOperationConverter>();
-        _dynamicValueConverter = Substitute.For<IDynamicValueConverter>();
-        _serializer = new JsonSerializer(_operationConverter, _dynamicValueConverter);
+        var operationConverter = Substitute.For<IOperationConverter>();
+        var dynamicValueConverter = Substitute.For<IDynamicValueConverter>();
+        var commandConverter = Substitute.For<ICommandConverter>();
+        _serializer = new JsonSerializer(operationConverter, dynamicValueConverter, commandConverter);
     }
 
     [Fact]
@@ -23,7 +22,8 @@ public class JsonSerializerTests
         var testOperationConverter = new TestOperationConverter(testOperation);
 
         var dynamicValueConverter = Substitute.For<IDynamicValueConverter>();
-        var serializer = new JsonSerializer(testOperationConverter, dynamicValueConverter);
+        var commandConverter = Substitute.For<ICommandConverter>();
+        var serializer = new JsonSerializer(testOperationConverter, dynamicValueConverter, commandConverter);
 
         // Act
         var result = serializer.TryDeserialize<Operation>(json, out var operation, out var exception);
@@ -77,15 +77,8 @@ public class JsonSerializerTests
     }
 }
 
-internal class TestOperationConverter : IOperationConverter
+internal class TestOperationConverter(Operation operation) : IOperationConverter
 {
-    private readonly Operation _operation;
-
-    public TestOperationConverter(Operation operation)
-    {
-        _operation = operation;
-    }
-
     public Operation Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         using var document = JsonDocument.ParseValue(ref reader);
@@ -93,7 +86,7 @@ internal class TestOperationConverter : IOperationConverter
 
         // Ensure the operation name matches what we expect in the test
         if (operationName == "TestOperation")
-            return _operation;
+            return operation;
 
         throw new JsonException("Unexpected operation name");
     }

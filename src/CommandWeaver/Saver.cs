@@ -79,8 +79,16 @@ public class Saver(
     {
         var variables = repositoryWithUpdatedVariables.Content!.Variables?
             .Select(v => v != null ? v with { RepositoryElementId = null } : null).ToImmutableList();
-        if (originalRepository?.Content != null) return originalRepository.Content with { Variables = variables };
-        if (originalRepository == null) return repositoryWithUpdatedVariables.Content! with { Variables = variables };
+        
+        // For builtin repositories we do not rewrite commands.
+        if (originalRepository?.RepositoryLocation == RepositoryLocation.BuiltIn) 
+            return new RepositoryElementContent { Variables = variables };
+        // For application and session repositories we rewrite everything, just replace variables with new values.
+        if (originalRepository?.Content != null) 
+            return originalRepository.Content with { Variables = variables };
+        // For newly created repositories we just write varaibles.
+        if (originalRepository == null)       
+            return repositoryWithUpdatedVariables.Content! with { Variables = variables };
         return null;
     }
 

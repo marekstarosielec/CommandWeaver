@@ -44,8 +44,15 @@ public class OperationConverter(
     /// <param name="writer">The writer to which JSON data is written.</param>
     /// <param name="value">The <see cref="Operation"/> instance to write.</param>
     /// <param name="options">Options for JSON serialization.</param>
-    public void Write(Utf8JsonWriter writer, Operation value, JsonSerializerOptions options) =>
-        throw new InvalidOperationException($"Serializing {nameof(Operation)} is not supported");
+    public void Write(Utf8JsonWriter writer, Operation value, JsonSerializerOptions options)
+    {
+        writer.WriteString("operation", value.Name);
+        foreach (var parameter in value.Parameters)
+        {
+            writer.WritePropertyName(parameter.Key);
+            _dynamicValueConverter.Write(writer, parameter.Value.OriginalValue, options);
+        }
+    }
 
     private string GetOperationName(JsonElement element)
     {

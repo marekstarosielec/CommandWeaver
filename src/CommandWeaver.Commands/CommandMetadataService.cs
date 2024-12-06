@@ -11,40 +11,28 @@ public interface ICommandMetadataService
     /// <param name="serializedCommand">The serialized JSON representation of the command.</param>
     void StoreCommandMetadata(
         string repositoryElementId,
-        Command command,
-        string serializedCommand);
+        Command command);
 }
 
 /// <inheritdoc />
 public class CommandMetadataService(
     IVariableService variableService,
-    IJsonSerializer serializer,
-    IFlowService flowService,
     IOutputService outputService) : ICommandMetadataService
 {
     /// <inheritdoc />
     public void StoreCommandMetadata(
         string repositoryElementId,
-        Command command,
-        string serializedCommand)
+        Command command)
     {
         outputService.Trace($"Storing metadata for command: {command.Name}");
-
-        // Deserialize the serialized command as DynamicValue
-        if (!serializer.TryDeserialize(serializedCommand, out DynamicValue? dynamicCommandDefinition, out Exception? exception))
-        {
-            flowService.NonFatalException(exception);
-            outputService.Warning($"Failed to deserialize command metadata for {command.Name}");
-            return;
-        }
 
         // Prepare metadata for the command
         var commandInformation = new Dictionary<string, DynamicValue?>
         {
-            ["key"] = new DynamicValue(command.Name),
-            ["json"] = new DynamicValue(serializedCommand, true),
-            ["id"] = new DynamicValue(repositoryElementId),
-            ["definition"] = dynamicCommandDefinition! with { NoResolving = true }
+            ["key"] = new (command.Name),
+            ["source"] = new (command.Source, true),
+            ["id"] = new (repositoryElementId),
+            ["definition"] = command.Definition with { NoResolving = true},
         };
 
         // Store the metadata into variables

@@ -4,6 +4,10 @@
       "commandName": "Project",
       "commandLineArgs": "cmd -n cmd"
     },
+    "Switch session": {
+      "commandName": "Project",
+      "commandLineArgs": "ss -name session2 -log-level debug"
+    },
     "Paths": {
       "commandName": "Project",
       "commandLineArgs": "paths"

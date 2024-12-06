@@ -29,8 +29,13 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
         {
             outputService.Trace($"Saving repository element: {repositoryElementId}");
             var directoryPath = Path.GetDirectoryName(repositoryElementId);
+            if (string.IsNullOrWhiteSpace(directoryPath))
+            {
+                repositoryElementId = Path.Combine(GetPath(RepositoryLocation.Application), repositoryElementId);
+                directoryPath = GetPath(RepositoryLocation.Application);
+            }
 
-            if (directoryPath != null)
+            if (!string.IsNullOrWhiteSpace(directoryPath))
                 physicalFileProvider.CreateDirectoryIfItDoesNotExist(directoryPath);
 
             await physicalFileProvider.WriteFileAsync(repositoryElementId, content, cancellationToken);

@@ -45,4 +45,14 @@ public record Command
     /// These parameters provide additional context or configuration for the command and its operations.
     /// </remarks>
     public List<CommandParameter> Parameters { get; set; } = [];
+    
+    /// <summary>
+    /// Contains json definition of command. Filled by to CommandConverter.
+    /// </summary>
+    public string Source { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Contains command deserialize as DynamicValue, so it can be accessed in operations. Filled by to CommandConverter.
+    /// </summary>
+    public DynamicValue Definition { get; set; } = new ();
 }

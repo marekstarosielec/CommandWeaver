@@ -15,6 +15,11 @@
       "operations": [
         {
           "operation": "output",
+          "value": "Current session is [[{{styles[focused].value}}]]{{current-session-name}}",
+          "styling": "MarkupLine"
+        },
+        {
+          "operation": "output",
           "value": "{{param1}}"
         }
       ]
