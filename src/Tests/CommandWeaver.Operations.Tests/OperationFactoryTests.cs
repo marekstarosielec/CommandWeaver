@@ -45,25 +45,6 @@ public class OperationFactoryTests
     }
 
     [Fact]
-    public void GetOperations_ShouldReturnAllOperations()
-    {
-        // Arrange
-        var serviceProvider = CreateMockServiceProvider();
-        var factory = new OperationFactory(serviceProvider);
-
-        // Act
-        var operations = factory.GetOperations();
-
-        // Assert
-        Assert.Equal(5, operations.Count);
-        Assert.Contains("output", operations.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Contains("setVariable", operations.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Contains("terminate", operations.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Contains("forEach", operations.Keys, StringComparer.OrdinalIgnoreCase);
-        Assert.Contains("restCall", operations.Keys, StringComparer.OrdinalIgnoreCase);
-    }
-
-    [Fact]
     public void AllOperations_ShouldBePresentInFactory()
     {
         // Arrange
@@ -108,6 +89,8 @@ public class OperationFactoryTests
             .Returns(new RestCall(conditionsService, variableService, jsonSerializer));
         serviceProvider.GetService(typeof(Block))
             .Returns(new Block(Substitute.For<ICommandService>()));
+        serviceProvider.GetService(typeof(ListGroup))
+            .Returns(new ListGroup(variableService));
 
         return serviceProvider;
     }

@@ -10,7 +10,8 @@ public class OperationFactory(IServiceProvider serviceProvider) : IOperationFact
         { "terminate", serviceProvider.GetRequiredService<Terminate> },
         { "forEach", serviceProvider.GetRequiredService<ForEach> },
         { "restCall", serviceProvider.GetRequiredService<RestCall> },
-        { "block", serviceProvider.GetRequiredService<Block> }
+        { "block", serviceProvider.GetRequiredService<Block> },
+        { "listGroup", serviceProvider.GetRequiredService<ListGroup> }
     };
 
     /// <inheritdoc />

@@ -3,6 +3,7 @@
     {
       "name": "cmd",
       "description": "source json of single single command",
+      "category": "test category",
       "parameters": [
         {
           "key": "name",

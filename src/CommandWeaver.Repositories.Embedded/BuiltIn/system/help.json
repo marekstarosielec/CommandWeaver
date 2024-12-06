@@ -16,6 +16,18 @@
           "styling": "MarkupLine"
         },
         {
+          "comment": "Build list of categories", 
+          "operation": "listGroup",
+          "list": "{{ commands }}",
+          "property": "definition.category",
+          "sort": {
+            "property": "definition.category",
+            "ascending": true
+          },
+          "nullValueReplacement": "Other",
+          "saveTo": "commandCategories"
+        },
+        {
           "operation": "forEach",
           "list": "{{ commands }}",
           "element": "currentCommand",
