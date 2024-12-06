@@ -2,6 +2,7 @@
   "commands": [
     {
       "name": "variable",
+      "description": "shows variable value",
       "parameters": [
         {
           "key": "name",

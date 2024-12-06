@@ -33,7 +33,20 @@ public class ReaderTests
         Assert.NotNull(result);
         Assert.Equal("SimpleText", result.TextValue);
     }
+    
+    [Fact]
+    public void ReadVariableValue_ShouldReplaceNonExistingVariablesWithEmptyText_WhenItIsPartOfBiggerText()
+    {
+        // Arrange
+        _variableStorage.Command.Returns(new List<Variable>());
 
+        // Act
+        var result = _reader.ReadVariableValue(new DynamicValue("{{simpleKey}}abc"));
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("abc", result.TextValue);
+    }
     [Fact]
     public void ReadVariableValue_ShouldReturnDateTimeValue_WhenKeyRefersToDateTime()
     {

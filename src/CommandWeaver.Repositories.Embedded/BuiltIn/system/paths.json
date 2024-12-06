@@ -2,6 +2,7 @@
   "commands": [
     {
       "name": "paths",
+      "description": "paths of application and session files",
       "operations": [
         {
           "operation": "output",

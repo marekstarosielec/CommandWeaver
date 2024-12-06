@@ -23,6 +23,11 @@ public record Command
     public string Description { get; init; } = string.Empty;
 
     /// <summary>
+    /// Command category. Allows to build help list grouped into categories.
+    /// </summary>
+    public string? Category { get; init; } = string.Empty;
+    
+    /// <summary>
     /// Gets or sets a list of alternative names for the command.
     /// </summary>
     /// <remarks>

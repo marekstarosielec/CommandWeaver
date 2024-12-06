@@ -2,7 +2,7 @@
   "commands": [
     {
       "name": "cmd",
-      "description": "Display information about single command",
+      "description": "source json of single single command",
       "parameters": [
         {
           "key": "name",

@@ -26,7 +26,7 @@ public class CommandConverter : ICommandConverter
         if (commandAsDynamicValue == null)
             return null;
 
-        return command with { Source = rootElement.GetRawText() , Definition = commandAsDynamicValue };
+        return command with { Source = rootElement.GetRawText(), Definition = commandAsDynamicValue };
     }
 
     public void Write(Utf8JsonWriter writer, Command value, JsonSerializerOptions options)

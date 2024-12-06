@@ -2,6 +2,7 @@
   "commands": [
     {
       "name": "help",
+      "description": "this screen",
       "parameters": [
         {
           "key": "command",
@@ -24,7 +25,7 @@
           "operations": [
             {
               "operation": "output",
-              "value": "  [[{{styles[focused].value}}]]{{ currentCommand.definition.name }}[[/]]",
+              "value": " {{ currentCommand.definition.category }} [[{{styles[focused].value}}]]{{ currentCommand.definition.name }}[[/]]",
               "styling": "Markup"
             },
             {

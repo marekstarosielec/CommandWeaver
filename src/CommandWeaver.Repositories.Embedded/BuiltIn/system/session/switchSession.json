@@ -3,6 +3,8 @@
     {
       "name": "switch session",
       "otherNames": ["ss", "switch-session"],
+      "description": "change current session",
+      "category": "Session management",
       "parameters": [
         {
           "key": "name",

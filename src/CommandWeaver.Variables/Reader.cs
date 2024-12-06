@@ -95,14 +95,23 @@ public class Reader(IFlowService flowService, IOutputService outputService, IVar
 
         var resolvedVariable = ResolveSingleValue(path);
 
-        if (resolvedVariable == null)
+        var wholePathIsSingleVariable = ValuePath.WholePathIsSingleVariable(resolvedKey, path);
+        
+        if (wholePathIsSingleVariable && resolvedVariable == null)
             return new DynamicValue();
 
-        if (ValuePath.WholePathIsSingleVariable(resolvedKey, path))
+        //If variable name is just part of text and is empty, replace it by e,pty text.
+        if (!wholePathIsSingleVariable && resolvedVariable == null)
+        {
+            resolvedKey = ValuePath.ReplaceVariableWithValue(resolvedKey, path, string.Empty);
+            return ReadVariableValue(new DynamicValue(resolvedKey), false, depth, false);
+        }
+
+        if (wholePathIsSingleVariable)
             //If whole key is variable name, it can be replaced by any type.
             return ReadVariableValue(resolvedVariable, false, depth);
 
-        if (resolvedVariable.TextValue != null)
+        if (resolvedVariable!.TextValue != null)
         {
             //If variable name is just part of text, it can be replaced only by text.
 
