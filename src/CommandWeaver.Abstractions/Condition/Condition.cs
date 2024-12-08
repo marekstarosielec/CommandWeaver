@@ -18,4 +18,9 @@ public record Condition
     /// When this condition is set, the operation will execute only if the associated value is not <c>null</c>.
     /// </remarks>
     public DynamicValue? IsNotNull { get; init; }
+    
+    /// <summary>
+    /// Gets or sets the condition specifying that the operation should execute if both values are equal.
+    /// </summary>
+    public DoubleValue? AreEqual { get; init; }
 }

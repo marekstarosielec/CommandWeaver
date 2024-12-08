@@ -24,7 +24,7 @@
           "saveTo": "commandCategories"
         },
         {
-          "category": "Enumerate categories",
+          "comment": "Enumerate categories",
           "operation": "forEach",
           "list": "{{ commandCategories }}",
           "element": "commandCategory",
@@ -59,6 +59,12 @@
                 {
                   "comment": "Skip all commands that do not match category",
                   "operation": "block",
+                  "conditions": {
+                    "areEqual": {
+                      "value1": "{{commandCategory}}",
+                      "value2": "{{command.definition.category}}"
+                    }
+                  },
                   "operations": [
                     {
                       "operation": "output",

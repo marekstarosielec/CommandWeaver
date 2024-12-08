@@ -65,6 +65,52 @@ public class ConditionsServiceTests
         Assert.False(result);
         _outputService.Received(1).Trace(Arg.Is<string>(msg => msg.Contains("Condition 'IsNull' not met")));
     }
+    
+    [Fact]
+    public void ConditionsAreMet_ShouldReturnFalse_WhenAreEqualConditionFails()
+    {
+        // Arrange
+        var condition = new Condition
+        {
+            AreEqual = new DoubleValue{
+                Value1 = new DynamicValue("Value1"),
+                Value2 = new DynamicValue("Value2"),
+            }
+        };
+
+        _variableService.ReadVariableValue(condition.AreEqual!.Value1).Returns(new DynamicValue("Value1"));
+        _variableService.ReadVariableValue(condition.AreEqual!.Value2).Returns(new DynamicValue("Value2"));
+
+        // Act
+        var result = _conditionsService.ConditionsAreMet(condition);
+
+        // Assert
+        Assert.False(result);
+        _outputService.Received(1).Trace(Arg.Is<string>(msg => msg.Contains("Condition 'AreEqual' not met")));
+    }
+    
+    [Fact]
+    public void ConditionsAreMet_ShouldReturnTrue_WhenAreEqualConditionSucceeds()
+    {
+        // Arrange
+        var condition = new Condition
+        {
+            AreEqual = new DoubleValue{
+                Value1 = new DynamicValue("Value1"),
+                Value2 = new DynamicValue("Value1"),
+            }
+        };
+
+        _variableService.ReadVariableValue(condition.AreEqual!.Value1).Returns(new DynamicValue("Value1"));
+        _variableService.ReadVariableValue(condition.AreEqual!.Value2).Returns(new DynamicValue("Value1"));
+
+        // Act
+        var result = _conditionsService.ConditionsAreMet(condition);
+
+        // Assert
+        Assert.True(result);
+        _outputService.Received(0).Trace(Arg.Any<string>());
+    }
 
     [Fact]
     public void ConditionsAreMet_ShouldReturnFalse_WhenIsNotNullConditionFails()
