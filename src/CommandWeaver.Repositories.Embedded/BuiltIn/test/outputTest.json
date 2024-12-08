@@ -2,6 +2,7 @@
   "commands": [
     {
       "name": "output-test",
+      "category": "tests",
       "operations": [
         {
           "operation": "output",

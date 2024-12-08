@@ -1,7 +1,8 @@
 {
   "commands": [
     {
-      "name": "help",
+      "name": "help123",
+      "category": "tests",
       "description": "this screen",
       "parameters": [
         {

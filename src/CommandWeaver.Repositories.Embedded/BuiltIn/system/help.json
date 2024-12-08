@@ -2,6 +2,7 @@
   "commands": [
     {
       "name": "help",
+      "category": "help",
       "description": "this screen",
       "parameters": [
         {
@@ -67,9 +68,25 @@
                   },
                   "operations": [
                     {
+                      "comment": "Output command name",
                       "operation": "output",
                       "value": "  [[{{styles[focused].value}}]]{{command.definition.name}}",
-                      "styling": "MarkupLine"
+                      "styling": "Markup"
+                    },
+                    {
+                      "comment": "Output command description",
+                      "operation": "output",
+                      "value": " - {{ command.definition.description }}",
+                      "styling": "Markup",
+                      "conditions": {
+                        "isNotNull": "{{ command.definition.description }}"
+                      }
+                    },
+                    {
+                      "comment": "Move to next line",
+                      "operation": "output",
+                      "value": "\r\n",
+                      "styling": "Markup"
                     }
                   ]
                 }

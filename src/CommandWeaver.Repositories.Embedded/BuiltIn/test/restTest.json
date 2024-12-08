@@ -2,6 +2,7 @@
   "commands": [
     {
       "name": "restTest",
+      "category": "tests",
       "operations":[
         {
           "operation": "restCall",

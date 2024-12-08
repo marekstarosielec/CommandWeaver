@@ -2,6 +2,7 @@
   "commands": [
     {
       "name": "help test",
+      "category": "tests",
       "parameters":[{
         "key": "param1",
         "description": "description1",

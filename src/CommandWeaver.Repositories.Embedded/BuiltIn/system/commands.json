@@ -2,8 +2,8 @@
   "commands": [
     {
       "name": "cmd",
-      "description": "source json of single single command",
-      "category": "test category",
+      "category": "help",
+      "description": "outputs source json of single command",
       "parameters": [
         {
           "key": "name",
