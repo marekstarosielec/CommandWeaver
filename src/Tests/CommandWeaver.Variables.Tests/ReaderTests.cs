@@ -406,4 +406,39 @@ public class ReaderTests
         // Assert
         Assert.Equal(1.2, result.PrecisionValue);
     }
+    
+    [Fact]
+    public void ReadVariableValue_ShouldCombineListsAcrossStoragesWhenKeyIsNotPresent()
+    {
+        // Arrange
+        var builtInList = new DynamicValueList(new List<DynamicValue>
+        {
+            new DynamicValue("Item1"),
+            new DynamicValue("Item2")
+        });
+    
+        _variableStorage.BuiltIn.Returns(new List<Variable>
+        {
+            new Variable { Key = "list", Value = new DynamicValue(builtInList) }
+        }.ToImmutableList());
+      
+        var sessionList = new DynamicValueList(new List<DynamicValue>
+        {
+            new DynamicValue("Item3")
+        });
+    
+        _variableStorage.Session.Returns(new List<Variable>
+        {
+            new Variable { Key = "list", Value = new DynamicValue(sessionList) }
+        });
+    
+        // Act
+        var result = _reader.ReadVariableValue(new DynamicValue("{{list}}"));
+    
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.ListValue);
+        Assert.Equal(3, result.ListValue!.Count);
+    }
+
 }

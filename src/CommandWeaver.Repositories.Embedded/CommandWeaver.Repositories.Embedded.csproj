@@ -33,6 +33,8 @@
     <EmbeddedResource Include="BuiltIn\test\restTest.json" />
     <None Remove="BuiltIn\system\session\switchSession.json" />
     <EmbeddedResource Include="BuiltIn\system\session\switchSession.json" />
+    <None Remove="BuiltIn\test\temp.json" />
+    <EmbeddedResource Include="BuiltIn\test\temp.json" />
   </ItemGroup>
 
   <ItemGroup>

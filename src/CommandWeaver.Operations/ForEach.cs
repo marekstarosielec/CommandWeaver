@@ -17,7 +17,7 @@ public record ForEach(ICommandService commandService, IVariableService variableS
         foreach (var element in Parameters["list"].Value.ListValue!)
         {
             outputService.Debug("Processing element in list");
-            variableService.WriteVariableValue(VariableScope.Command, path, new DynamicValue(element.ObjectValue));
+            variableService.WriteVariableValue(VariableScope.Command, path, element);
             await commandService.ExecuteOperations(Operations, cancellationToken);
         }
     }

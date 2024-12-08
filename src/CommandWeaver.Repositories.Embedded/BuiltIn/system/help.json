@@ -11,6 +11,7 @@
       ],
       "operations": [
         {
+          "comment": "Author information",
           "operation": "output",
           "value": "Command-Weaver by [[{{styles[focused].value}}]]Marek Starosielec\r\n",
           "styling": "MarkupLine"
@@ -20,74 +21,59 @@
           "operation": "listGroup",
           "list": "{{ commands }}",
           "property": "definition.category",
-          "sort": {
-            "property": "definition.category",
-            "ascending": true
-          },
-          "nullValueReplacement": "Other",
           "saveTo": "commandCategories"
         },
         {
+          "category": "Enumerate categories",
           "operation": "forEach",
-          "list": "{{ commands }}",
-          "element": "currentCommand",
+          "list": "{{ commandCategories }}",
+          "element": "commandCategory",
           "conditions": {
             "isNull": "{{ command }}"
           },
           "operations": [
             {
-              "operation": "block",
+              "comment": "Output category name if it exists",
+              "operation": "output",
+              "value": "[[i]]{{commandCategory}}\r\n",
+              "styling": "MarkupLine",
+              "conditions": {
+                "isNotNull": "{{ commandCategory }}"
+              }
+            },
+            {
+              "comment": "Output default category name",
+              "operation": "output",
+              "value": "[[i]]Other\r\n",
+              "styling": "MarkupLine",
+              "conditions": {
+                "isNull": "{{ commandCategory }}"
+              }
+            },
+            {
+              "comment": "Output commands inside category",
+              "operation": "forEach",
+              "list": "{{ commands }}",
+              "element": "command",
               "operations": [
                 {
-                  "operation": "output",
-                  "value": " {{ currentCommand.definition.category }} [[{{styles[focused].value}}]]{{ currentCommand.definition.name }}[[/]]",
-                  "styling": "Markup"
-                },
-                {
-                  "operation": "output",
-                  "value": " - {{ currentCommand.definition.description }}",
-                  "styling": "Markup",
-                  "conditions": {
-                    "isNotNull": "{{ currentCommand.definition.description }}"
-                  }
-                },
-                {
-                  "operation": "output",
-                  "value": " ",
-                  "styling": "MarkupLine"
+                  "comment": "Skip all commands that do not match category",
+                  "operation": "block",
+                  "operations": [
+                    {
+                      "operation": "output",
+                      "value": "  [[{{styles[focused].value}}]]{{command.definition.name}}",
+                      "styling": "MarkupLine"
+                    }
+                  ]
                 }
               ]
-            }
-          ]
-        },
-        {
-          "operation": "output",
-          "value": "\r\nTo display additional help about specific command, use command [[{{styles[focused].value}}]]help --command [[{{styles[focused].value}},italic]]<command-name>",
-          "styling": "Markup",
-          "conditions": {
-            "isNull": "{{ command }}"
-          }
-        },
-        {
-          "operation": "output",
-          "value": "Usage: [[{{styles[focused].value}}]] {{ commands[{{command}}].definition.name }}",
-          "styling": "Markup",
-          "conditions": {
-            "isNotNull": "{{ command }}"
-          }
-        },
-        {
-          "operation": "forEach",
-          "list": "{{ commands[{{command}}].parameters }}",
-          "element": "commandParameter",
-          "conditions": {
-            "isNotNull": "{{ commands[{{command}}].parameters }}"
-          },
-          "operations": [
+            },
             {
+              "comment": "Output empty line before next category",
               "operation": "output",
-              "value": " --{{commandParameter.key}}",
-              "styling": "Markup"
+              "value": "\r\n",
+              "styling": "MarkupLine"
             }
           ]
         }

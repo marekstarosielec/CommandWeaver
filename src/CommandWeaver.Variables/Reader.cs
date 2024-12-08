@@ -181,8 +181,7 @@ public class Reader(IFlowService flowService, IOutputService outputService, IVar
             {
                 // Avoid adding duplicates by checking the "key" property
                 var key = item.ObjectValue?["key"].TextValue;
-                if (key != null && combinedList.All(existing =>
-                        existing.ObjectValue?["key"].TextValue != key))
+                if (key == null || combinedList.All(existing => existing.ObjectValue?["key"].TextValue != key))
                     combinedList.Add(item);
             }
         }
