@@ -17,5 +17,6 @@ public static class ServiceRegistration
         services.AddCommandWeaverFileRepository();
         services.AddCommandWeaverEmbeddedRepository();
         services.AddCommandWeaverCommands();
+        services.AddCommandWeaverResource();
     }
 }

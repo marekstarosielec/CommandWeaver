@@ -16,6 +16,7 @@
     <ProjectReference Include="..\CommandWeaver.Repositories.Abstraction\CommandWeaver.Repositories.Abstraction.csproj" />
     <ProjectReference Include="..\CommandWeaver.Repositories.Embedded\CommandWeaver.Repositories.Embedded.csproj" />
     <ProjectReference Include="..\CommandWeaver.Repositories.File\CommandWeaver.Repositories.File.csproj" />
+    <ProjectReference Include="..\CommandWeaver.Resource\CommandWeaver.Resource.csproj" />
     <ProjectReference Include="..\CommandWeaver.Serializers.Json\CommandWeaver.Serializers.Json.csproj" />
     <ProjectReference Include="..\CommandWeaver.Variables\CommandWeaver.Variables.csproj" />
   </ItemGroup>
