@@ -108,7 +108,7 @@ public class Loader(
     /// <param name="repositoryLocation">The location of the repository (e.g., built-in, application, session).</param>
     /// <param name="repositoryElementsSerialized">The serialized repository elements to process.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    private async Task LoadRepositoryElements(RepositoryLocation repositoryLocation, IAsyncEnumerable<RepositoryElementSerialized> repositoryElementsSerialized, CancellationToken cancellationToken)
+    private async Task LoadRepositoryElements(RepositoryLocation repositoryLocation, IAsyncEnumerable<RepositoryElementInformation> repositoryElementsSerialized, CancellationToken cancellationToken)
     {
         await foreach (var repositoryElementSerialized in repositoryElementsSerialized.WithCancellation(cancellationToken))
         {
@@ -120,14 +120,15 @@ public class Loader(
                 outputService.Trace($"Skipped element {variableService.CurrentlyLoadRepositoryElement} due to unsupported format: {repositoryElementSerialized.Format}");
                 continue;
             }
-
-            if (string.IsNullOrWhiteSpace(repositoryElementSerialized.Content))
+            
+            var content = repositoryElementSerialized.ContentAsString?.Value;
+            if (string.IsNullOrWhiteSpace(content))
             {
                 outputService.Warning($"Element '{variableService.CurrentlyLoadRepositoryElement}' is empty in repository '{repositoryLocation}'");
                 continue;
             }
 
-            if (!serializer.TryDeserialize(repositoryElementSerialized.Content, out RepositoryElementContent? repositoryContent, out var exception) || repositoryContent == null)
+            if (!serializer.TryDeserialize(content, out RepositoryElementContent? repositoryContent, out var exception) || repositoryContent == null)
             {
                 HandleDeserializationError(repositoryLocation, repositoryElementSerialized, exception);
                 continue;
@@ -162,12 +163,12 @@ public class Loader(
     /// </summary>
     /// <param name="repositoryElementSerialized">The serialized repository element containing commands.</param>
     /// <param name="commands">The list of commands to add.</param>
-    private void AddCommands(RepositoryElementSerialized repositoryElementSerialized, ImmutableList<Command?>? commands)
+    private void AddCommands(RepositoryElementInformation repositoryElementSerialized, ImmutableList<Command?>? commands)
     {
         if (commands == null)
             return;
 
-        commandService.Add(repositoryElementSerialized.Id, repositoryElementSerialized.Content!, commands.OfType<Command>().ToList());
+        commandService.Add(repositoryElementSerialized.Id, commands.OfType<Command>().ToList());
         outputService.Trace($"Added commands from repository element: {repositoryElementSerialized.FriendlyName}");
     }
 
@@ -177,7 +178,7 @@ public class Loader(
     /// <param name="repositoryLocation">The location of the repository.</param>
     /// <param name="element">The repository element that failed deserialization.</param>
     /// <param name="exception">The exception encountered during deserialization, if any.</param>
-    private void HandleDeserializationError(RepositoryLocation repositoryLocation, RepositoryElementSerialized element, Exception? exception)
+    private void HandleDeserializationError(RepositoryLocation repositoryLocation, RepositoryElementInformation element, Exception? exception)
     {
         repositoryElementStorage.Add(new RepositoryElement(repositoryLocation, element.Id, null));
         flowService.NonFatalException(exception);

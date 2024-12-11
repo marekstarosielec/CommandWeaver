@@ -1,10 +1,5 @@
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using NSubstitute;
-using Xunit;
+
 
 public class FileRepositoryTests
 {
@@ -26,7 +21,7 @@ public class FileRepositoryTests
     {
         // Arrange
         _fileProvider.When(x => x.CreateDirectoryIfItDoesNotExist(Arg.Any<string>()))
-            .Do(x => throw new IOException("Test exception"));
+            .Do(_ => throw new IOException("Test exception"));
 
         // Act
         var result = await _fileRepository
@@ -47,8 +42,8 @@ public class FileRepositoryTests
         var testFile = Path.Combine(testPath, "test-file.json");
         var testContent = "{ \"key\": \"value\" }";
 
-        _fileProvider.GetFiles(testPath).Returns(new[] { testFile });
-        _fileProvider.GetFileContent(testFile, Arg.Any<CancellationToken>()).Returns(testContent);
+        _fileProvider.GetFiles(testPath).Returns([testFile]);
+        _fileProvider.GetFileContent(testFile).Returns(testContent);
 
         // Act
         var result = await _fileRepository
@@ -59,7 +54,7 @@ public class FileRepositoryTests
         Assert.Single(result);
         Assert.Equal(testFile, result.First().Id);
         Assert.Equal("json", result.First().Format);
-        Assert.Equal(testContent, result.First().Content);
+        Assert.Equal(testContent, result.First().ContentAsString?.Value);
         _outputService.Received(1).Trace(Arg.Is<string>(msg => msg.Contains("Listing files")));
     }
 
@@ -92,7 +87,7 @@ public class FileRepositoryTests
         var testContent = "{ \"key\": \"value\" }";
 
         _fileProvider.When(x => x.CreateDirectoryIfItDoesNotExist(Arg.Any<string>()))
-            .Do(x => throw new IOException("Test exception"));
+            .Do(_ => throw new IOException("Test exception"));
 
         // Act
         await _fileRepository.SaveRepositoryElement(testFile, testContent, CancellationToken.None);
@@ -147,16 +142,16 @@ public class FileRepositoryTests
         var testContent = "{ \"key\": \"value\" }";
 
         _fileProvider.GetFileName(validFile).Returns(validFile);
-        _fileProvider.GetFileContent(validFile, Arg.Any<CancellationToken>()).Returns(testContent);
+        _fileProvider.GetFileContent(validFile).Returns(testContent);
 
         // Act
         var result = await _fileRepository.TryGetRepositoryElementInfoAsync(rootPath, validFile, CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(validFile, result!.Id);
+        Assert.Equal(validFile, result.Id);
         Assert.Equal("json", result.Format);
-        Assert.Equal(testContent, result.Content);
+        Assert.Equal(testContent, result.ContentAsString?.Value);
         _outputService.Received(1).Trace(Arg.Is<string>(msg => msg.Contains("File processed")));
     }
 }

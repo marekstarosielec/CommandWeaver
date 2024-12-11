@@ -13,7 +13,6 @@ public class CommandServiceTests
         var outputService = Substitute.For<IOutputService>();
         var commandService = new CommandService(conditionsService, commandMetadataService, operationParameterResolver, outputService);
         const string repositoryElementId = "repo-123";
-        const string content = "{ \"commands\": [{ \"Name\": \"cmd1\" }, { \"Name\": \"cmd2\" }] }";
         var commands = new List<Command>
         {
             new Command { Name = "cmd1" },
@@ -21,7 +20,7 @@ public class CommandServiceTests
         };
 
         // Act
-        commandService.Add(repositoryElementId, content, commands);
+        commandService.Add(repositoryElementId, commands);
 
         // Assert
         Assert.NotNull(commandService.Get("cmd1"));
@@ -45,13 +44,12 @@ public class CommandServiceTests
         var outputService = Substitute.For<IOutputService>();
         var commandService = new CommandService(conditionsService, commandMetadataService, operationParameterResolver, outputService);
         const string repositoryElementId = "repo-123";
-        const string content = "{ \"commands\": [{ \"Name\": \"cmd1\", \"OtherNames\": [\"alias1\"] }] }";
         var commands = new List<Command>
         {
             new Command { Name = "cmd1", OtherNames = ["alias1"] }
         };
 
-        commandService.Add(repositoryElementId, content, commands);
+        commandService.Add(repositoryElementId, commands);
 
         // Act
         var commandByName = commandService.Get("cmd1");

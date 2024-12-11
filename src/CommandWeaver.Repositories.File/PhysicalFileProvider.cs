@@ -38,11 +38,10 @@
     /// Asynchronously reads the content of a file as a string.
     /// </summary>
     /// <param name="filePath">The full path of the file to read.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous operation, containing the file content as a string.</returns>
     /// <exception cref="FileNotFoundException">Thrown if the file does not exist.</exception>
     /// <exception cref="UnauthorizedAccessException">Thrown if the file cannot be accessed.</exception>
-    Task<string> GetFileContent(string filePath, CancellationToken cancellationToken);
+    string GetFileContent(string filePath);
     
     /// <summary>
     /// Writes the specified content to a file asynchronously.
@@ -118,12 +117,12 @@ public class PhysicalFileProvider(IFlowService flowService, IOutputService outpu
     }
 
     /// <inheritdoc />
-    public async Task<string> GetFileContent(string filePath, CancellationToken cancellationToken)
+    public string GetFileContent(string filePath)
     {
         if (string.IsNullOrWhiteSpace(filePath))
             throw new ArgumentException("File path cannot be null or whitespace.", nameof(filePath));
 
-        return await File.ReadAllTextAsync(filePath, cancellationToken);
+        return File.ReadAllText(filePath);
     }
     
     /// <inheritdoc />

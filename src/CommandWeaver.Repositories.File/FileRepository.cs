@@ -5,7 +5,7 @@
 public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputService outputService, IFlowService flowService) : IRepository
 {
     /// <inheritdoc />
-    public IAsyncEnumerable<RepositoryElementSerialized> GetList(RepositoryLocation repositoryLocation, string? sessionName, CancellationToken cancellationToken)
+    public IAsyncEnumerable<RepositoryElementInformation> GetList(RepositoryLocation repositoryLocation, string? sessionName, CancellationToken cancellationToken)
     {
         try
         {
@@ -18,7 +18,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
         {
             flowService.NonFatalException(ex);
             outputService.Warning($"Failed to list files for location {repositoryLocation}");
-            return AsyncEnumerable.Empty<RepositoryElementSerialized>();
+            return AsyncEnumerable.Empty<RepositoryElementInformation>();
         }
     }
 
@@ -55,7 +55,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
     /// <param name="sessionName">The optional session name for session-based repositories.</param>
     /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
     /// <returns>An asynchronous stream of serialized repository elements.</returns>
-    private async IAsyncEnumerable<RepositoryElementSerialized> GetFilesAsync(RepositoryLocation location, string? sessionName, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<RepositoryElementInformation> GetFilesAsync(RepositoryLocation location, string? sessionName, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var rootPath = GetPath(location, sessionName);
         outputService.Debug($"Starting file enumeration in: {rootPath}");
@@ -70,7 +70,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
     /// <param name="rootPath">The root directory to start the enumeration.</param>
     /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
     /// <returns>An asynchronous stream of serialized repository elements.</returns>
-    private async IAsyncEnumerable<RepositoryElementSerialized> EnumerateFilesIterativelyAsync(string rootPath, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<RepositoryElementInformation> EnumerateFilesIterativelyAsync(string rootPath, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         foreach (var file in physicalFileProvider.GetFiles(rootPath))
         {
@@ -94,8 +94,8 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
     /// <param name="rootPath">The root directory path for the repository.</param>
     /// <param name="file">The file path of the repository element.</param>
     /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
-    /// <returns>A <see cref="RepositoryElementSerialized"/> object if successful; otherwise, <c>null</c>.</returns>
-    internal async Task<RepositoryElementSerialized?> TryGetRepositoryElementInfoAsync(string rootPath, string file, CancellationToken cancellationToken)
+    /// <returns>A <see cref="RepositoryElementInformation"/> object if successful; otherwise, <c>null</c>.</returns>
+    internal Task<RepositoryElementInformation?> TryGetRepositoryElementInfoAsync(string rootPath, string file, CancellationToken cancellationToken)
     {
         try
         {
@@ -103,7 +103,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
             if (fileName.StartsWith('.'))
             {
                 outputService.Debug($"Skipping hidden/system file: {fileName}");
-                return null;
+                return Task.FromResult<RepositoryElementInformation?>(null);
             }
 
             var format = Path.GetExtension(file).TrimStart('.');
@@ -111,15 +111,18 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
                 ? file[(rootPath.Length + 1)..]
                 : file;
 
-            var content = await physicalFileProvider.GetFileContent(file, cancellationToken);
             outputService.Trace($"File processed: {fileName}");
-            return new RepositoryElementSerialized { Id = file, Format = format, FriendlyName = friendlyName, Content = content };
+            return Task.FromResult<RepositoryElementInformation?>(new RepositoryElementInformation
+            {
+                Id = file, Format = format, FriendlyName = friendlyName,
+                ContentAsString = new Lazy<string?>(() => physicalFileProvider.GetFileContent(file))
+            });
         }
         catch (Exception ex)
         {
             flowService.NonFatalException(ex);
             outputService.Warning($"Failed to process file {file}: {ex.Message}");
-            return null;
+            return Task.FromResult<RepositoryElementInformation?>(null);
         }
     }
 

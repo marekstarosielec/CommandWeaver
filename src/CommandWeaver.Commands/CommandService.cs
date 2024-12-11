@@ -10,7 +10,7 @@ public class CommandService(
     private readonly List<Command> _commands = [];
 
     /// <inheritdoc />
-    public void Add(string repositoryElementId, string content, IEnumerable<Command> commands)
+    public void Add(string repositoryElementId, IEnumerable<Command> commands)
     {
         var commandList = commands.ToList();
         _commands.AddRange(commandList);

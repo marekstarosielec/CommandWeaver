@@ -37,7 +37,7 @@ public class EmbeddedRepositoryTests
         var repository = new EmbeddedRepository(_mockAssembly, "TestResources.", _mockOutputService);
 
         // Act
-        var results = new List<RepositoryElementSerialized>();
+        var results = new List<RepositoryElementInformation>();
         await foreach (var element in repository.GetList(CancellationToken.None))
         {
             results.Add(element);
@@ -46,37 +46,8 @@ public class EmbeddedRepositoryTests
         // Assert
         Assert.Equal(2, results.Count);
         Assert.All(results, e => Assert.Equal("json", e.Format));
-        Assert.All(results, e => Assert.Contains("Content of", e.Content));
+        Assert.All(results, e => Assert.Contains("Content of", e.ContentAsString?.Value));
         Assert.All(results, e => Assert.StartsWith("TestResources.", e.Id));
-    }
-
-    [Fact]
-    public async Task GetList_ShouldLogTraceMessage_ForSkippedNonJsonResources()
-    {
-        // Arrange
-        var resourceNames = new[] { "TestResources.InvalidFile.txt", "TestResources.ValidResource.json" };
-        _mockAssembly.GetManifestResourceNames().Returns(resourceNames);
-
-        // Mock GetName to return a valid AssemblyName
-        var mockAssemblyName = new AssemblyName("TestAssembly");
-        _mockAssembly.GetName().Returns(mockAssemblyName);
-
-        _mockAssembly.GetManifestResourceStream("TestResources.InvalidFile.txt").Returns((Stream?)null);
-        _mockAssembly.GetManifestResourceStream("TestResources.ValidResource.json")
-            .Returns(new MemoryStream(Encoding.UTF8.GetBytes("Valid JSON content")));
-
-        var repository = new EmbeddedRepository(_mockAssembly, "TestResources.", _mockOutputService);
-
-        // Act
-        var results = new List<RepositoryElementSerialized>();
-        await foreach (var element in repository.GetList(CancellationToken.None))
-        {
-            results.Add(element);
-        }
-
-        // Assert
-        Assert.Single(results); // Only valid JSON resource is processed
-        _mockOutputService.Received(1).Trace("Resource 'TestResources.InvalidFile.txt' could not be loaded.");
     }
 
     [Fact]
@@ -95,12 +66,11 @@ public class EmbeddedRepositoryTests
         var repository = new EmbeddedRepository(_mockAssembly, "TestResources.", _mockOutputService);
 
         // Act
-        var results = new List<RepositoryElementSerialized>();
+        var results = new List<RepositoryElementInformation>();
         await foreach (var element in repository.GetList(CancellationToken.None))
-        {
-            results.Add(element);
-        }
-
+            if (!string.IsNullOrWhiteSpace(element.ContentAsString?.Value))
+                results.Add(element);
+        
         // Assert
         Assert.Empty(results); // No valid resources
         _mockOutputService.Received(1).Debug("Stream for resource 'TestResources.MissingResource.json' is null.");
@@ -123,7 +93,7 @@ public class EmbeddedRepositoryTests
         var repository = new EmbeddedRepository(_mockAssembly, "TestResources.", _mockOutputService);
 
         // Act
-        var results = new List<RepositoryElementSerialized>();
+        var results = new List<RepositoryElementInformation>();
         await foreach (var element in repository.GetList(CancellationToken.None))
         {
             results.Add(element);

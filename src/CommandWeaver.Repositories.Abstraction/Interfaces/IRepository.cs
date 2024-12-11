@@ -10,9 +10,9 @@ public interface IRepository
     /// <param name="sessionName">The session name to use if the <paramref name="repositoryLocation"/> is set to session-based retrieval.</param>
     /// <param name="cancellationToken">A token to observe while waiting for the operation to complete, allowing the operation to be canceled.</param>
     /// <returns>
-    /// An asynchronous stream of <see cref="RepositoryElementSerialized"/> elements representing the items in the repository.
+    /// An asynchronous stream of <see cref="RepositoryElementInformation"/> elements representing the items in the repository.
     /// </returns>
-    IAsyncEnumerable<RepositoryElementSerialized> GetList(RepositoryLocation repositoryLocation, string? sessionName, CancellationToken cancellationToken);
+    IAsyncEnumerable<RepositoryElementInformation> GetList(RepositoryLocation repositoryLocation, string? sessionName, CancellationToken cancellationToken);
 
     /// <summary>
     /// Retrieves the physical path of the repository based on its location.

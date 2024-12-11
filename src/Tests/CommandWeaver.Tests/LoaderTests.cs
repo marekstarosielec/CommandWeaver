@@ -41,7 +41,7 @@ public class LoaderTests
     {
         // Arrange
         _embeddedRepository.GetList(Arg.Any<CancellationToken>())
-            .Returns(AsyncEnumerable.Empty<RepositoryElementSerialized>());
+            .Returns(AsyncEnumerable.Empty<RepositoryElementInformation>());
 
         // Act
         await _loader.Execute(CancellationToken.None);
@@ -56,7 +56,7 @@ public class LoaderTests
     {
         // Arrange
         _embeddedRepository.GetList(Arg.Any<CancellationToken>())
-            .Returns(AsyncEnumerable.Empty<RepositoryElementSerialized>());
+            .Returns(AsyncEnumerable.Empty<RepositoryElementInformation>());
 
         // Act
         await _loader.Execute(CancellationToken.None);
@@ -69,12 +69,12 @@ public class LoaderTests
     public async Task LoadRepositoryElements_ShouldLogWarningsForEmptyContent()
     {
         // Arrange
-        var repositoryElement = new RepositoryElementSerialized
+        var repositoryElement = new RepositoryElementInformation
         {
             Id = "Id",
             FriendlyName = "EmptyElement",
             Format = "json",
-            Content = string.Empty
+            ContentAsString = new Lazy<string?>(() => string.Empty)
         };
 
         _embeddedRepository.GetList(Arg.Any<CancellationToken>())
@@ -91,12 +91,12 @@ public class LoaderTests
     public async Task LoadRepositoryElements_ShouldLogDeserializationWarnings()
     {
         // Arrange
-        var repositoryElement = new RepositoryElementSerialized
+        var repositoryElement = new RepositoryElementInformation
         {
             Id = "Id",
             FriendlyName = "InvalidElement",
             Format = "json",
-            Content = "{ invalid json }"
+            ContentAsString = new Lazy<string?>(() => "{ invalid json }")
         };
 
         _embeddedRepository.GetList(Arg.Any<CancellationToken>())
@@ -120,12 +120,12 @@ public class LoaderTests
     public async Task LoadRepositoryElements_ShouldLogSkippedElementsForUnsupportedFormat()
     {
         // Arrange
-        var repositoryElement = new RepositoryElementSerialized
+        var repositoryElement = new RepositoryElementInformation
         {
             Id = "Id",
             FriendlyName = "UnsupportedElement",
             Format = "xml",
-            Content = "<unsupported></unsupported>"
+            ContentAsString = new Lazy<string?>(() => "<unsupported></unsupported>")
         };
 
         _embeddedRepository.GetList(Arg.Any<CancellationToken>())
@@ -148,12 +148,12 @@ public class LoaderTests
             Variables = ImmutableList.Create(new Variable { Key = "TestVariable" })!
         };
 
-        var repositoryElement = new RepositoryElementSerialized
+        var repositoryElement = new RepositoryElementInformation
         {
             Id = "Id",
             FriendlyName = "ValidElement",
             Format = "json",
-            Content = "{ valid json }"
+            ContentAsString = new Lazy<string?>(() => "{ valid json }")
         };
 
         _embeddedRepository.GetList(Arg.Any<CancellationToken>())

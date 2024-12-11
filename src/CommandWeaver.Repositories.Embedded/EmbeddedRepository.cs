@@ -29,7 +29,7 @@ public class EmbeddedRepository : IEmbeddedRepository
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<RepositoryElementSerialized> GetList([EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<RepositoryElementInformation> GetList([EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var baseName = _assembly.GetName().Name ?? string.Empty;
         var resourceNames = FilterResourceNames(_assembly.GetManifestResourceNames());
@@ -53,15 +53,24 @@ public class EmbeddedRepository : IEmbeddedRepository
         resourceNames.Where(name => name.StartsWith(_resourcePrefix, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
-    /// Creates a <see cref="RepositoryElementSerialized"/> from a resource name.
+    /// Creates a <see cref="RepositoryElementInformation"/> from a resource name.
     /// </summary>
     /// <param name="resourceName">The resource name.</param>
     /// <param name="baseName">The base name of the assembly.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A <see cref="RepositoryElementSerialized"/> or <c>null</c> if the resource cannot be processed.</returns>
-    private async Task<RepositoryElementSerialized?> CreateRepositoryElement(string resourceName, string baseName, CancellationToken cancellationToken)
+    /// <returns>A <see cref="RepositoryElementInformation"/> or <c>null</c> if the resource cannot be processed.</returns>
+    private Task<RepositoryElementInformation?> CreateRepositoryElement(string resourceName, string baseName, CancellationToken cancellationToken) =>
+        Task.FromResult<RepositoryElementInformation?>(new RepositoryElementInformation
+        {
+            Id = resourceName,
+            Format = "json",
+            FriendlyName = GetFriendlyName(resourceName, baseName),
+            ContentAsString = new Lazy<string?>(() => ReadContentAsString(resourceName))
+        });
+
+    private string? ReadContentAsString(string resourceName)
     {
-        await using var stream = _assembly.GetManifestResourceStream(resourceName);
+        using var stream = _assembly.GetManifestResourceStream(resourceName);
         if (stream == null)
         {
             _outputService.Debug($"Stream for resource '{resourceName}' is null.");
@@ -69,17 +78,8 @@ public class EmbeddedRepository : IEmbeddedRepository
         }
 
         using var reader = new StreamReader(stream);
-        var content = await reader.ReadToEndAsync();
-
-        return new RepositoryElementSerialized
-        {
-            Id = resourceName,
-            Format = "json",
-            FriendlyName = GetFriendlyName(resourceName, baseName),
-            Content = content
-        };
+        return reader.ReadToEnd();
     }
-
     /// <summary>
     /// Extracts a user-friendly name from the resource name.
     /// </summary>
