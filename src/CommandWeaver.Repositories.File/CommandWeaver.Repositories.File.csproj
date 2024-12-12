@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CommandWeaver.Repositories.Abstraction\CommandWeaver.Repositories.Abstraction.csproj" />
+    <ProjectReference Include="..\CommandWeaver.Abstractions\CommandWeaver.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

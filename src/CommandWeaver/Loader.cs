@@ -23,7 +23,8 @@ public class Loader(
     ICommandService commandService,
     IJsonSerializer serializer,
     IFlowService flowService,
-    IRepositoryElementStorage repositoryElementStorage) : ILoader
+    IRepositoryElementStorage repositoryElementStorage,
+    IResourceService resourceService) : ILoader
 {
     private const string BuiltInRepositoryName = "built-in";
     private const string StylesKey = "{{ styles }}";
@@ -106,22 +107,23 @@ public class Loader(
     /// Loads commands and variables from repository elements.
     /// </summary>
     /// <param name="repositoryLocation">The location of the repository (e.g., built-in, application, session).</param>
-    /// <param name="repositoryElementsSerialized">The serialized repository elements to process.</param>
+    /// <param name="repositoryElementsInformation">The serialized repository elements to process.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    private async Task LoadRepositoryElements(RepositoryLocation repositoryLocation, IAsyncEnumerable<RepositoryElementInformation> repositoryElementsSerialized, CancellationToken cancellationToken)
+    private async Task LoadRepositoryElements(RepositoryLocation repositoryLocation, IAsyncEnumerable<RepositoryElementInformation> repositoryElementsInformation, CancellationToken cancellationToken)
     {
-        await foreach (var repositoryElementSerialized in repositoryElementsSerialized.WithCancellation(cancellationToken))
+        await foreach (var repositoryElementInformation in repositoryElementsInformation.WithCancellation(cancellationToken))
         {
-            variableService.CurrentlyLoadRepositoryElement = repositoryElementSerialized.FriendlyName;
+            variableService.CurrentlyLoadRepositoryElement = repositoryElementInformation.FriendlyName;
             outputService.Debug($"Processing element {variableService.CurrentlyLoadRepository}\\{variableService.CurrentlyLoadRepositoryElement}");
 
-            if (!string.Equals(serializer.Extension, repositoryElementSerialized.Format, StringComparison.OrdinalIgnoreCase))
+            resourceService.Add(repositoryElementInformation);
+            if (!string.Equals(serializer.Extension, repositoryElementInformation.Format, StringComparison.OrdinalIgnoreCase))
             {
-                outputService.Trace($"Skipped element {variableService.CurrentlyLoadRepositoryElement} due to unsupported format: {repositoryElementSerialized.Format}");
+                outputService.Trace($"Skipped element {variableService.CurrentlyLoadRepositoryElement} due to unsupported format: {repositoryElementInformation.Format}");
                 continue;
             }
             
-            var content = repositoryElementSerialized.ContentAsString?.Value;
+            var content = repositoryElementInformation.ContentAsString?.Value;
             if (string.IsNullOrWhiteSpace(content))
             {
                 outputService.Warning($"Element '{variableService.CurrentlyLoadRepositoryElement}' is empty in repository '{repositoryLocation}'");
@@ -130,14 +132,14 @@ public class Loader(
 
             if (!serializer.TryDeserialize(content, out RepositoryElementContent? repositoryContent, out var exception) || repositoryContent == null)
             {
-                HandleDeserializationError(repositoryLocation, repositoryElementSerialized, exception);
+                HandleDeserializationError(repositoryLocation, repositoryElementInformation, exception);
                 continue;
             }
 
-            repositoryElementStorage.Add(new RepositoryElement(repositoryLocation, repositoryElementSerialized.Id, repositoryContent));
+            repositoryElementStorage.Add(new RepositoryElement(repositoryLocation, repositoryElementInformation.Id, repositoryContent));
 
-            AddVariables(repositoryLocation, repositoryElementSerialized.Id, repositoryContent.Variables);
-            AddCommands(repositoryElementSerialized, repositoryContent.Commands);
+            AddVariables(repositoryLocation, repositoryElementInformation.Id, repositoryContent.Variables);
+            AddCommands(repositoryElementInformation, repositoryContent.Commands);
         }
 
         variableService.CurrentlyLoadRepositoryElement = null;
@@ -161,15 +163,15 @@ public class Loader(
     /// <summary>
     /// Adds commands from the repository to the command service.
     /// </summary>
-    /// <param name="repositoryElementSerialized">The serialized repository element containing commands.</param>
+    /// <param name="repositoryElementInformation">The serialized repository element containing commands.</param>
     /// <param name="commands">The list of commands to add.</param>
-    private void AddCommands(RepositoryElementInformation repositoryElementSerialized, ImmutableList<Command?>? commands)
+    private void AddCommands(RepositoryElementInformation repositoryElementInformation, ImmutableList<Command?>? commands)
     {
         if (commands == null)
             return;
 
-        commandService.Add(repositoryElementSerialized.Id, commands.OfType<Command>().ToList());
-        outputService.Trace($"Added commands from repository element: {repositoryElementSerialized.FriendlyName}");
+        commandService.Add(repositoryElementInformation.Id, commands.OfType<Command>().ToList());
+        outputService.Trace($"Added commands from repository element: {repositoryElementInformation.FriendlyName}");
     }
 
     /// <summary>

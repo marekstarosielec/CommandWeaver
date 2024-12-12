@@ -2,7 +2,7 @@
   "commands": [
     {
       "name": "help",
-      "category": "help",
+      "category": "Help",
       "description": "this screen",
       "parameters": [
         {

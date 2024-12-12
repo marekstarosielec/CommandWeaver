@@ -62,7 +62,7 @@ public class FileRepositoryTests
     public async Task SaveRepositoryElement_ShouldCreateDirectoryAndSaveFile()
     {
         // Arrange
-        var repositoryElementId = "testDir/testFile.txt";
+        var repositoryElementId = "testDir\\testFile.txt";
         var content = "Sample content";
 
         var physicalFileProvider = Substitute.For<IPhysicalFileProvider>();
@@ -76,7 +76,7 @@ public class FileRepositoryTests
 
         // Assert
         await physicalFileProvider.Received(1)
-            .WriteFileAsync(repositoryElementId, content, Arg.Any<CancellationToken>());
+            .WriteFileAsync(Arg.Is<string>(s => s.EndsWith(repositoryElementId)), content, Arg.Any<CancellationToken>());
     }
 
     [Fact]

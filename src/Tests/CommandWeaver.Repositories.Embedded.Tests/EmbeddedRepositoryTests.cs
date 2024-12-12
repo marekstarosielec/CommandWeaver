@@ -47,7 +47,7 @@ public class EmbeddedRepositoryTests
         Assert.Equal(2, results.Count);
         Assert.All(results, e => Assert.Equal("json", e.Format));
         Assert.All(results, e => Assert.Contains("Content of", e.ContentAsString?.Value));
-        Assert.All(results, e => Assert.StartsWith("TestResources.", e.Id));
+        Assert.All(results, e => Assert.StartsWith("TestResources\\", e.Id));
     }
 
     [Fact]
@@ -101,7 +101,7 @@ public class EmbeddedRepositoryTests
 
         // Assert
         Assert.Single(results); // Only prefixed JSON resource is processed
-        Assert.Equal("TestResources.Resource2.json", results[0].Id);
+        Assert.Equal("TestResources\\Resource2.json", results[0].Id);
     }
     
     [Fact]

@@ -23,6 +23,7 @@ public class LoaderTests
         _serializer.Extension.Returns("json");
         var flowService = Substitute.For<IFlowService>();
         var repositoryElementStorage = Substitute.For<IRepositoryElementStorage>();
+        var resourceService = Substitute.For<IResourceService>();
 
         _loader = new Loader(
             _variableService,
@@ -33,7 +34,8 @@ public class LoaderTests
             commandService,
             _serializer,
             flowService,
-            repositoryElementStorage);
+            repositoryElementStorage,
+            resourceService);
     }
 
     [Fact]

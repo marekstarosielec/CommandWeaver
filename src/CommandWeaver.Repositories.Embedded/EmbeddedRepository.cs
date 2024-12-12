@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 /// <inheritdoc />
 public class EmbeddedRepository : IEmbeddedRepository
@@ -62,9 +63,9 @@ public class EmbeddedRepository : IEmbeddedRepository
     private Task<RepositoryElementInformation?> CreateRepositoryElement(string resourceName, string baseName, CancellationToken cancellationToken) =>
         Task.FromResult<RepositoryElementInformation?>(new RepositoryElementInformation
         {
-            Id = resourceName,
+            Id = GetId(resourceName, baseName),
             Format = "json",
-            FriendlyName = GetFriendlyName(resourceName, baseName),
+            FriendlyName = GetId(resourceName, baseName),
             ContentAsString = new Lazy<string?>(() => ReadContentAsString(resourceName))
         });
 
@@ -80,14 +81,18 @@ public class EmbeddedRepository : IEmbeddedRepository
         using var reader = new StreamReader(stream);
         return reader.ReadToEnd();
     }
+    
     /// <summary>
-    /// Extracts a user-friendly name from the resource name.
+    /// Extracts a user-friendly id from the resource name.
     /// </summary>
     /// <param name="resourceName">The resource name.</param>
     /// <param name="baseName">The base name of the assembly.</param>
     /// <returns>A user-friendly name for the resource.</returns>
-    private static string GetFriendlyName(string resourceName, string baseName) =>
-        resourceName.Length > baseName.Length
-            ? resourceName[(baseName.Length + 1)..]
-            : resourceName;
+    private static string GetId(string resourceName, string baseName)
+    {
+        var result = resourceName;
+        if (result.StartsWith(baseName, StringComparison.OrdinalIgnoreCase))
+            result = result.Remove(0, baseName.Length).Trim('.');
+        return Regex.Replace(result, @"\.(?=.*\.)", @"\");
+    }
 }

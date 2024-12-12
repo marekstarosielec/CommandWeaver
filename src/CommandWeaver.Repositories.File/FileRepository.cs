@@ -28,12 +28,9 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
         try
         {
             outputService.Trace($"Saving repository element: {repositoryElementId}");
-            var directoryPath = Path.GetDirectoryName(repositoryElementId);
-            if (string.IsNullOrWhiteSpace(directoryPath))
-            {
+            if (!Path.IsPathRooted(repositoryElementId))
                 repositoryElementId = Path.Combine(GetPath(RepositoryLocation.Application), repositoryElementId);
-                directoryPath = GetPath(RepositoryLocation.Application);
-            }
+            var directoryPath = Path.GetDirectoryName(repositoryElementId);
 
             if (!string.IsNullOrWhiteSpace(directoryPath))
                 physicalFileProvider.CreateDirectoryIfItDoesNotExist(directoryPath);

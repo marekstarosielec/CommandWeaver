@@ -2,7 +2,7 @@
   "commands": [
     {
       "name": "cmd",
-      "category": "help",
+      "category": "Help",
       "description": "outputs source json of single command",
       "parameters": [
         {

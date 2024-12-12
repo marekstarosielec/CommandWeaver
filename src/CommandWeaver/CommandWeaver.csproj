@@ -13,7 +13,6 @@
     <ProjectReference Include="..\CommandWeaver.Operations\CommandWeaver.Operations.csproj" />
     <ProjectReference Include="..\CommandWeaver.Output.SpectreConsole\CommandWeaver.Output.SpectreConsole.csproj" />
     <ProjectReference Include="..\CommandWeaver.Output\CommandWeaver.Output.csproj" />
-    <ProjectReference Include="..\CommandWeaver.Repositories.Abstraction\CommandWeaver.Repositories.Abstraction.csproj" />
     <ProjectReference Include="..\CommandWeaver.Repositories.Embedded\CommandWeaver.Repositories.Embedded.csproj" />
     <ProjectReference Include="..\CommandWeaver.Repositories.File\CommandWeaver.Repositories.File.csproj" />
     <ProjectReference Include="..\CommandWeaver.Resource\CommandWeaver.Resource.csproj" />

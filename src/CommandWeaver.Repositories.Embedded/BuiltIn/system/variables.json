@@ -2,7 +2,7 @@
   "commands": [
     {
       "name": "variable",
-      "category": "help",
+      "category": "Help",
       "description": "shows variable value",
       "parameters": [
         {

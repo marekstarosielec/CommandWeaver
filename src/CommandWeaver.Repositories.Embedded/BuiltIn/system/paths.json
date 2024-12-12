@@ -2,7 +2,7 @@
   "commands": [
     {
       "name": "paths",
-      "category": "help",
+      "category": "Help",
       "description": "paths of application and session files",
       "operations": [
         {

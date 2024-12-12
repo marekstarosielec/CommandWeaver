@@ -21,6 +21,7 @@
     <EmbeddedResource Include="BuiltIn\system\commands.json" />
     <EmbeddedResource Include="BuiltIn\system\defaultStyles.json" />
     <EmbeddedResource Include="BuiltIn\system\paths.json" />
+    <EmbeddedResource Include="BuiltIn\system\resources.json" />
     <EmbeddedResource Include="BuiltIn\system\variables.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
@@ -42,7 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CommandWeaver.Repositories.Abstraction\CommandWeaver.Repositories.Abstraction.csproj" />
+    <ProjectReference Include="..\CommandWeaver.Abstractions\CommandWeaver.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>
