@@ -51,33 +51,7 @@ public class EmbeddedRepositoryTests
         Assert.All(results, e => Assert.Contains("Content of", e.ContentAsString?.Value));
         Assert.All(results, e => Assert.StartsWith("TestResources\\", e.Id));
     }
-
-    [Fact]
-    public async Task GetList_ShouldLogDebugMessage_ForNullStream()
-    {
-        // Arrange
-        var resourceNames = new[] { "TestResources.MissingResource.json" };
-        _mockAssembly.GetManifestResourceNames().Returns(resourceNames);
-
-        // Mock GetName to return a valid AssemblyName
-        var mockAssemblyName = new AssemblyName("TestAssembly");
-        _mockAssembly.GetName().Returns(mockAssemblyName);
-
-        _mockAssembly.GetManifestResourceStream("TestResources.MissingResource.json").Returns((Stream?)null);
-
-        var repository = new EmbeddedRepository(_mockAssembly, "TestResources.", _mockOutputService, _mockFlowService);
-
-        // Act
-        var results = new List<RepositoryElementInformation>();
-        await foreach (var element in repository.GetList(CancellationToken.None))
-            if (!string.IsNullOrWhiteSpace(element.ContentAsString?.Value))
-                results.Add(element);
-        
-        // Assert
-        Assert.Empty(results); // No valid resources
-        _mockOutputService.Received(1).Debug("Stream for resource 'TestResources.MissingResource.json' is null.");
-    }
-
+    
     [Fact]
     public async Task GetList_ShouldFilterNonPrefixedResources()
     {

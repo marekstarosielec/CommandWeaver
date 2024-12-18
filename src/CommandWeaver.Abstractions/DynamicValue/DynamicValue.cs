@@ -72,12 +72,17 @@ public record DynamicValue
     /// <param name="listValue">The <see cref="DynamicValueList"/> instance to be assigned.</param>
     public DynamicValue(DynamicValueList listValue) => ListValue = listValue;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DynamicValue"/> class with a lazy loaded text value.
+    /// </summary>
+    /// <param name="lazyTextValue">The lazy loaded text value to be assigned.</param>
     public DynamicValue(Lazy<string?> lazyTextValue) => LazyTextValue = lazyTextValue;
-    public Lazy<string?> LazyTextValue { get; set; }
-
+    
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DynamicValue"/> class with a lazy loaded binary value.
+    /// </summary>
+    /// <param name="lazyBinaryValue">The lazy loaded binary value to be assigned.</param>
     public DynamicValue(Lazy<byte[]?> lazyBinaryValue) => LazyBinaryValue = lazyBinaryValue;
-    public Lazy<byte[]?> LazyBinaryValue { get; set; }
-
     
     /// <summary>
     /// Gets the text value of the dynamic value.
@@ -115,11 +120,21 @@ public record DynamicValue
     public DynamicValueList? ListValue { get; }
 
     /// <summary>
+    /// Gets the text value that is loaded on request. Used for file content.
+    /// </summary>
+    public Lazy<string?>? LazyTextValue { get; }
+    
+    /// <summary>
+    /// Gets the binary value that is loaded on request. Used for file content.
+    /// </summary>
+    public Lazy<byte[]?>? LazyBinaryValue { get; }
+
+    /// <summary>
     /// Indicates that the value may contain unresolved metatags (e.g., {{ name }}) but they should not be replaced 
     /// or resolved. This is useful for cases where the raw value needs to be preserved, such as when exporting or 
     /// displaying the original data.
     /// </summary>
-    public bool NoResolving { get; set; }
+    public bool NoResolving { get; init; }
     
     /// <summary>
     /// Determines whether the dynamic value is null, meaning all properties are unassigned.

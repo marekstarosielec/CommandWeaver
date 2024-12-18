@@ -1,22 +1,17 @@
-using System.Text;
-
+/// <inheritdoc />
 public class ResourceService(IVariableService variableService) : IResourceService
 {
-    private readonly Dictionary<string, RepositoryElementInformation> _resources = new ();
-    
+    /// <inheritdoc />
     public void Add(RepositoryElementInformation repositoryElementInformation)
     {
-        // using var memoryStream = new MemoryStream();
-        // repositoryElementInformation.Stream.CopyTo(memoryStream);
-        // var t = memoryStream.ToArray();
-        // var t2 = Encoding.UTF8.GetString(t);
-        _resources[repositoryElementInformation.Id] = repositoryElementInformation;
-        var currentResources = variableService.ReadVariableValue(new DynamicValue("{{ resources }}"));
-        var resourcesList = currentResources.ListValue?.ToList() ?? new List<DynamicValue>();
-        var resourceObject = new Dictionary<string, DynamicValue?>();
-        resourceObject["key"] = new DynamicValue(repositoryElementInformation.Id);
-        resourceObject["text"] = new DynamicValue(repositoryElementInformation.ContentAsString);
-        resourceObject["binary"] = new DynamicValue(repositoryElementInformation.ContentAsBinary);
+        var resourcesList =
+            variableService.ReadVariableValue(new DynamicValue("{{ resources }}"))?.ListValue?.ToList() ?? [];
+        var resourceObject = new Dictionary<string, DynamicValue?>
+        {
+            ["key"] = new (repositoryElementInformation.Id),
+            ["text"] = repositoryElementInformation.ContentAsString != null ? new DynamicValue(repositoryElementInformation.ContentAsString) : new DynamicValue(),
+            ["binary"] = repositoryElementInformation.ContentAsBinary != null ? new DynamicValue(repositoryElementInformation.ContentAsBinary) : new DynamicValue()
+        };
         resourcesList.Add(new DynamicValue(new DynamicValueObject(resourceObject)));
         variableService.WriteVariableValue(VariableScope.Command, "resources", new DynamicValue(resourcesList));
     }

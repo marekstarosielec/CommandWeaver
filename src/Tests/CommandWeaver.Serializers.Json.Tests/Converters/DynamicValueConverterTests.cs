@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using NSubstitute;
 
@@ -270,6 +271,8 @@ public class DynamicValueConverterTests
         if (propertyType == typeof(double?)) return 12345.6789;
         if (propertyType == typeof(DynamicValueObject)) return new DynamicValueObject(new Dictionary<string, DynamicValue?>());
         if (propertyType == typeof(DynamicValueList)) return new DynamicValueList(new List<DynamicValue>());
+        if (propertyType == typeof(Lazy<string>)) return new Lazy<string>(() => "TestString");
+        if (propertyType == typeof(Lazy<byte[]>)) return new Lazy<byte[]>(() => Encoding.UTF8.GetBytes("TestString"));
         return null; // Return null for unsupported types
     }
     
