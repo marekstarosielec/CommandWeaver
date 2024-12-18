@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
-public record RestCall(IConditionsService conditionsService, IVariableService variableServices, IJsonSerializer serializer) : Operation
+public record RestCall(IConditionsService conditionsService, IVariableService variableServices, IJsonSerializer serializer, IFlowService flowService) : Operation
 {
     public override string Name => nameof(RestCall);
 
@@ -19,11 +19,28 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
     
     public override async Task Run(CancellationToken cancellationToken)
     {
+        var certificateInformation = Parameters["certificate"].Value.GetAsObject<Certificate>();
         
-        var certificateContent = Parameters["certificate"]?.Value.ObjectValue?["binary"].LazyBinaryValue.Value;
-        var certificate = new X509Certificate2(certificateContent, Parameters["certificatePassword"].Value.TextValue);
         using var handler = new HttpClientHandler();
-        handler.ClientCertificates.Add(certificate);
+        if (!string.IsNullOrWhiteSpace(certificateInformation?.FromResource))
+        {
+            var resourceKey = $"{{{{resources[{certificateInformation.FromResource}].binary}}}}";
+            var certificateBinaryContent = variableServices.ReadVariableValue(new DynamicValue(resourceKey));
+            if (certificateBinaryContent.LazyBinaryValue?.Value != null)
+            {
+                try
+                {
+                    var certificate =
+                        new X509Certificate2(certificateBinaryContent.LazyBinaryValue.Value, Parameters["certificatePassword"].Value.TextValue);
+                    handler.ClientCertificates.Add(certificate);
+                }
+                catch (Exception e)
+                {
+                    flowService.FatalException(e, "Failed to load certificate from certificate resource");
+                    throw;
+                }
+            }
+        }
 
         using var httpClient = new HttpClient(handler);
         AddHeaders(httpClient);
@@ -89,5 +106,10 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         //             
         //         }
         // }
+    }
+
+    private record Certificate
+    {
+        public string? FromResource { get; set; }
     }
 }

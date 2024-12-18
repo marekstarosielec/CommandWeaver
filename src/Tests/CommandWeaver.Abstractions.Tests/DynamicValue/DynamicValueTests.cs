@@ -1,3 +1,5 @@
+using System.Reflection;
+
 public class DynamicValueTests
 {
     [Fact]
@@ -147,5 +149,37 @@ public class DynamicValueTests
 
         // Assert
         Assert.False(dynamicValue.IsNull());
+    }
+    
+    [Fact]
+    public void IsNull_ReturnsFalse_WhenAnyPropertyIsSet()
+    {
+        // Get all properties of the DynamicValue class
+        var properties = typeof(DynamicValue).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+        // Iterate through each property and initialize it to ensure IsNull returns false
+        foreach (var property in properties)
+        {
+            if (property.Name == "NoResolving")
+                continue;
+            
+            // Create a new instance of DynamicValue
+            var dynamicValue = property.Name switch
+            {
+                nameof(DynamicValue.TextValue) => new DynamicValue("Test Text"),
+                nameof(DynamicValue.DateTimeValue) => new DynamicValue(DateTimeOffset.Now),
+                nameof(DynamicValue.BoolValue) => new DynamicValue(true),
+                nameof(DynamicValue.NumericValue) => new DynamicValue(123L),
+                nameof(DynamicValue.PrecisionValue) => new DynamicValue(123.45),
+                nameof(DynamicValue.ObjectValue) => new DynamicValue(new Dictionary<string, DynamicValue?> { { "key", new DynamicValue("value") } }),
+                nameof(DynamicValue.ListValue) => new DynamicValue(new List<DynamicValue> { new DynamicValue("List Item") }),
+                nameof(DynamicValue.LazyTextValue) => new DynamicValue(new Lazy<string?>(() => "Lazy Text")),
+                nameof(DynamicValue.LazyBinaryValue) => new DynamicValue(new Lazy<byte[]?>(() => new byte[] { 1, 2, 3 })),
+                _ => throw new InvalidOperationException($"Unhandled property: {property.Name}")
+            };
+
+            // Ensure IsNull returns false
+            Assert.False(dynamicValue.IsNull(), $"IsNull returned true for property: {property.Name}. Ensure it is handled in IsNull.");
+        }
     }
 }

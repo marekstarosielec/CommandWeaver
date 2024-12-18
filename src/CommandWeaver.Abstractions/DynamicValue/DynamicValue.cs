@@ -135,7 +135,7 @@ public record DynamicValue
     /// displaying the original data.
     /// </summary>
     public bool NoResolving { get; init; }
-    
+
     /// <summary>
     /// Determines whether the dynamic value is null, meaning all properties are unassigned.
     /// </summary>
@@ -147,7 +147,9 @@ public record DynamicValue
         NumericValue is null &&
         PrecisionValue is null &&
         ObjectValue is null &&
-        ListValue is null;
+        ListValue is null &&
+        LazyTextValue is null &&
+        LazyBinaryValue is null;
 
     /// <summary>
     /// Attempts to retrieve an enum value from the stored text value if it matches the specified enum type.
@@ -159,6 +161,15 @@ public record DynamicValue
         ? result
         : null;
 
+    /// <summary>
+    /// Returns value casted to given type.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public T? GetAsObject<T>() 
+        where T : new()
+        => DynamicValueMapper.MapTo<T>(this);
+    
     /// <summary>
     /// Returns first encountered value as text. 
     /// </summary>
@@ -192,6 +203,8 @@ public record DynamicValue
     {
         get
         {
+            if (LazyTextValue != null) return "LazyTextValue is available";
+            if (LazyBinaryValue != null) return "LazyBinaryValue is available";
             if (TextValue != null) return $"Text: \"{TextValue}\"";
             if (DateTimeValue != null) return $"DateTime: {DateTimeValue}";
             if (BoolValue != null) return $"Bool: {BoolValue}";

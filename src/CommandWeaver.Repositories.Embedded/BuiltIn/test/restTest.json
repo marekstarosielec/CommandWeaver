@@ -7,7 +7,10 @@
         {
           "operation": "restCall",
           "method": "post",
-          "certificate": "{{ resources[BuiltIn\\TestCertificate.pfx] }}",
+          "certificate":
+          {
+            "fromResource": "BuiltIn\\TestCertificate.pfx" 
+          },
           "certificatePassword": "test",
           "url": "https://jsonplaceholder.typicode.com/posts",
           "timeout": 2,
