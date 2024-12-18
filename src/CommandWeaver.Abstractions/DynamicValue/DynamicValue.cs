@@ -72,6 +72,13 @@ public record DynamicValue
     /// <param name="listValue">The <see cref="DynamicValueList"/> instance to be assigned.</param>
     public DynamicValue(DynamicValueList listValue) => ListValue = listValue;
 
+    public DynamicValue(Lazy<string?> lazyTextValue) => LazyTextValue = lazyTextValue;
+    public Lazy<string?> LazyTextValue { get; set; }
+
+    public DynamicValue(Lazy<byte[]?> lazyBinaryValue) => LazyBinaryValue = lazyBinaryValue;
+    public Lazy<byte[]?> LazyBinaryValue { get; set; }
+
+    
     /// <summary>
     /// Gets the text value of the dynamic value.
     /// </summary>

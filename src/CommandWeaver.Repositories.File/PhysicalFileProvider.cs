@@ -21,27 +21,22 @@
     string GetFileName(string filePath);
 
     /// <summary>
-    /// Gets the directory path from a full file path.
-    /// </summary>
-    /// <param name="filePath">The full path of the file.</param>
-    /// <returns>The directory path.</returns>
-    string GetDirectoryName(string filePath);
-
-    /// <summary>
-    /// Retrieves the file extension from a file name or path, without the leading dot.
-    /// </summary>
-    /// <param name="filePath">The full path or name of the file.</param>
-    /// <returns>The file extension without the leading dot.</returns>
-    string GetExtension(string filePath);
-
-    /// <summary>
     /// Asynchronously reads the content of a file as a string.
     /// </summary>
     /// <param name="filePath">The full path of the file to read.</param>
     /// <returns>A task representing the asynchronous operation, containing the file content as a string.</returns>
     /// <exception cref="FileNotFoundException">Thrown if the file does not exist.</exception>
     /// <exception cref="UnauthorizedAccessException">Thrown if the file cannot be accessed.</exception>
-    string GetFileContent(string filePath);
+    string GetFileContentAsString(string filePath);
+
+    /// <summary>
+    /// Asynchronously reads the content of a file as a binary.
+    /// </summary>
+    /// <param name="filePath">The full path of the file to read.</param>
+    /// <returns>A task representing the asynchronous operation, containing the file content as a string.</returns>
+    /// <exception cref="FileNotFoundException">Thrown if the file does not exist.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown if the file cannot be accessed.</exception>
+    byte[] GetFileContentAsBinary(string filePath);
     
     /// <summary>
     /// Writes the specified content to a file asynchronously.
@@ -99,25 +94,7 @@ public class PhysicalFileProvider(IFlowService flowService, IOutputService outpu
     }
 
     /// <inheritdoc />
-    public string GetDirectoryName(string filePath)
-    {
-        if (string.IsNullOrWhiteSpace(filePath))
-            throw new ArgumentException("File path cannot be null or whitespace.", nameof(filePath));
-
-        return Path.GetDirectoryName(filePath) ?? string.Empty;
-    }
-
-    /// <inheritdoc />
-    public string GetExtension(string filePath)
-    {
-        if (string.IsNullOrWhiteSpace(filePath))
-            throw new ArgumentException("File path cannot be null or whitespace.", nameof(filePath));
-
-        return Path.GetExtension(filePath).TrimStart('.');
-    }
-
-    /// <inheritdoc />
-    public string GetFileContent(string filePath)
+    public string GetFileContentAsString(string filePath)
     {
         if (string.IsNullOrWhiteSpace(filePath))
             throw new ArgumentException("File path cannot be null or whitespace.", nameof(filePath));
@@ -125,6 +102,15 @@ public class PhysicalFileProvider(IFlowService flowService, IOutputService outpu
         return File.ReadAllText(filePath);
     }
     
+    /// <inheritdoc />
+    public byte[] GetFileContentAsBinary(string filePath)
+    {
+        if (string.IsNullOrWhiteSpace(filePath))
+            throw new ArgumentException("File path cannot be null or whitespace.", nameof(filePath));
+        
+        return File.ReadAllBytes(filePath);
+    }
+
     /// <inheritdoc />
     public async Task WriteFileAsync(string filePath, string content, CancellationToken cancellationToken)
     {

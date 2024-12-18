@@ -112,7 +112,8 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
             return Task.FromResult<RepositoryElementInformation?>(new RepositoryElementInformation
             {
                 Id = file, Format = format, FriendlyName = friendlyName,
-                ContentAsString = new Lazy<string?>(() => physicalFileProvider.GetFileContent(file))
+                ContentAsString = new Lazy<string?>(() => physicalFileProvider.GetFileContentAsString(file)),
+                ContentAsBinary = new Lazy<byte[]?>(() => physicalFileProvider.GetFileContentAsBinary(file))
             });
         }
         catch (Exception ex)

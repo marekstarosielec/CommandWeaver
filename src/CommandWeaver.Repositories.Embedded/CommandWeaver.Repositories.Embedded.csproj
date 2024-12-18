@@ -36,6 +36,8 @@
     <EmbeddedResource Include="BuiltIn\system\session\switchSession.json" />
     <None Remove="BuiltIn\test\temp.json" />
     <EmbeddedResource Include="BuiltIn\test\temp.json" />
+    <None Remove="BuiltIn\TestCertificate.pfx" />
+    <EmbeddedResource Include="BuiltIn\TestCertificate.pfx" />
   </ItemGroup>
 
   <ItemGroup>

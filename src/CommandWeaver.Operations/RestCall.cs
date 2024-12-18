@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 public record RestCall(IConditionsService conditionsService, IVariableService variableServices, IJsonSerializer serializer) : Operation
@@ -18,7 +19,13 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
     
     public override async Task Run(CancellationToken cancellationToken)
     {
-        var httpClient = new HttpClient();
+        
+        var certificateContent = Parameters["certificate"]?.Value.ObjectValue?["binary"].LazyBinaryValue.Value;
+        var certificate = new X509Certificate2(certificateContent, Parameters["certificatePassword"].Value.TextValue);
+        using var handler = new HttpClientHandler();
+        handler.ClientCertificates.Add(certificate);
+
+        using var httpClient = new HttpClient(handler);
         AddHeaders(httpClient);
         using var request = new HttpRequestMessage();
         request.Method = HttpMethod.Parse(Parameters["method"].Value.TextValue!);

@@ -43,7 +43,7 @@ public class FileRepositoryTests
         var testContent = "{ \"key\": \"value\" }";
 
         _fileProvider.GetFiles(testPath).Returns([testFile]);
-        _fileProvider.GetFileContent(testFile).Returns(testContent);
+        _fileProvider.GetFileContentAsString(testFile).Returns(testContent);
 
         // Act
         var result = await _fileRepository
@@ -142,7 +142,7 @@ public class FileRepositoryTests
         var testContent = "{ \"key\": \"value\" }";
 
         _fileProvider.GetFileName(validFile).Returns(validFile);
-        _fileProvider.GetFileContent(validFile).Returns(testContent);
+        _fileProvider.GetFileContentAsString(validFile).Returns(testContent);
 
         // Act
         var result = await _fileRepository.TryGetRepositoryElementInfoAsync(rootPath, validFile, CancellationToken.None);

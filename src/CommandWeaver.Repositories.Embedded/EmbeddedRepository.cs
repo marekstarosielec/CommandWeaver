@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
 
 /// <inheritdoc />
@@ -8,13 +9,15 @@ public class EmbeddedRepository : IEmbeddedRepository
     private readonly Assembly _assembly;
     private readonly string _resourcePrefix;
     private readonly IOutputService _outputService;
+    private readonly IFlowService _flowService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EmbeddedRepository"/> class using the executing assembly.
     /// </summary>
     /// <param name="outputService">The service used for logging output.</param>
-    public EmbeddedRepository(IOutputService outputService)
-        : this(Assembly.GetExecutingAssembly(), string.Empty, outputService) { }
+    /// <param name="flowService">The service that allows influencing the execution flow</param>
+    public EmbeddedRepository(IOutputService outputService, IFlowService flowService)
+        : this(Assembly.GetExecutingAssembly(), string.Empty, outputService, flowService) { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EmbeddedRepository"/> class with a specified assembly and resource prefix.
@@ -22,11 +25,13 @@ public class EmbeddedRepository : IEmbeddedRepository
     /// <param name="assembly">The assembly containing the embedded resources.</param>
     /// <param name="resourcePrefix">The prefix to filter relevant embedded resources.</param>
     /// <param name="outputService">The service used for logging output.</param>
-    internal EmbeddedRepository(Assembly assembly, string resourcePrefix, IOutputService outputService)
+    /// <param name="flowService">The service that allows influencing the execution flow</param>
+    internal EmbeddedRepository(Assembly assembly, string resourcePrefix, IOutputService outputService, IFlowService flowService)
     {
         _assembly = assembly;
         _resourcePrefix = resourcePrefix;
         _outputService = outputService;
+        _flowService = flowService;
     }
 
     /// <inheritdoc />
@@ -64,24 +69,34 @@ public class EmbeddedRepository : IEmbeddedRepository
         Task.FromResult<RepositoryElementInformation?>(new RepositoryElementInformation
         {
             Id = GetId(resourceName, baseName),
-            Format = "json",
+            Format = GetExtension(resourceName, baseName),
             FriendlyName = GetId(resourceName, baseName),
-            ContentAsString = new Lazy<string?>(() => ReadContentAsString(resourceName))
+            ContentAsString = new Lazy<string?>(() => ReadContentAsString(resourceName)),
+            ContentAsBinary = new Lazy<byte[]?>(() => ReadContentAsBinary(resourceName)),
         });
 
-    private string? ReadContentAsString(string resourceName)
+    private byte[] ReadContentAsBinary(string resourceName)
     {
-        using var stream = _assembly.GetManifestResourceStream(resourceName);
-        if (stream == null)
+        try
         {
-            _outputService.Debug($"Stream for resource '{resourceName}' is null.");
-            return null;
+            using var stream = _assembly.GetManifestResourceStream(resourceName);
+            if (stream == null)
+                throw new InvalidOperationException($"Stream is null");
+        
+            using var memoryStream = new MemoryStream();
+            stream.CopyTo(memoryStream);
+            return memoryStream.ToArray();
         }
-
-        using var reader = new StreamReader(stream);
-        return reader.ReadToEnd();
+        catch (Exception e)
+        {
+            _flowService.FatalException(e, $"Failed to load {resourceName}");
+            throw;
+        }
     }
-    
+
+    private string ReadContentAsString(string resourceName) =>
+        Encoding.UTF8.GetString(ReadContentAsBinary(resourceName));
+
     /// <summary>
     /// Extracts a user-friendly id from the resource name.
     /// </summary>
@@ -95,4 +110,13 @@ public class EmbeddedRepository : IEmbeddedRepository
             result = result.Remove(0, baseName.Length).Trim('.');
         return Regex.Replace(result, @"\.(?=.*\.)", @"\");
     }
+
+    /// <summary>
+    /// Extracts extension.
+    /// </summary>
+    /// <param name="resourceName">The resource name.</param>
+    /// <param name="baseName">The base name of the assembly.</param>
+    /// <returns>A user-friendly name for the resource.</returns>
+    private static string GetExtension(string resourceName, string baseName) =>
+        Path.GetExtension(GetId(resourceName, baseName)).TrimStart('.');
 }

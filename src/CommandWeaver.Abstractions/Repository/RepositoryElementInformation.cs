@@ -22,4 +22,9 @@ public record RepositoryElementInformation
     /// Repository content in serialized form.
     /// </summary>
     public Lazy<string?>? ContentAsString { get; init; }
+    
+    /// <summary>
+    /// Repository content in binary form.
+    /// </summary>
+    public Lazy<byte[]?>? ContentAsBinary { get; init; }
 }
