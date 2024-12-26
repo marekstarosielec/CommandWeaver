@@ -14,8 +14,8 @@ public class DynamicValueMapperTests
         var person = DynamicValueMapper.MapTo<Person>(dynamicValue);
 
         // Assert
-        Assert.Equal("John Doe", person.Name);
-        Assert.Equal(30, person.Age);
+        Assert.Equal("John Doe", person?.Name);
+        Assert.Equal(30, person?.Age);
     }
 
     [Fact]
@@ -38,11 +38,11 @@ public class DynamicValueMapperTests
         var person = DynamicValueMapper.MapTo<Person>(dynamicValue);
 
         // Assert
-        Assert.Equal("John Doe", person.Name);
-        Assert.Equal(30, person.Age);
-        Assert.NotNull(person.HomeAddress);
-        Assert.Equal("123 Main St", person.HomeAddress?.Street);
-        Assert.Equal("Metropolis", person.HomeAddress?.City);
+        Assert.Equal("John Doe", person?.Name);
+        Assert.Equal(30, person?.Age);
+        Assert.NotNull(person?.HomeAddress);
+        Assert.Equal("123 Main St", person?.HomeAddress?.Street);
+        Assert.Equal("Metropolis", person?.HomeAddress?.City);
     }
 
     [Fact]
@@ -58,9 +58,9 @@ public class DynamicValueMapperTests
         var person = DynamicValueMapper.MapTo<Person>(dynamicValue);
 
         // Assert
-        Assert.Equal("Jane Doe", person.Name);
-        Assert.Equal(0, person.Age); // Default value for int
-        Assert.Null(person.HomeAddress); // Not set
+        Assert.Equal("Jane Doe", person?.Name);
+        Assert.Equal(0, person?.Age); // Default value for int
+        Assert.Null(person?.HomeAddress); // Not set
     }
 
     [Fact]
@@ -86,9 +86,9 @@ public class DynamicValueMapperTests
         var person = DynamicValueMapper.MapTo<Person>(dynamicValue);
 
         // Assert
-        Assert.Equal(string.Empty, person.Name);
-        Assert.Equal(0, person.Age);
-        Assert.Null(person.HomeAddress);
+        Assert.Equal(string.Empty, person?.Name);
+        Assert.Equal(0, person?.Age);
+        Assert.Null(person?.HomeAddress);
     }
 
     [Fact]
@@ -109,12 +109,12 @@ public class DynamicValueMapperTests
         var person = DynamicValueMapper.MapTo<Person>(dynamicValue);
 
         // Assert
-        Assert.NotNull(person.HomeAddress);
-        Assert.Equal("123 Main St", person.HomeAddress?.Street);
-        Assert.Equal("Metropolis", person.HomeAddress?.City);
+        Assert.NotNull(person?.HomeAddress);
+        Assert.Equal("123 Main St", person?.HomeAddress?.Street);
+        Assert.Equal("Metropolis", person?.HomeAddress?.City);
     }
     
-    internal class Person
+    private class Person
     {
         public string Name { get; set; } = string.Empty;
         public int Age { get; set; }

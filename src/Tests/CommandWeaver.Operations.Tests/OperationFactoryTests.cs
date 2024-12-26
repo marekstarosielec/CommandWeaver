@@ -86,7 +86,7 @@ public class OperationFactoryTests
         serviceProvider.GetService(typeof(ForEach))
             .Returns(new ForEach(Substitute.For<ICommandService>(), variableService, outputService));
         serviceProvider.GetService(typeof(RestCall))
-            .Returns(new RestCall(conditionsService, variableService, jsonSerializer));
+            .Returns(new RestCall(conditionsService, variableService, jsonSerializer, flowService));
         serviceProvider.GetService(typeof(Block))
             .Returns(new Block(Substitute.For<ICommandService>()));
         serviceProvider.GetService(typeof(ListGroup))
