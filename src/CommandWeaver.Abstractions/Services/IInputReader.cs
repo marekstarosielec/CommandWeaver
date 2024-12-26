@@ -1,4 +1,4 @@
 public interface IInputReader
 {
-    string? Prompt();
+    string? Prompt(string message);
 }

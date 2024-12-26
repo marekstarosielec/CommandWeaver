@@ -76,6 +76,7 @@ public record CommandParameter
     /// </summary>
     public DynamicValue IfNull { get; set; } = new ();
     
+    public CommandPrompt Prompt { get; init; } = new ();
     
     /*
      * prompt:

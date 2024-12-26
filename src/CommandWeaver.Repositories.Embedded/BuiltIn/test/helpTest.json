@@ -7,7 +7,11 @@
         "key": "param1",
         "description": "description1",
         "ifNull": ["{{ current-session-name1 }}"],
-        "required": true
+        "required": true,
+        "prompt": {
+          "enabled": true,
+          "message": "Give some value for param1"
+        }
       },{
         "key": "param2",
         "description": "description2"

@@ -47,9 +47,13 @@ public class CommandParameterResolver(
         var argumentValue = GetArgumentValue(parameter, arguments);
         argumentValue = GetIfNullValue(argumentValue, parameter.IfNull);
 
-        if (argumentValue == null)
+        if (argumentValue == null && parameter.Prompt?.Enabled != false)
         {
-            var t = inputService.Prompt(new InputInformation());
+            var i = new InputInformation
+            {
+                CustomMessage = parameter.Prompt?.Message,
+            };
+            var t = inputService.Prompt(i);
         }
         
         Validate(parameter, argumentValue);

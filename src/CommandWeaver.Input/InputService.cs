@@ -2,6 +2,6 @@
 {
     public DynamicValue Prompt(InputInformation inputInformation)
     {
-        return new DynamicValue(inputReader.Prompt());
+        return new DynamicValue(inputReader.Prompt(inputInformation.CustomMessage));
     }
 }

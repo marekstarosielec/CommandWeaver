@@ -2,8 +2,10 @@
 
 public class SpectreConsoleInput : IInputReader
 {
-    public string? Prompt()
+    public string? Prompt(string message)
     {
-        return AnsiConsole.Prompt(new TextPrompt<string>("What's your name?"));
+        // Merge with Output project
+        // Support for markup in questions
+        return AnsiConsole.Prompt(new TextPrompt<string>(message));
     }
 }
