@@ -15,6 +15,7 @@ public interface ICommandParameterResolver
 public class CommandParameterResolver(
     IFlowService flowService,
     IOutputService outputService,
+    IInputService inputService,
     IVariableService variableService) : ICommandParameterResolver
 {
     /// <inheritdoc />
@@ -45,6 +46,12 @@ public class CommandParameterResolver(
         // Try to get the argument value from the main key
         var argumentValue = GetArgumentValue(parameter, arguments);
         argumentValue = GetIfNullValue(argumentValue, parameter.IfNull);
+
+        if (argumentValue == null)
+        {
+            var t = inputService.Prompt(new InputInformation());
+        }
+        
         Validate(parameter, argumentValue);
         outputService.Trace($"Argument for parameter '{parameter.Key}' resolved successfully.");
         

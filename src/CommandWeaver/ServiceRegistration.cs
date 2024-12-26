@@ -9,6 +9,7 @@ public static class ServiceRegistration
         services.AddSingleton<IRepositoryElementStorage, RepositoryElementStorage>(); //Needs to be singleton, because it stores data.
         services.AddTransient<ICommandWeaver, CommandWeaver>();
         services.AddTransient<IOutputWriter, SpectreConsoleOutput>();
+        services.AddTransient<IInputReader, SpectreConsoleInput>();
         services.AddCommandWeaverJsonSerializer();
         services.AddCommandWeaverFlow();
         services.AddCommandWeaverOutput();

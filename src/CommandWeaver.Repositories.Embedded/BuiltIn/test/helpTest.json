@@ -6,7 +6,7 @@
       "parameters":[{
         "key": "param1",
         "description": "description1",
-        "ifNull": ["{{ current-session-name1 }}", 1.34],
+        "ifNull": ["{{ current-session-name1 }}"],
         "required": true
       },{
         "key": "param2",

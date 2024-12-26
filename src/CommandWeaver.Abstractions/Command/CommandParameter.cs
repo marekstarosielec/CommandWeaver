@@ -75,4 +75,23 @@ public record CommandParameter
     /// Allows to set alternative value (or values) if current value is null.
     /// </summary>
     public DynamicValue IfNull { get; set; } = new ();
+    
+    
+    /*
+     * prompt:
+     * should it be called when not required and is empty - enabled yes/no, default yes
+     * custom description
+     * should I use required?
+     * AllowedValue or AllowedEnumValues - selection
+     * bool value - with predefined default?
+     * otherwise input string/int/precision/date
+     *
+     *
+     *
+     * prompt operation:
+     * custom description
+     * required
+     * allowed values or allowed enum value
+     * allowed type
+     */
 }

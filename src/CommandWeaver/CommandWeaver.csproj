@@ -10,6 +10,7 @@
     <ProjectReference Include="..\CommandWeaver.Abstractions\CommandWeaver.Abstractions.csproj" />
     <ProjectReference Include="..\CommandWeaver.Commands\CommandWeaver.Commands.csproj" />
     <ProjectReference Include="..\CommandWeaver.Flow\CommandWeaver.Flow.csproj" />
+    <ProjectReference Include="..\CommandWeaver.Input.SpectreConsole\CommandWeaver.Input.SpectreConsole.csproj" />
     <ProjectReference Include="..\CommandWeaver.Input\CommandWeaver.Input.csproj" />
     <ProjectReference Include="..\CommandWeaver.Operations\CommandWeaver.Operations.csproj" />
     <ProjectReference Include="..\CommandWeaver.Output.SpectreConsole\CommandWeaver.Output.SpectreConsole.csproj" />
