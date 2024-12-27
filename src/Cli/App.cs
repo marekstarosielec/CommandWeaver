@@ -7,9 +7,16 @@ public class App(ICommandWeaver commandWeaver, Parser parser)
             Support for prompts.
             Support for sessions.
             Add a command for setting a new log level.
-            Add support for file handling (e.g., certificates for HTTPS).
             Add encryption support for variables.
-            Add multiline argument support. 
+            Add multiline argument support.
+            
+            readme:
+            general description
+            commands
+            operations
+            styling tags
+            variables + syntax + encryption
+            rest command 
         */
         var cancellationTokenSource = new CancellationTokenSource();
         cancellationTokenSource.Token.ThrowIfCancellationRequested();

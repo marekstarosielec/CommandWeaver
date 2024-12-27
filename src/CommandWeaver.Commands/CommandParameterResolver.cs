@@ -51,7 +51,9 @@ public class CommandParameterResolver(
         {
             var i = new InputInformation
             {
-                CustomMessage = parameter.Prompt?.Message,
+                Message = parameter.Prompt?.Message ?? parameter.Key,
+                PromptStyle = parameter.Prompt?.PromptStyle,
+                Required = parameter.Required
             };
             var t = inputService.Prompt(i);
         }

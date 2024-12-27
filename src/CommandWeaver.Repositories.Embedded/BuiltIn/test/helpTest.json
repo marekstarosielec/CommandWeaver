@@ -10,7 +10,8 @@
         "required": true,
         "prompt": {
           "enabled": true,
-          "message": "Give some value for param1"
+          "message": "Give [[#FF0000]]some[[/]] value for [[#00FF00]]param1",
+          "promptStyle": "u"
         }
       },{
         "key": "param2",

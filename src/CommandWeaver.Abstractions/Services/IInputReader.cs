@@ -1,4 +1,4 @@
 public interface IInputReader
 {
-    string? Prompt(string message);
+    string? PromptText(string message, bool required, string? promptStyle);
 }

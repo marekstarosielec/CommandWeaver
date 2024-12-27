@@ -1,13 +1,8 @@
 using Spectre.Console.Rendering;
 
-public class CustomRenderable : IRenderable
+public class CustomRenderable(IEnumerable<Segment> segments) : IRenderable
 {
-    private readonly List<Segment> _segments;
-
-    public CustomRenderable(IEnumerable<Segment> segments)
-    {
-        _segments = segments.ToList();
-    }
+    private readonly List<Segment> _segments = segments.ToList();
 
     public Measurement Measure(RenderOptions options, int maxWidth)
     {

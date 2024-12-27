@@ -2,10 +2,14 @@
 
 public class SpectreConsoleInput : IInputReader
 {
-    public string? Prompt(string message)
+    public string? PromptText(string message, bool required, string? promptStyle)
     {
-        // Merge with Output project
-        // Support for markup in questions
-        return AnsiConsole.Prompt(new TextPrompt<string>(message));
+        var markup = MarkupConverter.ConvertToSpectreMarkup(message);
+        var prompt = new TextPrompt<string>(markup);
+        if (!required)
+            prompt = prompt.AllowEmpty();
+        if (promptStyle != null)
+            prompt = prompt.PromptStyle(MarkupConverter.ConvertToSpectreStyle(promptStyle));
+        return AnsiConsole.Prompt(prompt);
     }
 }

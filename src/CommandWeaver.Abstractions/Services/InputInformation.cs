@@ -1,8 +1,8 @@
 public record InputInformation
 {
-    public string? CustomMessage { get; init; }
+    public required string Message { get; init; }
 
     public bool Required { get; init; } = false;
     
-    
+    public string? PromptStyle { get; init; }
 }

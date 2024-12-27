@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -15,7 +16,30 @@ internal static class MarkupConverter
         { "u", Decoration.Underline },
         { "underline", Decoration.Underline },
     };
-    
+
+    //TODO: Add unit tests.
+    public static string ConvertToSpectreMarkup(string input)
+    {
+        var markup = new StringBuilder(input.Length);
+        foreach (var segment in ConvertToSegments(input))
+        {
+            var style = segment.Style.ToMarkup();
+            if (string.IsNullOrWhiteSpace(style))
+                style = "/";
+            markup.Append($"[{style}]{segment.Text}");
+        }
+
+        markup.Append("[/]");
+        var result = markup.ToString();
+        if (result.StartsWith("[/]"))
+            result = result.Substring(3);
+        return result;
+    }
+
+    //TODO: Add unit tests for sad paths (e.g. multiple style tags), not it throws InvalidOperationException.
+    //TODO: Add unit tests.
+    public static string ConvertToSpectreStyle(string input) => GetStyle(input).ToMarkup();
+
     public static IEnumerable<Segment> ConvertToSegments(string input)
     {
         Style? style = null;
@@ -31,11 +55,11 @@ internal static class MarkupConverter
             }
     }
 
-    internal static Style? GetStyle(string input)
+    internal static Style GetStyle(string input)
     {
         var style = input.TrimStart('[').TrimEnd(']');
         if (style == "/")
-            return null;
+            return new Style();
 
         Color? color = null;
         Decoration? decoration = null;
