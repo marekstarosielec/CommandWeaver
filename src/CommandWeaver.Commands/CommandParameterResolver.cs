@@ -53,7 +53,8 @@ public class CommandParameterResolver(
             {
                 Message = parameter.Prompt?.Message ?? parameter.Key,
                 PromptStyle = parameter.Prompt?.PromptStyle,
-                Required = parameter.Required
+                Required = parameter.Required,
+                IsSecret = parameter.Prompt?.IsSecret ?? false,
             };
             var t = inputService.Prompt(i);
         }

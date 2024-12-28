@@ -5,4 +5,6 @@ public record CommandPrompt
     public string? Message { get; init; }
     
     public string? PromptStyle { get; init; }
+    
+    public bool IsSecret { get; init; } = false;
 }

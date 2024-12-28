@@ -5,4 +5,6 @@ public record InputInformation
     public bool Required { get; init; } = false;
     
     public string? PromptStyle { get; init; }
+    
+    public bool IsSecret { get; init; } = false;
 }

@@ -35,6 +35,10 @@
     {
       "key": "log-level",
       "value": "information"
+    },
+    {
+      "key": "secret-char",
+      "value": "*"
     }
   ]
 }
