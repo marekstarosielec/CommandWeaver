@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 [SuppressMessage("ReSharper", "ClassWithVirtualMembersNeverInherited.Global")]
-public record CommandParameter
+public record CommandParameter : IValidatable
 {
     public CommandParameter()
     {
@@ -45,31 +45,20 @@ public record CommandParameter
     /// </remarks>
     public string? Description { get; init; }
 
-    /// <summary>
-    /// Gets or sets the list of allowed values for the command parameter.
-    /// </summary>
-    /// <remarks>
-    /// If specified, only these values are accepted for the parameter. Values outside this list will result 
-    /// in validation errors during parsing.
-    /// </remarks>
-    public ImmutableList<string>? AllowedValues { get; init; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether this command parameter is required.
-    /// </summary>
-    /// <remarks>
-    /// If <c>true</c>, the parameter must be provided in the command line arguments; otherwise, it is optional.
-    /// </remarks>
+    /// <inheritdoc />
     public bool Required { get; set; }
     
-    /// <summary>
-    /// Gets or sets the type of the allowed enum values for the parameter.
-    /// </summary>
-    /// <remarks>
-    /// If specified, the parameter value must match one of the values in this enum type. This allows enforcing 
-    /// strict validation for predefined sets of values.
-    /// </remarks>
+    /// <inheritdoc />
+    public ImmutableList<string>? AllowedTextValues { get; init; }
+    
+    /// <inheritdoc />
     public Type? AllowedEnumValues { get; init; }
+
+    /// <inheritdoc />
+    public string? AllowedType { get; set; }
+
+    /// <inheritdoc />
+    public bool? List { get; set; }
     
     /// <summary>
     /// Allows to set alternative value (or values) if current value is null.

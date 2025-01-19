@@ -10,5 +10,6 @@ public static class ServiceRegistration
         services.AddTransient<IConditionsService, ConditionsService>();
         services.AddTransient<ICommandMetadataService, CommandMetadataService>();
         services.AddTransient<IOperationParameterResolver, OperationParameterResolver>();
+        services.AddTransient<IValidationService, ValidationService>();
     }
 }

@@ -7,8 +7,8 @@ public record ForEach(ICommandService commandService, IVariableService variableS
     public override ImmutableDictionary<string, OperationParameter> Parameters { get; init; } =
         new Dictionary<string, OperationParameter>
         {
-            {"list", new OperationParameter { Description = "List to enumerate through", RequiredList = true}},
-            {"element", new OperationParameter { Description = "Name of variable where each element of list will be placed", RequiredText = true}}
+            {"list", new OperationParameter { Description = "List to enumerate through", Required = true, List = true}},
+            {"element", new OperationParameter { Description = "Name of variable where each element of list will be placed", Required = true, AllowedType = "text"}}
         }.ToImmutableDictionary();
 
     public override async Task Run(CancellationToken cancellationToken)

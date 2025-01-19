@@ -8,6 +8,7 @@
         "description": "description1",
         "ifNull": ["{{ current-session-name1 }}"],
         "required": true,
+        "allowedType": "text",
         "prompt": {
           "enabled": true,
           "message": "Give [[#FF0000]]some[[/]] value for [[#00FF00]]param1",

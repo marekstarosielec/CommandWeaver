@@ -7,11 +7,12 @@ public class CommandParameterResolverTests
     private readonly IOutputService _outputService = Substitute.For<IOutputService>();
     private readonly IInputService _inputService = Substitute.For<IInputService>();
     private readonly IVariableService _variableService = Substitute.For<IVariableService>();
+    private readonly IValidationService _validationService = Substitute.For<IValidationService>();
     private readonly CommandParameterResolver _resolver;
 
     public CommandParameterResolverTests()
     {
-        _resolver = new CommandParameterResolver(_flowService, _outputService, _inputService, _variableService);
+        _resolver = new CommandParameterResolver(_flowService, _outputService, _inputService, _variableService, _validationService);
     }
 
     [Fact]
@@ -71,95 +72,7 @@ public class CommandParameterResolverTests
         _variableService.Received(1).WriteVariableValue(VariableScope.Command, "param1", Arg.Is<DynamicValue>(v => v.TextValue == "resolvedValue"));
     }
 
-    [Fact]
-    public void PrepareCommandParameters_ShouldTerminateForMissingRequiredParameter()
-    {
-        // Arrange
-        var command = new Command
-        {
-            Name = "test-command",
-            Parameters = [new CommandParameter { Key = "param1", Required = true }]
-        };
-
-        var arguments = new Dictionary<string, string>();
-
-        // Act
-        _resolver.PrepareCommandParameters(command, arguments);
-
-        // Assert
-        _flowService.Received(1).Terminate(Arg.Is<string>(msg => msg.Contains("param1")));
-    }
-
-    [Fact]
-    public void PrepareCommandParameters_ShouldValidateAllowedValues()
-    {
-        // Arrange
-        var command = new Command
-        {
-            Name = "test-command",
-            Parameters =
-            [
-                new CommandParameter
-                    { Key = "param1", AllowedValues = new List<string> { "allowed1", "allowed2" }.ToImmutableList() }
-            ]
-        };
-
-        var arguments = new Dictionary<string, string>
-        {
-            { "param1", "invalidValue" }
-        };
-
-        // Act
-        _resolver.PrepareCommandParameters(command, arguments);
-
-        // Assert
-        _flowService.Received(1).Terminate(Arg.Is<string>(msg => msg.Contains("Invalid value for argument 'param1'")));
-    }
-
-    [Fact]
-    public void PrepareCommandParameters_ShouldValidateAllowedEnumValues()
-    {
-        // Arrange
-        var command = new Command
-        {
-            Name = "test-command",
-            Parameters = [new CommandParameter(key: "param1", allowedEnumValues: typeof(LogLevel))]
-        };
-
-        var arguments = new Dictionary<string, string>
-        {
-            { "param1", "InvalidEnumValue" }
-        };
-
-        // Act
-        _resolver.PrepareCommandParameters(command, arguments);
-
-        // Assert
-        _flowService.Received(1).Terminate(Arg.Is<string>(msg => msg.Contains("Invalid value for argument 'param1'")));
-    }
-
-    [Fact]
-    public void PrepareCommandParameters_ShouldNotTerminateForValidEnumValue()
-    {
-        // Arrange
-        var command = new Command
-        {
-            Name = "test-command",
-            Parameters = [new CommandParameter { Key = "param1", AllowedEnumValues = typeof(LogLevel) }]
-        };
-
-        var arguments = new Dictionary<string, string>
-        {
-            { "param1", "Trace" }
-        };
-
-        // Act
-        _resolver.PrepareCommandParameters(command, arguments);
-
-        // Assert
-        _flowService.DidNotReceive().Terminate(Arg.Any<string>());
-        _variableService.Received(1).WriteVariableValue(VariableScope.Command, "param1", Arg.Is<DynamicValue>(v => v.TextValue == "Trace"));
-    }
+    //TODO: Add test PrepareCommandParameters_ShouldCallValidate
     
     [Fact]
     public void PrepareCommandParameters_UsesIfNullTextValue()

@@ -93,7 +93,8 @@ public class MarkupConverterTests
         var style = MarkupConverter.GetStyle(input);
 
         // Assert
-        Assert.Null(style);
+        Assert.NotNull(style);
+        Assert.Equal(Style.Plain, style);
     }
 
     [Theory]

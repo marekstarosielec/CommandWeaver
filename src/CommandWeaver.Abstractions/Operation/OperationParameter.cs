@@ -1,7 +1,9 @@
-﻿/// <summary>
+﻿using System.Collections.Immutable;
+
+/// <summary>
 /// Represents a parameter used in an operation.
 /// </summary>
-public record OperationParameter
+public record OperationParameter : IValidatable
 {
     /// <summary>
     /// Gets or sets the dynamic value for the operation parameter.
@@ -29,47 +31,21 @@ public record OperationParameter
     /// </remarks>
     public required string Description { get; init; }
 
-    /// <summary>
-    /// Gets the list of allowed values for this parameter.
-    /// </summary>
-    /// <remarks>
-    /// If specified, only values within this list are considered valid for the parameter.
-    /// </remarks>
-    public List<string>? AllowedValues { get; init; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether this parameter is required.
-    /// </summary>
-    /// <remarks>
-    /// If <c>true</c>, the parameter must be provided for the operation to execute successfully.
-    /// </remarks>
+    /// <inheritdoc />
     public bool Required { get; init; }
 
-    /// <summary>
-    /// Gets or sets a value indicating whether a text value is required for this parameter.
-    /// </summary>
-    /// <remarks>
-    /// If <c>true</c>, the parameter expects its value to be in a textual format.
-    /// </remarks>
-    public bool RequiredText { get; init; }
+    /// <inheritdoc />
+    public ImmutableList<string>? AllowedTextValues { get; init; }
 
-    /// <summary>
-    /// Gets or sets a value indicating whether a list value is required for this parameter.
-    /// </summary>
-    /// <remarks>
-    /// If <c>true</c>, the parameter expects its value to be a list of items.
-    /// </remarks>
-    public bool RequiredList { get; init; }
-
-    /// <summary>
-    /// Gets or sets the allowed enum type for this parameter.
-    /// </summary>
-    /// <remarks>
-    /// If specified, the parameter value is restricted to valid values of this enum type. This enforces
-    /// type-safe, predefined options for the parameter.
-    /// </remarks>
+    /// <inheritdoc />
     public Type? AllowedEnumValues { get; init; }
 
+    /// <inheritdoc />
+    public string? AllowedType { get; set; }
+    
+    /// <inheritdoc />
+    public bool? List { get; set; }
+    
     /// <summary>
     /// Gets or sets the default value for this parameter.
     /// </summary>

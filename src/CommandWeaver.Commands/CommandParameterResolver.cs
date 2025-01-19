@@ -16,7 +16,8 @@ public class CommandParameterResolver(
     IFlowService flowService,
     IOutputService outputService,
     IInputService inputService,
-    IVariableService variableService) : ICommandParameterResolver
+    IVariableService variableService,
+    IValidationService validationService) : ICommandParameterResolver
 {
     /// <inheritdoc />
     public void PrepareCommandParameters(Command command, Dictionary<string, string> arguments)
@@ -47,22 +48,23 @@ public class CommandParameterResolver(
         var argumentValue = GetArgumentValue(parameter, arguments);
         argumentValue = GetIfNullValue(argumentValue, parameter.IfNull);
 
-        if (argumentValue == null && parameter.Prompt?.Enabled != false)
-        {
-            var i = new InputInformation
-            {
-                Message = parameter.Prompt?.Message ?? parameter.Key,
-                PromptStyle = parameter.Prompt?.PromptStyle,
-                Required = parameter.Required,
-                IsSecret = parameter.Prompt?.IsSecret ?? false,
-            };
-            var t = inputService.Prompt(i);
-        }
+        // if (argumentValue == null && parameter.Prompt?.Enabled != false)
+        // {
+        //     var i = new InputInformation
+        //     {
+        //         Message = parameter.Prompt?.Message ?? parameter.Key,
+        //         PromptStyle = parameter.Prompt?.PromptStyle,
+        //         Required = parameter.Required,
+        //         IsSecret = parameter.Prompt?.IsSecret ?? false,
+        //     };
+        //     var t = inputService.Prompt(i);
+        // }
         
-        Validate(parameter, argumentValue);
+        var resolvedValue = new DynamicValue(argumentValue);
+        validationService.Validate(parameter, resolvedValue, parameter.Key);
         outputService.Trace($"Argument for parameter '{parameter.Key}' resolved successfully.");
         
-        return new DynamicValue(argumentValue);
+        return resolvedValue;
     }
 
     /// <summary>
@@ -100,34 +102,5 @@ public class CommandParameterResolver(
                 }
 
         return argumentValue;
-    }
-
-    /// <summary>
-    /// Checks if parameter meets constraints.
-    /// </summary>
-    /// <param name="parameter"></param>
-    /// <param name="argumentValue"></param>
-    private void Validate(CommandParameter parameter, string? argumentValue)
-    {
-        if (parameter.Required && string.IsNullOrWhiteSpace(argumentValue))
-        {
-            flowService.Terminate($"Parameter {parameter.Key} requires a value.");
-            return;
-        }
-
-        // Validate against AllowedValues if specified
-        if (parameter.AllowedValues != null && argumentValue != null && !parameter.AllowedValues.Contains(argumentValue))
-        {
-            flowService.Terminate($"Invalid value for argument '{parameter.Key}'. Allowed values: {string.Join(", ", parameter.AllowedValues)}.");
-            return;
-        }
-
-        // Validate against AllowedEnumValues if specified
-        if (parameter.AllowedEnumValues != null && argumentValue != null &&
-            !Enum.GetNames(parameter.AllowedEnumValues).Any(name => name.Equals(argumentValue, StringComparison.OrdinalIgnoreCase)))
-        {
-            flowService.Terminate($"Invalid value for argument '{parameter.Key}'. Allowed enum values: {string.Join(", ", Enum.GetNames(parameter.AllowedEnumValues))}.");
-            return;
-        }
     }
 }
