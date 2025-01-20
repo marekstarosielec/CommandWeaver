@@ -16,7 +16,7 @@
           "timeout": 2,
           "headers":[
             { 
-              "key": "Accept",
+              "name": "Accept",
               "value": "application/json",
               "conditions": {
                 "IsNull": "abc"

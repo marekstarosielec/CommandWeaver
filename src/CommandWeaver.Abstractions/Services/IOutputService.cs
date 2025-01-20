@@ -60,4 +60,6 @@ public interface IOutputService
     void Write(DynamicValue value, LogLevel? logLevel, Styling styling);
     
     void WriteException(Exception exception);
+    
+    void WriteRequest(HttpRequestMessage request, string? jsonBody, string? rawBody);
 }

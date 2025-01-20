@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
-public record RestCall(IConditionsService conditionsService, IVariableService variableServices, IJsonSerializer serializer, IFlowService flowService) : Operation
+public record RestCall(IConditionsService conditionsService, IVariableService variableServices, IJsonSerializer serializer, IFlowService flowService, IOutputService outputService) : Operation
 {
     public override string Name => nameof(RestCall);
 
@@ -31,7 +31,8 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
                 try
                 {
                     var certificate =
-                        new X509Certificate2(certificateBinaryContent.LazyBinaryValue.Value, Parameters["certificatePassword"].Value.TextValue);
+                        new X509Certificate2(certificateBinaryContent.LazyBinaryValue.Value,
+                            Parameters["certificatePassword"].Value.TextValue);
                     handler.ClientCertificates.Add(certificate);
                 }
                 catch (Exception e)
@@ -43,22 +44,18 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         }
 
         using var httpClient = new HttpClient(handler);
-        AddHeaders(httpClient);
         using var request = new HttpRequestMessage();
         request.Method = HttpMethod.Parse(Parameters["method"].Value.TextValue!);
         request.RequestUri = new Uri(Parameters["url"].Value.TextValue!);
         httpClient.Timeout = TimeSpan.FromSeconds(Parameters["timeout"].Value.NumericValue ?? 60);
-        if (Parameters["body"].Value.TextValue != null)
-            request.Content = new StringContent(Parameters["body"].Value.TextValue!, Encoding.UTF8, GetContentType() ?? "application/json");
-        if (Parameters["body"].Value.ObjectValue != null || Parameters["body"].Value.ListValue != null)
-        {
-            serializer.TrySerialize(Parameters["body"].Value, out var body, out _);
-            if (!string.IsNullOrEmpty(body))
-                request.Content = new StringContent(body, Encoding.UTF8,"application/json");
-        }
-
+        AddBody(request, out var jsonBody);
+        AddHeaders(request);
+        outputService.WriteRequest(request, jsonBody, Parameters["body"].Value.TextValue);
+        
+        
         var result = await httpClient.SendAsync(request, cancellationToken);
         var resultBody = await result.Content.ReadAsStringAsync(cancellationToken);
+        
         //try to deserialize to json
         serializer.TryDeserialize(resultBody, out DynamicValue? resultModel, out _);
         
@@ -71,41 +68,69 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         var lastRestCall = new Dictionary<string, DynamicValue?>();
         lastRestCall["response"] = new DynamicValue(dynamicValueResponse);
         variableServices.WriteVariableValue(VariableScope.Command, "lastRestCall", new DynamicValue(lastRestCall));
+        
         var t = variableServices.ReadVariableValue(new DynamicValue("lastRestCall"), true);
+    }
+
+    private void AddBody(HttpRequestMessage request, out string? jsonBody)
+    {
+        jsonBody = null;
+        if (Parameters["body"].Value.TextValue != null)
+            request.Content = new StringContent(Parameters["body"].Value.TextValue!, Encoding.UTF8, GetContentType() ?? "application/json");
+        if (Parameters["body"].Value.ObjectValue != null || Parameters["body"].Value.ListValue != null)
+        {
+            serializer.TrySerialize(Parameters["body"].Value, out jsonBody, out _);
+            if (!string.IsNullOrEmpty(jsonBody))
+                request.Content = new StringContent(jsonBody, Encoding.UTF8,"application/json");
+        }
     }
 
     private string? GetContentType() => Parameters["headers"].Value.ListValue?.FirstOrDefault(h => string.Equals(h.ObjectValue?["key"]?.TextValue, "content-type", StringComparison.OrdinalIgnoreCase))?.ObjectValue?["value"].TextValue;
 
-    private void AddHeaders(HttpClient httpClient)
+    private void AddHeaders(HttpRequestMessage request)
     {
-        // var headers = Parameters["headers"].Value.ListValue;
-        // if (headers == null)
-        //     return;
-        //
-        // foreach (var header in headers)
-        // {
-        //     var skipHeader = false;
-        //     string? name = null;
-        //     string? value = null;
-        //     foreach (var headerKey in header.Keys)
-        //         if (string.Equals(headerKey, "conditions", StringComparison.OrdinalIgnoreCase))
-        //         {
-        //             var condition = conditionsService.GetFromDynamicValue(header[headerKey]);
-        //             if (condition != null && conditionsService.ShouldBeSkipped(condition, variables))
-        //                 skipHeader = true;
-        //         }
-        //         else
-        //         {
-        //             name = headerKey;
-        //             value = header[headerKey].TextValue;
-        //         }
-        //     
-        //     if (!skipHeader && name!=null)
-        //         if (!httpClient.DefaultRequestHeaders.TryAddWithoutValidation(name, value))
-        //         {
-        //             
-        //         }
-        // }
+        var headers = Parameters["headers"].Value.ListValue;
+        if (headers == null)
+            return;
+
+        foreach (var header in headers)
+        {
+            var name = header.ObjectValue?["name"]?.TextValue;
+            if (string.IsNullOrEmpty(name))
+            {
+                flowService.Terminate("Missing header name");
+                return;
+            }
+
+            var value = header.ObjectValue?["value"]?.TextValue;
+            if (string.IsNullOrEmpty(value))
+            {
+                flowService.Terminate("Missing header value");
+                return;
+            }
+
+            var conditions = header.ObjectValue?["conditions"];
+            Condition? parsedConditions = null;
+            if (conditions != null && !conditions.IsNull())
+                parsedConditions = conditionsService.GetFromDynamicValue(conditions);
+            if (parsedConditions != null && conditionsService.ConditionsAreMet(parsedConditions))
+                continue;
+
+            if (!request.Headers.TryAddWithoutValidation(name, value))
+            {
+                if (request.Content == null)
+                {
+                    flowService.Terminate($"Failed to add header {name}");
+                    return;
+                }
+
+                if (!request.Content.Headers.TryAddWithoutValidation(name!, value!))
+                {
+                    flowService.Terminate($"Failed to add header {name}");
+                    return;
+                }
+            }
+        }
     }
 
     private record Certificate
