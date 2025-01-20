@@ -1,0 +1,19 @@
+{
+  "commands": [
+    {
+      "name": "paths",
+      "category": "Help",
+      "description": "paths of application and session files",
+      "operations": [
+        {
+          "operation": "output",
+          "value": "Local path: [[u]]{{ LocalPath }}[[/]]"
+        },
+        {
+          "operation": "output",
+          "value": "Current session path: [[u]]{{ SessionPath }}[[/]]"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CommandWeaver.Abstractions\CommandWeaver.Abstractions.csproj" />
+    <ProjectReference Include="..\CommandWeaver.Commands\CommandWeaver.Commands.csproj" />
+    <ProjectReference Include="..\CommandWeaver.Flow\CommandWeaver.Flow.csproj" />
+    <ProjectReference Include="..\CommandWeaver.Input\CommandWeaver.Input.csproj" />
+    <ProjectReference Include="..\CommandWeaver.Operations\CommandWeaver.Operations.csproj" />
+    <ProjectReference Include="..\CommandWeaver.Output\CommandWeaver.Output.csproj" />
+    <ProjectReference Include="..\CommandWeaver.Repositories.Embedded\CommandWeaver.Repositories.Embedded.csproj" />
+    <ProjectReference Include="..\CommandWeaver.Repositories.File\CommandWeaver.Repositories.File.csproj" />
+    <ProjectReference Include="..\CommandWeaver.Resource\CommandWeaver.Resource.csproj" />
+    <ProjectReference Include="..\CommandWeaver.Serializers.Json\CommandWeaver.Serializers.Json.csproj" />
+    <ProjectReference Include="..\CommandWeaver.SpectreConsole\CommandWeaver.SpectreConsole.csproj" />
+    <ProjectReference Include="..\CommandWeaver.Variables\CommandWeaver.Variables.csproj" />
+  </ItemGroup>
+
+</Project>

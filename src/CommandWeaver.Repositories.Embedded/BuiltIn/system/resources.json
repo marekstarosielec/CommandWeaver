@@ -1,0 +1,27 @@
+{
+  "commands": [
+    {
+      "name": "resources",
+      "otherNames": ["res"],
+      "category": "Help",
+      "description": "displays list of all resources available",
+      "operations": [
+        {
+          "comment": "Enumerate resources",
+          "operation": "forEach",
+          "list": "{{ resources }}",
+          "element": "resource",
+          "operations": [
+            {
+              "comment": "Output resources name",
+              "operation": "output",
+              "value": "{{resource.key}}",
+              "styling": "MarkupLine"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

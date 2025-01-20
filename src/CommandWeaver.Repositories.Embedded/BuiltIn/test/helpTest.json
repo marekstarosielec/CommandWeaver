@@ -1,0 +1,36 @@
+{
+  "commands": [
+    {
+      "name": "help test",
+      "category": "tests",
+      "parameters":[{
+        "key": "param1",
+        "description": "description1",
+        "ifNull": ["{{ current-session-name1 }}"],
+        "required": true,
+        "allowedType": "text",
+        "prompt": {
+          "enabled": true,
+          "message": "Give [[#FF0000]]some[[/]] value for [[#00FF00]]param1",
+          "promptStyle": "u"
+        }
+      },{
+        "key": "param2",
+        "description": "description2"
+      }
+      ],
+      "operations": [
+        {
+          "operation": "output",
+          "value": "Current session is [[{{styles[focused].value}}]]{{current-session-name}}",
+          "styling": "MarkupLine"
+        },
+        {
+          "operation": "output",
+          "value": "{{param1}}"
+        }
+      ]
+    }
+  ]
+  
+}

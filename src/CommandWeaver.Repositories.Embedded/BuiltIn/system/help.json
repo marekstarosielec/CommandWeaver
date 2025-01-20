@@ -1,0 +1,106 @@
+{
+  "commands": [
+    {
+      "name": "help",
+      "category": "Help",
+      "description": "this screen",
+      "parameters": [
+        {
+          "key": "command",
+          "description": "Name of command"
+        }
+      ],
+      "operations": [
+        {
+          "comment": "Author information",
+          "operation": "output",
+          "value": "Command-Weaver by [[{{styles[focused].value}}]]Marek Starosielec\r\n",
+          "styling": "MarkupLine"
+        },
+        {
+          "comment": "Build list of categories", 
+          "operation": "listGroup",
+          "list": "{{ commands }}",
+          "property": "definition.category",
+          "saveTo": "commandCategories"
+        },
+        {
+          "comment": "Enumerate categories",
+          "operation": "forEach",
+          "list": "{{ commandCategories }}",
+          "element": "commandCategory",
+          "conditions": {
+            "isNull": "{{ command }}"
+          },
+          "operations": [
+            {
+              "comment": "Output category name if it exists",
+              "operation": "output",
+              "value": "[[i]]{{commandCategory}}\r\n",
+              "styling": "MarkupLine",
+              "conditions": {
+                "isNotNull": "{{ commandCategory }}"
+              }
+            },
+            {
+              "comment": "Output default category name",
+              "operation": "output",
+              "value": "[[i]]Other\r\n",
+              "styling": "MarkupLine",
+              "conditions": {
+                "isNull": "{{ commandCategory }}"
+              }
+            },
+            {
+              "comment": "Output commands inside category",
+              "operation": "forEach",
+              "list": "{{ commands }}",
+              "element": "command",
+              "operations": [
+                {
+                  "comment": "Skip all commands that do not match category",
+                  "operation": "block",
+                  "conditions": {
+                    "areEqual": {
+                      "value1": "{{commandCategory}}",
+                      "value2": "{{command.definition.category}}"
+                    }
+                  },
+                  "operations": [
+                    {
+                      "comment": "Output command name",
+                      "operation": "output",
+                      "value": "  [[{{styles[focused].value}}]]{{command.definition.name}}",
+                      "styling": "Markup"
+                    },
+                    {
+                      "comment": "Output command description",
+                      "operation": "output",
+                      "value": " - {{ command.definition.description }}",
+                      "styling": "Markup",
+                      "conditions": {
+                        "isNotNull": "{{ command.definition.description }}"
+                      }
+                    },
+                    {
+                      "comment": "Move to next line",
+                      "operation": "output",
+                      "value": "\r\n",
+                      "styling": "Markup"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "comment": "Output empty line before next category",
+              "operation": "output",
+              "value": "\r\n",
+              "styling": "MarkupLine"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

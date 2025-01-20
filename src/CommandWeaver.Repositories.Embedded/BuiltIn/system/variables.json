@@ -1,0 +1,44 @@
+{
+  "commands": [
+    {
+      "name": "variable",
+      "category": "Help",
+      "description": "shows variable value",
+      "parameters": [
+        {
+          "key": "name",
+          "otherNames": ["n"],
+          "description": "Name of variable",
+          "required": true
+        }
+      ],
+      "operations": [
+        {
+          "operation": "terminate",
+          "message": "Variable {{name}} does not exist or has no value",
+          "conditions": {
+            "isNull": "{{ {{name}} }}"
+          }
+        },
+        {
+          "operation": "output",
+          "value": "{{ {{ name }} }}"
+        }
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "key": "current-session-name",
+      "value": "session1"
+    },
+    {
+      "key": "log-level",
+      "value": "information"
+    },
+    {
+      "key": "secret-char",
+      "value": "*"
+    }
+  ]
+}

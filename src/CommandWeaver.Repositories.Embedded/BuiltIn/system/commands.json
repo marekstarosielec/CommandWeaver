@@ -1,0 +1,31 @@
+{
+  "commands": [
+    {
+      "name": "cmd",
+      "category": "Help",
+      "description": "outputs source json of single command",
+      "parameters": [
+        {
+          "key": "name",
+          "otherNames": ["n"],
+          "description": "Name of command",
+          "required": true
+        }
+      ],
+      "operations": [
+        {
+          "operation": "terminate",
+          "message": "Command {{name}} does not exist",
+          "conditions": {
+            "isNull": "{{ commands[{{name}}] }}"
+          }
+        },
+        {
+          "operation": "output",
+          "value": "{{ commands[{{name}}].source }}",
+          "styling": "json"
+        }
+      ]
+    }
+  ]
+}

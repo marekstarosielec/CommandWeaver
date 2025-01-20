@@ -1,0 +1,40 @@
+{
+  "profiles": {
+    "Command information": {
+      "commandName": "Project",
+      "commandLineArgs": "cmd -n cmd"
+    },
+    "Switch session": {
+      "commandName": "Project",
+      "commandLineArgs": "ss -name session2 -log-level debug"
+    },
+    "Paths": {
+      "commandName": "Project",
+      "commandLineArgs": "paths"
+    },
+    "Log level": {
+      "commandName": "Project",
+      "commandLineArgs": "output-test"
+    },
+    "Variable": {
+      "commandName": "Project",
+      "commandLineArgs": "variable -name styles"
+    },
+    "Help": {
+      "commandName": "Project",
+      "commandLineArgs": "help"
+    },
+    "Resources": {
+      "commandName": "Project",
+      "commandLineArgs": "resources"
+    },
+    "Help test": {
+      "commandName": "Project",
+      "commandLineArgs": "help test"
+    },
+    "RestCall test": {
+      "commandName": "Project",
+      "commandLineArgs": "restTest"
+    }
+  }
+}
