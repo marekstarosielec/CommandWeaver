@@ -19,43 +19,102 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
     
     public override async Task Run(CancellationToken cancellationToken)
     {
-        var certificateInformation = Parameters["certificate"].Value.GetAsObject<Certificate>();
-        
-        using var handler = GetHttpClientHandler(certificateInformation);
+        using var handler = GetHttpClientHandler();
         using var httpClient = new HttpClient(handler);
-        using var request = new HttpRequestMessage();
-        request.Method = HttpMethod.Parse(Parameters["method"].Value.TextValue!);
-        request.RequestUri = new Uri(Parameters["url"].Value.TextValue!);
-        httpClient.Timeout = TimeSpan.FromSeconds(Parameters["timeout"].Value.NumericValue ?? 60);
-        AddBody(request, out var jsonBody);
-        AddHeaders(request);
-        outputService.WriteRequest(request, jsonBody, Parameters["body"].Value.TextValue);
         
+        using var request = GetHttpRequestMessage(httpClient);
+        await outputService.WriteRequest(request);
         
-        var result = await httpClient.SendAsync(request, cancellationToken);
-        var resultBody = await result.Content.ReadAsStringAsync(cancellationToken);
-        
-        //try to deserialize to json
-        if (serializer.TryDeserialize(resultBody, out DynamicValue? resultModel, out _))
-            outputService.WriteResponse(result, resultBody, null);
-        else
-            outputService.WriteResponse(result, null, resultBody);
-        
-        // 
-        // lastRestCall["response"] = resultBody;
-        var dynamicValueResponse =  new Dictionary<string, DynamicValue?>();
-        dynamicValueResponse["status"] = new DynamicValue((int)result.StatusCode);
-        dynamicValueResponse["body"] = resultModel;
+        var response = await httpClient.SendAsync(request, cancellationToken);
+        var resultBody = await response.Content.ReadAsStringAsync(cancellationToken);
+        await outputService.WriteResponse(response);
         
         var lastRestCall = new Dictionary<string, DynamicValue?>();
-        lastRestCall["response"] = new DynamicValue(dynamicValueResponse);
+        lastRestCall["request"] = await GetRequestAsVariable(request);
+        lastRestCall["response"] = await GetResponseAsVariable(response); 
         variableServices.WriteVariableValue(VariableScope.Command, "lastRestCall", new DynamicValue(lastRestCall));
         
-        var t = variableServices.ReadVariableValue(new DynamicValue("lastRestCall"), true);
     }
 
-    private HttpClientHandler GetHttpClientHandler(Certificate? certificateInformation)
+    private async Task<DynamicValue> GetRequestAsVariable(HttpRequestMessage request)
     {
+        var result = new Dictionary<string, DynamicValue?>
+        {
+            ["method"] = new (request.Method.ToString()),
+            ["url"] = new (request.RequestUri?.AbsoluteUri)
+        };
+        var body = request.Content != null ? await request.Content.ReadAsStringAsync() : null;
+        
+        if (!string.IsNullOrWhiteSpace(body) && JsonHelper.IsJson(body) && serializer.TryDeserialize(body, out DynamicValue? bodyModel, out _))
+            result["body"] = bodyModel;
+        else
+            result["body"] = new DynamicValue(body);
+
+        var headers = new List<DynamicValue>();
+        foreach (var header in request.Headers.Concat(request.Content?.Headers.ToList() ?? []))
+        {
+            var headerVariable = new Dictionary<string, DynamicValue?>();
+            headerVariable["key"] = new DynamicValue(header.Key);
+            headerVariable["value"] = new DynamicValue(string.Join(',', header.Value));
+            headers.Add(new DynamicValue(headerVariable));
+        }
+
+        result["headers"] = new DynamicValue(headers);
+        
+        return new DynamicValue(result);
+    }
+    
+    private async Task<DynamicValue> GetResponseAsVariable(HttpResponseMessage response)
+    {
+        var result = new Dictionary<string, DynamicValue?>
+        {
+            ["status"] = new ((int)response.StatusCode)
+        };
+        var body = await response.Content.ReadAsStringAsync();
+        
+        if (!string.IsNullOrWhiteSpace(body) && JsonHelper.IsJson(body) && serializer.TryDeserialize(body, out DynamicValue? bodyModel, out _))
+            result["body"] = bodyModel;
+        else
+            result["body"] = new DynamicValue(body);
+
+        var headers = new List<DynamicValue>();
+        foreach (var header in response.Headers.Concat(response.Content.Headers))
+        {
+            var headerVariable = new Dictionary<string, DynamicValue?>();
+            headerVariable["key"] = new DynamicValue(header.Key);
+            headerVariable["value"] = new DynamicValue(string.Join(',', header.Value));
+            headers.Add(new DynamicValue(headerVariable));
+        }
+
+        result["headers"] = new DynamicValue(headers);
+        
+        return new DynamicValue(result);
+    }
+    
+    private HttpRequestMessage GetHttpRequestMessage(HttpClient httpClient)
+    {
+        HttpRequestMessage? request = null;
+        try
+        {
+            request = new HttpRequestMessage();
+            request.Method = HttpMethod.Parse(Parameters["method"].Value.TextValue!);
+            request.RequestUri = new Uri(Parameters["url"].Value.TextValue!);
+            httpClient.Timeout = TimeSpan.FromSeconds(Parameters["timeout"].Value.NumericValue ?? 60);
+            GetBody(request);
+            GetHeaders(request);
+            return request;
+        }
+        catch
+        {
+            request?.Dispose();
+            throw;
+        }
+    }
+
+    private HttpClientHandler GetHttpClientHandler()
+    {
+        var certificateInformation = Parameters["certificate"].Value.GetAsObject<Certificate>();
+
         HttpClientHandler? handler = null;
         try
         {
@@ -90,22 +149,22 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         }
     }
 
-    private void AddBody(HttpRequestMessage request, out string? jsonBody)
+    private void GetBody(HttpRequestMessage request)
     {
-        jsonBody = null;
-        if (Parameters["body"].Value.TextValue != null)
-            request.Content = new StringContent(Parameters["body"].Value.TextValue!, Encoding.UTF8, GetContentType() ?? "application/json");
         if (Parameters["body"].Value.ObjectValue != null || Parameters["body"].Value.ListValue != null)
         {
-            serializer.TrySerialize(Parameters["body"].Value, out jsonBody, out _);
+            serializer.TrySerialize(Parameters["body"].Value, out var jsonBody, out _);
             if (!string.IsNullOrEmpty(jsonBody))
                 request.Content = new StringContent(jsonBody, Encoding.UTF8,"application/json");
         }
+        if (Parameters["body"].Value.TextValue != null && request.Content == null)
+            request.Content = new StringContent(Parameters["body"].Value.TextValue!, Encoding.UTF8, GetContentType() ?? "application/json");
+
     }
 
     private string? GetContentType() => Parameters["headers"].Value.ListValue?.FirstOrDefault(h => string.Equals(h.ObjectValue?["key"]?.TextValue, "content-type", StringComparison.OrdinalIgnoreCase))?.ObjectValue?["value"].TextValue;
 
-    private void AddHeaders(HttpRequestMessage request)
+    private void GetHeaders(HttpRequestMessage request)
     {
         var headers = Parameters["headers"].Value.ListValue;
         if (headers == null)

@@ -28,6 +28,10 @@
             "body": "bar",
             "userId": 1
           }
+        },
+        {
+          "operation": "output",
+          "value": "[[#FF0000]]{{lastRestCall.request.body.userId}}"
         }
       ]
     }

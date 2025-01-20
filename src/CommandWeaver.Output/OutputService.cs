@@ -60,6 +60,9 @@
             outputWriter.WriteRaw("true");
         if (value.BoolValue.HasValue && !value.BoolValue.Value)
             outputWriter.WriteRaw("false");
+        
+        if (value.NumericValue != null)
+            outputWriter.WriteMarkup(value.NumericValue.Value.ToString());
     }
 
     public void WriteException(Exception exception)
@@ -67,7 +70,7 @@
         outputWriter.WriteException(exception);
     }
 
-    public void WriteRequest(HttpRequestMessage request, string? jsonBody, string? rawBody)
+    public async Task WriteRequest(HttpRequestMessage request)
     {
         outputWriter.WriteMarkup($"[[{outputSettings.Styles?["trace"]}]]----------------------------------------------------------------------------------[[/]]\r\n");
         outputWriter.WriteMarkup($"[[#005f87]]{request.Method.Method}[[/]]");
@@ -80,15 +83,19 @@
             outputWriter.WriteMarkup($"[[{outputSettings.Styles?["debug"]}]]{string.Join(',', header.Value)}[[/]]\r\n");
         }
         outputWriter.WriteMarkup("\r\n");
-        if (rawBody != null)
-            outputWriter.WriteRaw(rawBody);
-        else if (jsonBody != null)
-            outputWriter.WriteJson(jsonBody);
+        if (request.Content == null)
+            return;
+        
+        var body = await request.Content.ReadAsStringAsync();
+        if (!JsonHelper.IsJson(body))
+            outputWriter.WriteRaw(body);
+        else
+            outputWriter.WriteJson(body);
         
         outputWriter.WriteMarkup("\r\n");
     }
 
-    public void WriteResponse(HttpResponseMessage response, string? jsonBody, string? rawBody)
+    public async Task WriteResponse(HttpResponseMessage response)
     {
         outputWriter.WriteMarkup($"[[{outputSettings.Styles?["trace"]}]]----------------------------------------------------------------------------------[[/]]\r\n");
         outputWriter.WriteMarkup($"[[#005f87]]{(int) response.StatusCode}[[/]]");
@@ -101,10 +108,15 @@
             outputWriter.WriteMarkup($"[[{outputSettings.Styles?["debug"]}]]{string.Join(',', header.Value)}[[/]]\r\n");
         }
         outputWriter.WriteMarkup("\r\n");
-        if (rawBody != null)
-            outputWriter.WriteRaw(rawBody);
-        else if (jsonBody != null)
-            outputWriter.WriteJson(jsonBody);
+        
+        if (response.Content == null)
+            return;
+        
+        var body = await response.Content.ReadAsStringAsync();
+        if (!JsonHelper.IsJson(body))
+            outputWriter.WriteRaw(body);
+        else
+            outputWriter.WriteJson(body);
         
         outputWriter.WriteMarkup("\r\n");
     }

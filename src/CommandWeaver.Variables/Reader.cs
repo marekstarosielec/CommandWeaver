@@ -120,6 +120,16 @@ public class Reader(IFlowService flowService, IOutputService outputService, IVar
             resolvedKey = ValuePath.ReplaceVariableWithValue(resolvedKey, path, replacement);
             return ReadVariableValue(new DynamicValue(resolvedKey), false, depth, resolvedVariable.NoResolving);
         }
+        
+        if (resolvedVariable!.NumericValue != null)
+        {
+            //Handling variable that resolved to number as part of text.
+            //TODO: Add possibility to define ToString format.
+            //TODO: Support other DynamicValues like precision, date, etc.
+            var replacement = resolvedVariable.NumericValue.ToString() ?? string.Empty;
+            resolvedKey = ValuePath.ReplaceVariableWithValue(resolvedKey, path, replacement);
+            return ReadVariableValue(new DynamicValue(resolvedKey), false, depth, resolvedVariable.NoResolving);
+        }
 
         flowService.Terminate($"{{{{ {path} }}}} resolved to a non-text value, it cannot be part of text.");
         return null;
