@@ -21,28 +21,7 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
     {
         var certificateInformation = Parameters["certificate"].Value.GetAsObject<Certificate>();
         
-        using var handler = new HttpClientHandler();
-        if (!string.IsNullOrWhiteSpace(certificateInformation?.FromResource))
-        {
-            var resourceKey = $"{{{{resources[{certificateInformation.FromResource}].binary}}}}";
-            var certificateBinaryContent = variableServices.ReadVariableValue(new DynamicValue(resourceKey));
-            if (certificateBinaryContent.LazyBinaryValue?.Value != null)
-            {
-                try
-                {
-                    var certificate =
-                        new X509Certificate2(certificateBinaryContent.LazyBinaryValue.Value,
-                            Parameters["certificatePassword"].Value.TextValue);
-                    handler.ClientCertificates.Add(certificate);
-                }
-                catch (Exception e)
-                {
-                    flowService.FatalException(e, "Failed to load certificate from certificate resource");
-                    throw;
-                }
-            }
-        }
-
+        using var handler = GetHttpClientHandler(certificateInformation);
         using var httpClient = new HttpClient(handler);
         using var request = new HttpRequestMessage();
         request.Method = HttpMethod.Parse(Parameters["method"].Value.TextValue!);
@@ -57,7 +36,10 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         var resultBody = await result.Content.ReadAsStringAsync(cancellationToken);
         
         //try to deserialize to json
-        serializer.TryDeserialize(resultBody, out DynamicValue? resultModel, out _);
+        if (serializer.TryDeserialize(resultBody, out DynamicValue? resultModel, out _))
+            outputService.WriteResponse(result, resultBody, null);
+        else
+            outputService.WriteResponse(result, null, resultBody);
         
         // 
         // lastRestCall["response"] = resultBody;
@@ -70,6 +52,42 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         variableServices.WriteVariableValue(VariableScope.Command, "lastRestCall", new DynamicValue(lastRestCall));
         
         var t = variableServices.ReadVariableValue(new DynamicValue("lastRestCall"), true);
+    }
+
+    private HttpClientHandler GetHttpClientHandler(Certificate? certificateInformation)
+    {
+        HttpClientHandler? handler = null;
+        try
+        {
+            handler = new HttpClientHandler();
+            if (!string.IsNullOrWhiteSpace(certificateInformation?.FromResource))
+            {
+                var resourceKey = $"{{{{resources[{certificateInformation.FromResource}].binary}}}}";
+                var certificateBinaryContent = variableServices.ReadVariableValue(new DynamicValue(resourceKey));
+                if (certificateBinaryContent.LazyBinaryValue?.Value != null)
+                {
+                    try
+                    {
+                        var certificate =
+                            new X509Certificate2(certificateBinaryContent.LazyBinaryValue.Value,
+                                Parameters["certificatePassword"].Value.TextValue);
+                        handler.ClientCertificates.Add(certificate);
+                    }
+                    catch (Exception e)
+                    {
+                        flowService.FatalException(e, "Failed to load certificate from certificate resource");
+                        throw;
+                    }
+                }
+            }
+
+            return handler;
+        }
+        catch
+        {
+            handler?.Dispose();
+            throw;
+        }
     }
 
     private void AddBody(HttpRequestMessage request, out string? jsonBody)

@@ -84,6 +84,29 @@
             outputWriter.WriteRaw(rawBody);
         else if (jsonBody != null)
             outputWriter.WriteJson(jsonBody);
+        
+        outputWriter.WriteMarkup("\r\n");
+    }
+
+    public void WriteResponse(HttpResponseMessage response, string? jsonBody, string? rawBody)
+    {
+        outputWriter.WriteMarkup($"[[{outputSettings.Styles?["trace"]}]]----------------------------------------------------------------------------------[[/]]\r\n");
+        outputWriter.WriteMarkup($"[[#005f87]]{(int) response.StatusCode}[[/]]");
+        outputWriter.WriteMarkup($" {response.RequestMessage?.RequestUri?.AbsoluteUri}");
+        outputWriter.WriteMarkup($" [[{outputSettings.Styles?["trace"]}]]({DateTime.UtcNow:o})[[/]]\r\n\r\n");
+        var headers = response.Headers.ToList().Concat(response.Content?.Headers.ToList() ?? []);
+        foreach (var header in headers)
+        {
+            outputWriter.WriteMarkup($"[[{outputSettings.Styles?["trace"]}]]{header.Key}: [[/]]");
+            outputWriter.WriteMarkup($"[[{outputSettings.Styles?["debug"]}]]{string.Join(',', header.Value)}[[/]]\r\n");
+        }
+        outputWriter.WriteMarkup("\r\n");
+        if (rawBody != null)
+            outputWriter.WriteRaw(rawBody);
+        else if (jsonBody != null)
+            outputWriter.WriteJson(jsonBody);
+        
+        outputWriter.WriteMarkup("\r\n");
     }
 
     private string TraceStyle => outputSettings.Styles?["trace"] ?? "#c0c0c0";

@@ -62,4 +62,6 @@ public interface IOutputService
     void WriteException(Exception exception);
     
     void WriteRequest(HttpRequestMessage request, string? jsonBody, string? rawBody);
+    
+    void WriteResponse(HttpResponseMessage response, string? jsonBody, string? rawBody);
 }
