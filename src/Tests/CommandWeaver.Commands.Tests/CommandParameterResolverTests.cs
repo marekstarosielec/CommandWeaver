@@ -24,7 +24,7 @@ public class CommandParameterResolverTests
             Name = "test-command",
             Parameters =
             [
-                new CommandParameter { Key = "param1", Required = true },
+                new CommandParameter { Key = "param1", Validation = new Validation { Required = true }},
                 new CommandParameter { Key = "param2" }
             ]
         };
@@ -55,7 +55,7 @@ public class CommandParameterResolverTests
                 new CommandParameter
                 {
                     Key = "param1", OtherNames = new List<string> { "alias1", "alias2" }.ToImmutableList(),
-                    Required = true
+                    Validation = new Validation { Required = true }
                 }
             ]
         };

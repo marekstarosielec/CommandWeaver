@@ -30,7 +30,7 @@
     },
     "Help test": {
       "commandName": "Project",
-      "commandLineArgs": "help test --param1 123"
+      "commandLineArgs": "help test"
     },
     "RestCall test": {
       "commandName": "Project",

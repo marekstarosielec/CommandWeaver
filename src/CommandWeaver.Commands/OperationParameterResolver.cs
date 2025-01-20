@@ -31,7 +31,7 @@ internal class OperationParameterResolver(
             // Resolve the value from variables
             var resolvedValue = variableService.ReadVariableValue(parameter.OriginalValue);
             parameters[parameterKey] = parameter with { Value = resolvedValue };
-            validationService.Validate(parameter, resolvedValue, parameterKey); 
+            validationService.Validate(parameter.Validation, resolvedValue, parameterKey); 
         }
 
         return operation with { Parameters = parameters.ToImmutableDictionary() };

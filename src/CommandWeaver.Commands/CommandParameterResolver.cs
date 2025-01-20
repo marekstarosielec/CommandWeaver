@@ -61,7 +61,7 @@ public class CommandParameterResolver(
         // }
         
         var resolvedValue = new DynamicValue(argumentValue);
-        validationService.Validate(parameter, resolvedValue, parameter.Key);
+        validationService.Validate(parameter.Validation, resolvedValue, parameter.Key);
         outputService.Trace($"Argument for parameter '{parameter.Key}' resolved successfully.");
         
         return resolvedValue;

@@ -11,8 +11,8 @@ public class OutputTests
         var parameters = new Dictionary<string, OperationParameter>
         {
             { "value", new OperationParameter { Value = new DynamicValue("Test Value"), Description = "description"} },
-            { "styling", new OperationParameter { Value = new DynamicValue("Markup"), AllowedEnumValues = typeof(Styling), Description = "description" } },
-            { "logLevel", new OperationParameter { Value = new DynamicValue("Information"), AllowedEnumValues = typeof(LogLevel), Description = "description" } }
+            { "styling", new OperationParameter { Value = new DynamicValue("Markup"), Validation = new Validation { AllowedEnumValues = typeof(Styling)}, Description = "description" }},
+            { "logLevel", new OperationParameter { Value = new DynamicValue("Information"), Validation = new Validation { AllowedEnumValues = typeof(LogLevel)}, Description = "description" } }
         }.ToImmutableDictionary();
 
         var output = new Output(mockOutputService) { Parameters = parameters };
@@ -37,7 +37,7 @@ public class OutputTests
         {
             { "value", new OperationParameter { Value = new DynamicValue("Test Value"), Description = "description" } },
             { "logLevel", new OperationParameter { Value = new DynamicValue(), Description = "description" } },
-            { "styling", new OperationParameter { Value = new DynamicValue(), AllowedEnumValues = typeof(Styling), Description = "description" } }
+            { "styling", new OperationParameter { Value = new DynamicValue(), Validation = new Validation { AllowedEnumValues = typeof(Styling)}, Description = "description" } }
         }.ToImmutableDictionary();
 
         var output = new Output(mockOutputService) { Parameters = parameters };

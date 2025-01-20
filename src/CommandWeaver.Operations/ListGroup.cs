@@ -7,9 +7,9 @@ public record ListGroup(IVariableService variableService) : Operation
     public override ImmutableDictionary<string, OperationParameter> Parameters { get; init; } =
         new Dictionary<string, OperationParameter>
         {
-            {"list", new OperationParameter { Description = "List to group", Required = true, List = true}},
-            {"property", new OperationParameter { Description = "Property to group by", Required = true, AllowedType = "text"}},
-            {"saveTo", new OperationParameter { Description = "Name of variable where grouped values will be saved", Required = true, AllowedType = "text"}}
+            {"list", new OperationParameter { Description = "List to group", Validation = new Validation { Required = true, List = true}}},
+            {"property", new OperationParameter { Description = "Property to group by", Validation = new Validation { Required = true, AllowedType = "text"}}},
+            {"saveTo", new OperationParameter { Description = "Name of variable where grouped values will be saved", Validation = new Validation { Required = true, AllowedType = "text"}}}
         }.ToImmutableDictionary();
 
     public override Task Run(CancellationToken cancellationToken)

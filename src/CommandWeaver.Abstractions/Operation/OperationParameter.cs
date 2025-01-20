@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a parameter used in an operation.
 /// </summary>
-public record OperationParameter : IValidatable
+public record OperationParameter
 {
     /// <summary>
     /// Gets or sets the dynamic value for the operation parameter.
@@ -31,20 +31,10 @@ public record OperationParameter : IValidatable
     /// </remarks>
     public required string Description { get; init; }
 
-    /// <inheritdoc />
-    public bool Required { get; init; }
-
-    /// <inheritdoc />
-    public ImmutableList<string>? AllowedTextValues { get; init; }
-
-    /// <inheritdoc />
-    public Type? AllowedEnumValues { get; init; }
-
-    /// <inheritdoc />
-    public string? AllowedType { get; set; }
-    
-    /// <inheritdoc />
-    public bool? List { get; set; }
+    /// <summary>
+    /// Value validation information.
+    /// </summary>
+    public Validation? Validation { get; set; }
     
     /// <summary>
     /// Gets or sets the default value for this parameter.

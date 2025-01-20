@@ -1,17 +1,20 @@
 public interface IValidationService
 {
-    void Validate(IValidatable validatable, DynamicValue valueToValidate, string parameterKey);
+    void Validate(Validation validatable, DynamicValue valueToValidate, string parameterKey);
 }
 
 public class ValidationService(IFlowService flowService) : IValidationService
 {
-    public void Validate(IValidatable validatable, DynamicValue valueToValidate, string parameterKey)
+    public void Validate(Validation? validation, DynamicValue valueToValidate, string parameterKey)
     {
-        if (validatable.Required && valueToValidate.IsNull())
+        if (validation == null)
+            return;
+        
+        if (validation.Required && valueToValidate.IsNull())
             flowService.Terminate($"Parameter '{parameterKey}' is required.");
 
-        if (validatable.List != true)
-            SingleValueValidation(validatable, valueToValidate, parameterKey);
+        if (validation.List != true)
+            SingleValueValidation(validation, valueToValidate, parameterKey);
         else
         {
             //List values validation
@@ -22,25 +25,25 @@ public class ValidationService(IFlowService flowService) : IValidationService
                 flowService.Terminate($"Parameter '{parameterKey}' requires list of values.");
 
             foreach (var listElement in valueToValidate.ListValue!)
-                SingleValueValidation(validatable, listElement, parameterKey);
+                SingleValueValidation(validation, listElement, parameterKey); 
         }
     }
 
-    private void SingleValueValidation(IValidatable validatable, DynamicValue valueToValidate, string parameterKey)
+    private void SingleValueValidation(Validation validation, DynamicValue valueToValidate, string parameterKey)
     {
         //Single value validation
-        AllowedTextValuesValidation(validatable, valueToValidate, parameterKey);
+        AllowedTextValuesValidation(validation, valueToValidate, parameterKey);
 
-        AllowedEnumValuesValidation(validatable, valueToValidate, parameterKey);
+        AllowedEnumValuesValidation(validation, valueToValidate, parameterKey);
 
-        AllowedTypeValidation(validatable, valueToValidate, parameterKey);
+        AllowedTypeValidation(validation, valueToValidate, parameterKey);
     }
 
-    private void AllowedTypeValidation(IValidatable validatable, DynamicValue valueToValidate, string parameterKey)
+    private void AllowedTypeValidation(Validation validation, DynamicValue valueToValidate, string parameterKey)
     {
         if (valueToValidate.IsNull())
             return;
-        switch (validatable.AllowedType?.ToLower())
+        switch (validation.AllowedType?.ToLower())
         {
             case "text" when valueToValidate.TextValue == null:
                 flowService.Terminate($"'{parameterKey}' requires text value.");
@@ -49,20 +52,20 @@ public class ValidationService(IFlowService flowService) : IValidationService
         }
     }
 
-    private void AllowedEnumValuesValidation(IValidatable validatable, DynamicValue valueToValidate, string parameterKey)
+    private void AllowedEnumValuesValidation(Validation validation, DynamicValue valueToValidate, string parameterKey)
     {
-        if (validatable.AllowedEnumValues != null && valueToValidate.TextValue != null &&
-            !Enum.GetNames(validatable.AllowedEnumValues).Any(name =>
+        if (validation.AllowedEnumValues != null && valueToValidate.TextValue != null &&
+            !Enum.GetNames(validation.AllowedEnumValues).Any(name =>
                 name.Equals(valueToValidate.TextValue, StringComparison.OrdinalIgnoreCase)))
             flowService.Terminate($"Invalid value for argument '{parameterKey}'.");
     }
 
-    private void AllowedTextValuesValidation(IValidatable validatable, DynamicValue valueToValidate, string parameterKey)
+    private void AllowedTextValuesValidation(Validation validation, DynamicValue valueToValidate, string parameterKey)
     {
-        if (validatable.AllowedTextValues != null && valueToValidate.TextValue != null &&
-            !validatable.AllowedTextValues.Any(value =>
+        if (validation.AllowedTextValues != null && valueToValidate.TextValue != null &&
+            !validation.AllowedTextValues.Any(value =>
                 string.Equals(value, valueToValidate.TextValue, StringComparison.OrdinalIgnoreCase)))
             flowService.Terminate(
-                $"Invalid value for argument '{parameterKey}'. Allowed values: {string.Join(", ", validatable.AllowedTextValues)}.");
+                $"Invalid value for argument '{parameterKey}'. Allowed values: {string.Join(", ", validation.AllowedTextValues)}.");
     }
 }

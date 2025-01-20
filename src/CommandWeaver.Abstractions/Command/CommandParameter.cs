@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 [SuppressMessage("ReSharper", "ClassWithVirtualMembersNeverInherited.Global")]
-public record CommandParameter : IValidatable
+public record CommandParameter
 {
     public CommandParameter()
     {
@@ -16,7 +16,10 @@ public record CommandParameter : IValidatable
     public CommandParameter(string key, Type? allowedEnumValues)
     {
         Key = key;
-        AllowedEnumValues = allowedEnumValues;
+        Validation = new Validation
+        {
+            AllowedEnumValues = allowedEnumValues
+        };
     }
 
     /// <summary>
@@ -45,20 +48,10 @@ public record CommandParameter : IValidatable
     /// </remarks>
     public string? Description { get; init; }
 
-    /// <inheritdoc />
-    public bool Required { get; set; }
-    
-    /// <inheritdoc />
-    public ImmutableList<string>? AllowedTextValues { get; init; }
-    
-    /// <inheritdoc />
-    public Type? AllowedEnumValues { get; init; }
-
-    /// <inheritdoc />
-    public string? AllowedType { get; set; }
-
-    /// <inheritdoc />
-    public bool? List { get; set; }
+    /// <summary>
+    /// Value validation information.
+    /// </summary>
+    public Validation? Validation { get; set; }
     
     /// <summary>
     /// Allows to set alternative value (or values) if current value is null.

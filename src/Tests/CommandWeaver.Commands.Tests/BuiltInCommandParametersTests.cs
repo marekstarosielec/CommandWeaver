@@ -10,8 +10,8 @@ public class BuiltInCommandParametersTests
         Assert.NotNull(logLevelParameter);
         Assert.Equal("log-level", logLevelParameter.Key);
         Assert.Equal("Controls the detail of logs output by the application.", logLevelParameter.Description);
-        Assert.NotNull(logLevelParameter.AllowedEnumValues);
-        Assert.Equal(typeof(LogLevel), logLevelParameter.AllowedEnumValues);
+        Assert.NotNull(logLevelParameter.Validation?.AllowedEnumValues);
+        Assert.Equal(typeof(LogLevel), logLevelParameter.Validation.AllowedEnumValues);
     }
 
     [Fact]

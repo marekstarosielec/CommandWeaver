@@ -15,7 +15,7 @@ public class SetVariableTests
         {
             { "key", new OperationParameter { Value = new DynamicValue("TestKey"), Description = "TestDescription" } },
             { "value", new OperationParameter { Value = new DynamicValue("TestValue"), Description = "TestDescription" } },
-            { "scope", new OperationParameter { Value = new DynamicValue("Command"), Description = "TestDescription", AllowedEnumValues = typeof(VariableScope) } },
+            { "scope", new OperationParameter { Value = new DynamicValue("Command"), Description = "TestDescription", Validation = new Validation { AllowedEnumValues = typeof(VariableScope) }} },
             { "id", new OperationParameter { Value = new DynamicValue("TestId"), Description = "TestDescription" } }
         }.ToImmutableDictionary();
 

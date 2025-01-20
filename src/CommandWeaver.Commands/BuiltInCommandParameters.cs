@@ -5,7 +5,7 @@
         { 
             Key = "log-level", 
             Description = "Controls the detail of logs output by the application.",
-            AllowedEnumValues = typeof(LogLevel),
+            Validation = new Validation { AllowedEnumValues = typeof(LogLevel) },
         },
         new CommandParameter
         { 

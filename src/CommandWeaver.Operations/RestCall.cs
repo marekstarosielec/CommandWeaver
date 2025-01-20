@@ -8,8 +8,8 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
 
     public override ImmutableDictionary<string, OperationParameter> Parameters { get; init;  } = new Dictionary<string, OperationParameter>
     {
-        {"url", new OperationParameter { Description = "The endpoint of the API to call", Required = true, AllowedType = "text"} },
-        {"method", new OperationParameter { Description = "Operation to perform", Required = true, AllowedTextValues = [HttpMethod.Get.ToString(), HttpMethod.Post.ToString(), HttpMethod.Put.ToString(), HttpMethod.Delete.ToString(), HttpMethod.Patch.ToString() ] } },
+        {"url", new OperationParameter { Description = "The endpoint of the API to call", Validation = new Validation { Required = true, AllowedType = "text"}} },
+        {"method", new OperationParameter { Description = "Operation to perform",  Validation = new Validation{ Required = true, AllowedTextValues = [HttpMethod.Get.ToString(), HttpMethod.Post.ToString(), HttpMethod.Put.ToString(), HttpMethod.Delete.ToString(), HttpMethod.Patch.ToString() ] } }},
         {"headers", new OperationParameter { Description = "Metadata for the request"} },
         {"body", new OperationParameter { Description = "Data sent with the request"} },
         {"timeout", new OperationParameter { Description = "Seconds to wait for a response before failing"} },
