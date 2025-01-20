@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 /// <summary>
 /// Interface applied to CommandParameter and OperationParameter, which defines options of validity check.
 /// </summary>
-public class Validation
+public record Validation
 {
     /// <summary>
     /// Gets or sets a value indicating whether this command parameter is required.
