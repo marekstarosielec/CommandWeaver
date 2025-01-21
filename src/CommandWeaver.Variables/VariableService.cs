@@ -50,5 +50,11 @@ public class VariableService(IReader reader, IWriter writer, IVariableStorage va
         }
     }
 
-    public void WriteVariableValue(VariableScope scope, string path, DynamicValue value, string? respositoryElementId = null) => writer.WriteVariableValue(scope, CurrentSessionName, path, value, respositoryElementId);
+    public void WriteVariableValue(VariableScope scope, string path, DynamicValue value, string? repositoryElementId = null)
+    {
+        //TODO: get extension from serializer without circular dependency.
+        if (repositoryElementId != null && !repositoryElementId.ToLower().EndsWith(".json"))
+            repositoryElementId += ".json";
+        writer.WriteVariableValue(scope, CurrentSessionName, path, value, repositoryElementId);
+    }
 }

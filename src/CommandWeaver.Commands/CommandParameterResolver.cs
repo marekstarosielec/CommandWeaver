@@ -13,9 +13,7 @@ public interface ICommandParameterResolver
 
 /// <inheritdoc />
 public class CommandParameterResolver(
-    IFlowService flowService,
     IOutputService outputService,
-    IInputService inputService,
     IVariableService variableService,
     IValidationService validationService) : ICommandParameterResolver
 {

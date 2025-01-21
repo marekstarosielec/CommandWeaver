@@ -12,7 +12,7 @@ public class OperationParameterResolverTests
     {
         _variableService = Substitute.For<IVariableService>();
         _flowService = Substitute.For<IFlowService>();
-        _resolver = new OperationParameterResolver(_variableService, _flowService, _validationService);
+        _resolver = new OperationParameterResolver(_variableService, _validationService);
     }
 
     [Fact]
