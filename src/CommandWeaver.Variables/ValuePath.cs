@@ -6,7 +6,7 @@
 internal static class ValuePath
 {
     /// <summary>
-    /// Returns whole path embedded into varaiable tags.
+    /// Returns whole path embedded into variable tags.
     /// </summary>
     /// <param name="path"></param>
     /// <returns></returns>
@@ -84,5 +84,5 @@ internal static class ValuePath
     /// </summary>
     /// <param name="path"></param>
     /// <returns></returns>
-    public static string GetVariableName(string path) => path.Split(['.', '['], StringSplitOptions.RemoveEmptyEntries).First();
+    public static string GetVariableName(string path) => path.Split(new [] {'.', '['}, StringSplitOptions.RemoveEmptyEntries).First();
 }
