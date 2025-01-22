@@ -26,14 +26,12 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         await outputService.WriteRequest(request);
         
         var response = await httpClient.SendAsync(request, cancellationToken);
-        var resultBody = await response.Content.ReadAsStringAsync(cancellationToken);
         await outputService.WriteResponse(response);
         
         var lastRestCall = new Dictionary<string, DynamicValue?>();
         lastRestCall["request"] = await GetRequestAsVariable(request);
         lastRestCall["response"] = await GetResponseAsVariable(response); 
         variableServices.WriteVariableValue(VariableScope.Command, "lastRestCall", new DynamicValue(lastRestCall));
-        
     }
 
     private async Task<DynamicValue> GetRequestAsVariable(HttpRequestMessage request)

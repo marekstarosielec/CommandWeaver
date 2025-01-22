@@ -52,9 +52,13 @@ public class VariableService(IReader reader, IWriter writer, IVariableStorage va
 
     public void WriteVariableValue(VariableScope scope, string path, DynamicValue value, string? repositoryElementId = null)
     {
-        //TODO: get extension from serializer without circular dependency.
-        if (repositoryElementId != null && !repositoryElementId.ToLower().EndsWith(".json"))
-            repositoryElementId += ".json";
+        //Set default name
+        if (scope != VariableScope.Command && string.IsNullOrWhiteSpace(repositoryElementId))
+            repositoryElementId = Path.ChangeExtension("variables", JsonHelper.Extension);
+        
+        if (repositoryElementId != null && Path.GetExtension(repositoryElementId).Trim('.').ToLower() !=
+            JsonHelper.Extension.ToLower())
+            repositoryElementId = Path.ChangeExtension(repositoryElementId, JsonHelper.Extension);
         writer.WriteVariableValue(scope, CurrentSessionName, path, value, repositoryElementId);
     }
 }
