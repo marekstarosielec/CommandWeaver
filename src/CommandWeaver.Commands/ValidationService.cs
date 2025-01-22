@@ -1,6 +1,6 @@
 public interface IValidationService
 {
-    void Validate(Validation validatable, DynamicValue valueToValidate, string parameterKey);
+    void Validate(Validation? validatable, DynamicValue valueToValidate, string parameterKey);
 }
 
 public class ValidationService(IFlowService flowService) : IValidationService

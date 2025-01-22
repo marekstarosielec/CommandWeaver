@@ -16,7 +16,6 @@ public interface IOperationParameterResolver
 /// <inheritdoc />
 internal class OperationParameterResolver(
     IVariableService variableService,
-    IFlowService flowService,
     IValidationService validationService) : IOperationParameterResolver
 {
     /// <inheritdoc />

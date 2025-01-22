@@ -3,16 +3,14 @@ using NSubstitute;
 
 public class CommandParameterResolverTests
 {
-    private readonly IFlowService _flowService = Substitute.For<IFlowService>();
     private readonly IOutputService _outputService = Substitute.For<IOutputService>();
-    private readonly IInputService _inputService = Substitute.For<IInputService>();
     private readonly IVariableService _variableService = Substitute.For<IVariableService>();
     private readonly IValidationService _validationService = Substitute.For<IValidationService>();
     private readonly CommandParameterResolver _resolver;
 
     public CommandParameterResolverTests()
     {
-        _resolver = new CommandParameterResolver(_flowService, _outputService, _inputService, _variableService, _validationService);
+        _resolver = new CommandParameterResolver(_outputService, _variableService, _validationService);
     }
 
     [Fact]
