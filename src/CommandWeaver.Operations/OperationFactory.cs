@@ -11,6 +11,7 @@ public class OperationFactory(IServiceProvider serviceProvider) : IOperationFact
         { "forEach", serviceProvider.GetRequiredService<ForEach> },
         { "restCall", serviceProvider.GetRequiredService<RestCall> },
         { "block", serviceProvider.GetRequiredService<Block> },
+        { "extractFromNameValue", serviceProvider.GetRequiredService<ExtractFromNameValue> },
         { "listGroup", serviceProvider.GetRequiredService<ListGroup> }
     };
 

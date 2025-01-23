@@ -79,6 +79,8 @@ public class OperationFactoryTests
         // Mock the IServiceProvider.GetService behavior
         serviceProvider.GetService(typeof(Output))
             .Returns(new Output(outputService));
+        serviceProvider.GetService(typeof(ExtractFromNameValue))
+            .Returns(new ExtractFromNameValue(variableService));
         serviceProvider.GetService(typeof(SetVariable))
             .Returns(new SetVariable(variableService));
         serviceProvider.GetService(typeof(Terminate))

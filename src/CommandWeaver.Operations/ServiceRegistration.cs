@@ -11,6 +11,7 @@ public static class ServiceRegistration
         services.AddTransient<RestCall>();
         services.AddTransient<Block>();
         services.AddTransient<ListGroup>();
+        services.AddTransient<ExtractFromNameValue>();
         services.AddTransient<IOperationFactory, OperationFactory>();
     }
 }

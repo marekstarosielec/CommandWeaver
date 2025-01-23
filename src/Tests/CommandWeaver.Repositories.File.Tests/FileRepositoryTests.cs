@@ -105,7 +105,7 @@ public class FileRepositoryTests
 
         // Assert
         Assert.Contains("CommandWeaver", path);
-        Assert.Contains("Global", path);
+        Assert.Contains("Application", path);
     }
 
     [Fact]
