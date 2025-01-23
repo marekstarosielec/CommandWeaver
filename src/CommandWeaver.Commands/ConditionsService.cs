@@ -25,12 +25,18 @@
             var value1 = variables.ReadVariableValue(condition.AreEqual.Value1);
             var value2 = variables.ReadVariableValue(condition.AreEqual.Value2);
             var areEqualResult = value1 == value2;
-            if (!areEqualResult)
-            {
-                output.Trace($"Condition 'AreEqual' not met for variable: {condition.AreEqual}");
-                return false;
-            }
-            return areEqualResult;
+            if (areEqualResult) return areEqualResult;
+            output.Trace($"Condition 'AreEqual' not met for variable: {condition.AreEqual}");
+            return false;
+        }
+        if (condition?.AreNotEqual != null)
+        {
+            var value1 = variables.ReadVariableValue(condition.AreNotEqual.Value1);
+            var value2 = variables.ReadVariableValue(condition.AreNotEqual.Value2);
+            var areNotEqualResult = value1 != value2;
+            if (areNotEqualResult) return areNotEqualResult;
+            output.Trace($"Condition 'AreNotEqual' not met for variable: {condition.AreNotEqual}");
+            return false;
         }
         return true;
     }
@@ -43,6 +49,7 @@
         DynamicValue? isNull = null;
         DynamicValue? isNotNull = null;
         DoubleValue? areEqual = null;
+        DoubleValue? areNotEqual = null;
 
         foreach (var property in dynamicValue.ObjectValue!.Keys)
             if (string.Equals(property, "IsNull", StringComparison.OrdinalIgnoreCase))
@@ -55,12 +62,18 @@
                     Value1 = dynamicValue.ObjectValue![property].ObjectValue?["value1"] ?? new DynamicValue(),
                     Value2 = dynamicValue.ObjectValue![property].ObjectValue?["value2"] ?? new DynamicValue()
                 };
+            else if (string.Equals(property, "areNotEqual", StringComparison.OrdinalIgnoreCase))
+                areNotEqual = new DoubleValue
+                {
+                    Value1 = dynamicValue.ObjectValue![property].ObjectValue?["value1"] ?? new DynamicValue(),
+                    Value2 = dynamicValue.ObjectValue![property].ObjectValue?["value2"] ?? new DynamicValue()
+                };
             else
             {
                 flow.Terminate($"Unknown condition property: {property}");
                 return null;
             }
 
-        return new Condition{ IsNull = isNull, IsNotNull = isNotNull, AreEqual = areEqual };
+        return new Condition{ IsNull = isNull, IsNotNull = isNotNull, AreEqual = areEqual, AreNotEqual = areNotEqual};
     }
 }

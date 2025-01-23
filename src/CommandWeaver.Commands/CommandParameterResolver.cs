@@ -25,6 +25,9 @@ public class CommandParameterResolver(
         // Convert command parameters (both defined by command and built-in) to variables with values from arguments.
         foreach (var parameter in command.Parameters.Union(BuiltInCommandParameters.List))
         {
+            if (!parameter.Enabled)
+                continue;
+            
             var resolvedValue = ResolveArgument(parameter, arguments);
             variableService.WriteVariableValue(VariableScope.Command, parameter.Key, resolvedValue);
         }

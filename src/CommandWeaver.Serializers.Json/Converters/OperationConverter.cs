@@ -102,6 +102,11 @@ public class OperationConverter(
                     operationInstance.Comment = property.Value.GetString();
                     break;
 
+                case "enabled":
+                    if (property.Value.GetBoolean() == false)
+                        operationInstance.Enabled = false;
+                    break;
+
                 case "operations":
                     ConfigureSubOperations(operationInstance, property.Value);
                     break;

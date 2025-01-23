@@ -26,7 +26,7 @@ public class CommandService(
     public async Task ExecuteOperations(IEnumerable<Operation> operations, CancellationToken cancellationToken)
     {
         foreach (var operation in operations)
-            if (conditionsService.ConditionsAreMet(operation.Conditions) && !cancellationToken.IsCancellationRequested)
+            if (operation.Enabled && conditionsService.ConditionsAreMet(operation.Conditions) && !cancellationToken.IsCancellationRequested)
             {
                 var resolvedOperation = operationParameterResolver.PrepareOperationParameters(operation);
                 outputService.Trace($"Executing operation: {resolvedOperation.Name}");
