@@ -1,37 +1,19 @@
 {
+  "variables": [
+    {
+      "key": "testO",
+      "value": {
+        "operation": "output",
+        "value": "test"
+      }
+    }
+  ],
   "commands": [
     {
       "name": "help test",
       "category": "tests",
-      "parameters":[{
-        "key": "param1",
-        "description": "description1",
-        "ifNull": ["{{ current-session-name1 }}"],
-        "allowedType": "text",
-        "prompt": {
-          "enabled": true,
-          "message": "Give [[#FF0000]]some[[/]] value for [[#00FF00]]param1",
-          "promptStyle": "u"
-        }
-      },{
-        "key": "param2",
-        "description": "description2"
-      }
-      ],
       "operations": [
-        {
-          "operation": "extractFromNameValue",
-          "input": "https://auth.nordicapigateway.com/stage-routing/callback#code=71862485-15d6-4f79-958c-eb10b1ef80cd&state=testState&id_token=eyJhbGciOiJQUzI1NiIsImtpZCI6IlhyRDNXX2J0d0tROGlVblBwa2hMZG9aUFFDZyJ9.eyJzdWIiOiJhYWMtMTQ4OGY1NTUtMjMwYi00OTgxLTg0ZWYtMmY2YjIyNTBkM2E0Iiwib3BlbmJhbmtpbmdfaW50ZW50X2lkIjoiYWFjLTE0ODhmNTU1LTIzMGItNDk4MS04NGVmLTJmNmIyMjUwZDNhNCIsImlzcyI6Imh0dHBzOi8vYXV0aDEub2JpZS51ay5vem9uZWFwaS5pbyIsImF1ZCI6ImI5MmE5YjM1LTdhY2ItNDcxMC05NDNkLTY2OGMwOGI3YTY5NyIsImlhdCI6MTczNzYzNzU2OCwiZXhwIjoxNzM3NjM4NDY4LCJub25jZSI6IjNmZDBiYTU0LWI0MGMtNGJlNy1iZWExLThhY2Q5ZWQxMzcwYSIsImF1dGhfdGltZSI6MTczNzYzNzU2OCwiYXpwIjoiYjkyYTliMzUtN2FjYi00NzEwLTk0M2QtNjY4YzA4YjdhNjk3IiwiYWNyIjoiZGVmYXVsdCIsImNfaGFzaCI6IlNzU0hhdnFpR3J0ejhwc18xYmREWFEiLCJzX2hhc2giOiJSN0xyTjV6LVptbDNtUnNGeGdmNUdnIn0.H_IzMaFpdw9rncZHzkN78WZnJnZ6o8tmBOZtaYMqpEj7UrYCF0DwaeuZ1xIzDizfEef-IW30ubeVRhtRoe6Sll_vZw402mZ5xsWnsOldlNlMPqaIM90Hw81fNf3bpO8RV16RbuKL_yNuuHN_VnilPoFJ4jvYgJQZnUWdSKWh9lDb6GgmTJeJKg5Rz5XUDEeKTSGc3iFisLG8vLL9Sjn0oP77QlEzHj5yP0hpcKYV5hT0jZnWw1gaJwUsgZgzokBLZ6H4MBVUDpK_Ot7PWRldcDPAfUjV5EBDIBM6z4bQuQ84crdPdtiXvkieBAjUZ2BwLmSMkJiJiFerlR6m2fq6ew",
-          "name": "code"
-        },
-        {
-          "operation": "output",
-          "value": "Code: [[{{styles[focused].value}}]]{{name_value}}"
-        },
-        {
-          "operation": "output",
-          "value": "{{param1}}"
-        }
+
       ]
     }
   ]

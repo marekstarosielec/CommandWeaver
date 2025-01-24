@@ -24,4 +24,8 @@ public class OperationFactory(IServiceProvider serviceProvider) : IOperationFact
     /// <inheritdoc />
     public Dictionary<string, Operation> GetOperations() =>
         _operations.ToDictionary(kvp => kvp.Key, kvp => kvp.Value(), StringComparer.OrdinalIgnoreCase);
+
+    /// <inheritdoc />
+    public Operation VariableOperation()
+        => serviceProvider.GetRequiredService<VariableOperations>();
 }

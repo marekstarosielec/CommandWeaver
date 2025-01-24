@@ -64,4 +64,11 @@ public interface IVariableService
     /// This method allows writing or updating a variable value at a specific path and scope, with optional repository-specific storage.
     /// </remarks>
     void WriteVariableValue(VariableScope scope, string path, DynamicValue value, string? respositoryElementId = null); //TODO: Rename to Set and reorder arguments
+
+    /// <summary>
+    /// Returns true is whole provided text is variable.
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    bool IsVariable(string text);
 }
