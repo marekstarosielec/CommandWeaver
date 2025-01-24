@@ -1,10 +1,30 @@
 {
   "variables": [
     {
+      "key": "output-value",
+      "value": "my test"
+    },
+    {
       "key": "testO",
       "value": {
+        "fromVariable": "{{test2}}"
+      }
+    },
+    {
+      "key": "test1",
+      "value": {
         "operation": "output",
-        "value": "test"
+        "value": "{{output-value}}",
+        "conditions": {
+          "isNotNull": "{{output-value}}"
+        }
+      }
+    },
+    {
+      "key": "test2",
+      "value": {
+        "operation": "block",
+        "operations": [ { "fromVariable": "{{test1}}"}]
       }
     }
   ],
@@ -13,7 +33,9 @@
       "name": "help test",
       "category": "tests",
       "operations": [
-
+        {
+          "fromVariable": "{{testO}}"
+        }
       ]
     }
   ]

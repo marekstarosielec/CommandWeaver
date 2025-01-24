@@ -16,12 +16,12 @@ public abstract record Operation
     /// <summary>
     /// Optional comment for an operation.
     /// </summary>
-    public string? Comment { get; set; }
+    public DynamicValue Comment { get; set; } = new DynamicValue();
     
     /// <summary>
     /// Change to false to disable operation.
     /// </summary>
-    public bool Enabled { get; set; } = true;
+    public DynamicValue Enabled { get; set; } = new DynamicValue();
 
     /// <summary>
     /// Gets the dictionary of parameters associated with this operation.

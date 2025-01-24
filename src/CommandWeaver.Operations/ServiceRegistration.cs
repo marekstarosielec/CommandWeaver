@@ -12,7 +12,6 @@ public static class ServiceRegistration
         services.AddTransient<Block>();
         services.AddTransient<ListGroup>();
         services.AddTransient<ExtractFromNameValue>();
-        services.AddTransient<VariableOperations>();
         services.AddTransient<IOperationFactory, OperationFactory>();
     }
 }

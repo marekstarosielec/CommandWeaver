@@ -32,8 +32,8 @@ public class VariableService(IReader reader, IWriter writer, IVariableStorage va
     }
 
     /// <inheritdoc />
-    public DynamicValue ReadVariableValue(DynamicValue variableValue, bool treatTextValueAsVariable = false)
-    =>   reader.ReadVariableValue(variableValue, treatTextValueAsVariable);
+    public DynamicValue ReadVariableValue(DynamicValue variableValue, bool treatTextValueAsVariable = false, int maximumDepth = 51)
+    =>   reader.ReadVariableValue(variableValue, treatTextValueAsVariable, maximumDepth);
 
     /// <inheritdoc />
     public void Add(RepositoryLocation repositoryLocation, string repositoryElementId, IEnumerable<Variable> variables)

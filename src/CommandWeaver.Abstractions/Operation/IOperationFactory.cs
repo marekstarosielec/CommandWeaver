@@ -27,13 +27,5 @@ public interface IOperationFactory
     /// </remarks>
     Dictionary<string, Operation> GetOperations();
 
-    /// <summary>
-    /// Retrieves an operation instance of <see cref="VariableOperation"/>.
-    /// </summary>
-    /// <returns>
-    /// An instance of <see cref="VariableOperation"/>.
-    /// </returns>
-    /// <remarks>
-    /// </remarks>
-    Operation VariableOperation();
+    IEnumerable<Operation> GetOperations(DynamicValue source);
 }

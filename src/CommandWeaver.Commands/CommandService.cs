@@ -5,7 +5,9 @@ public class CommandService(
     IConditionsService conditionsService,
     ICommandMetadataService commandMetadataService,
     IOperationParameterResolver operationParameterResolver,
-    IOutputService outputService) : ICommandService
+    IOutputService outputService,
+    IOperationFactory operationFactory,
+    IVariableService variableService) : ICommandService
 {
     private readonly List<Command> _commands = [];
 
@@ -26,11 +28,23 @@ public class CommandService(
     public async Task ExecuteOperations(IEnumerable<Operation> operations, CancellationToken cancellationToken)
     {
         foreach (var operation in operations)
-            if (operation.Enabled && conditionsService.ConditionsAreMet(operation.Conditions) && !cancellationToken.IsCancellationRequested)
+        {
+            var disabled = variableService.ReadVariableValue(operation.Enabled)?.BoolValue == false;
+            if (!disabled && conditionsService.ConditionsAreMet(operation.Conditions) &&
+                !cancellationToken.IsCancellationRequested)
             {
                 var resolvedOperation = operationParameterResolver.PrepareOperationParameters(operation);
                 outputService.Trace($"Executing operation: {resolvedOperation.Name}");
                 await resolvedOperation.Run(cancellationToken);
             }
+        }
+    }
+
+    public Task ExecuteOperations(IEnumerable<DynamicValue> operations, CancellationToken cancellationToken)
+    {
+        List<Operation> operationList = [];
+        foreach (var operation in operations)
+            operationList.AddRange(operationFactory.GetOperations(operation));
+        return ExecuteOperations(operationList, cancellationToken);
     }
 }
