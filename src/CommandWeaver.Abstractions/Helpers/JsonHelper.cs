@@ -27,4 +27,9 @@ public static class JsonHelper
 
         return false;
     }
+
+    /// <summary>
+    /// Default extension for json files.
+    /// </summary>
+    public static string Extension = "json";
 }

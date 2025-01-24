@@ -49,7 +49,4 @@ public class JsonSerializer(IOperationConverter operationConverter, IDynamicValu
             return false;
         }
     }
-
-    /// <inheritdoc />
-    public string Extension => "json";
 }

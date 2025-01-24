@@ -40,6 +40,11 @@ public record CommandParameter
     public virtual ImmutableList<string>? OtherNames { get; init; }
 
     /// <summary>
+    /// Change to false to disable parameter.
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+    
+    /// <summary>
     /// Gets or sets a description of the command parameter.
     /// </summary>
     /// <remarks>

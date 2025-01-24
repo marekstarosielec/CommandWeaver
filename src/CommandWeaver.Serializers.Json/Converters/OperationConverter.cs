@@ -1,5 +1,7 @@
 using System.Collections.Immutable;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization.Metadata;
 
 /// <summary>
 /// A JSON converter that converts JSON data to an <see cref="Operation"/> instance using a specified context and factory.
@@ -73,6 +75,9 @@ public class OperationConverter(
         }
         
         var operationInstance = operationFactory.GetOperation(operationName);
+        if (operationInstance == null && variableService.IsVariable(operationName))
+            operationInstance = operationFactory.VariableOperation();
+
         if (operationInstance == null)
         {
             flowService.Terminate($"Unknown operation '{operationName}' in {variableService.CurrentlyLoadRepositoryElement}");
@@ -91,6 +96,10 @@ public class OperationConverter(
             switch (property.Name.ToLowerInvariant())
             {
                 case "operation":
+                    // For VariableOperations set name of variable as parameter
+                    if (operationInstance.GetType() == operationFactory.VariableOperation().GetType())
+                        ConfigureParameter(operationInstance, parameters, "variable", _dynamicValueConverter.ReadElement(property.Value));
+
                     // Skip the "operation" property
                     break;
 
@@ -102,12 +111,17 @@ public class OperationConverter(
                     operationInstance.Comment = property.Value.GetString();
                     break;
 
+                case "enabled":
+                    if (property.Value.GetBoolean() == false)
+                        operationInstance.Enabled = false;
+                    break;
+
                 case "operations":
                     ConfigureSubOperations(operationInstance, property.Value);
                     break;
 
                 default:
-                    ConfigureParameter(operationInstance, parameters, property);
+                    ConfigureParameter(operationInstance, parameters, property.Name,  _dynamicValueConverter.ReadElement(property.Value));
                     break;
             
         }
@@ -141,15 +155,15 @@ public class OperationConverter(
         aggregateInstance.Operations = subOperations;
     }
     
-    private void ConfigureParameter(Operation operationInstance, Dictionary<string, OperationParameter> parameters, JsonProperty property)
+    private void ConfigureParameter(Operation operationInstance, Dictionary<string, OperationParameter> parameters, string propertyName, DynamicValue? propertyValue)
     {
-        if (!parameters.TryGetValue(property.Name, out var parameter))
+        if (!parameters.TryGetValue(propertyName, out var parameter))
         {
-            flowService.Terminate($"Unexpected property '{property.Name}' in operation '{operationInstance.Name}' in {variableService.CurrentlyLoadRepositoryElement}");
+            flowService.Terminate($"Unexpected property '{propertyName}' in operation '{operationInstance.Name}' in {variableService.CurrentlyLoadRepositoryElement}");
             return; // Will never be reached due to Terminate
         }
 
-        parameters[property.Name] = parameter with { OriginalValue = _dynamicValueConverter.ReadElement(property.Value) ?? new DynamicValue() };
-        outputService.Trace($"Parameter '{property.Name}' set for operation '{operationInstance.Name}'.");
+        parameters[propertyName] = parameter with { OriginalValue = propertyValue ?? new DynamicValue() };
+        outputService.Trace($"Parameter '{propertyName}' set for operation '{operationInstance.Name}'.");
     }
 }

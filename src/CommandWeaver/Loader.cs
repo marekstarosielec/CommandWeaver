@@ -117,7 +117,7 @@ public class Loader(
             outputService.Debug($"Processing element {variableService.CurrentlyLoadRepository}\\{variableService.CurrentlyLoadRepositoryElement}");
 
             resourceService.Add(repositoryElementInformation);
-            if (!string.Equals(serializer.Extension, repositoryElementInformation.Format, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(JsonHelper.Extension, repositoryElementInformation.Format, StringComparison.OrdinalIgnoreCase))
             {
                 outputService.Trace($"Skipped element {variableService.CurrentlyLoadRepositoryElement} due to unsupported format: {repositoryElementInformation.Format}");
                 continue;

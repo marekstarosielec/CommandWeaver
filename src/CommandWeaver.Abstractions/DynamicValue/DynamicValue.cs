@@ -141,7 +141,7 @@ public record DynamicValue
     /// </summary>
     /// <returns><c>true</c> if the dynamic value is null; otherwise, <c>false</c>.</returns>
     public bool IsNull() =>
-        TextValue is null &&
+        TextValue is null or "" &&
         DateTimeValue is null &&
         BoolValue is null &&
         NumericValue is null &&

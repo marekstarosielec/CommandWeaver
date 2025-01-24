@@ -26,4 +26,14 @@ public interface IOperationFactory
     /// This property provides access to all operations currently managed by the factory, allowing inspection or iteration over the available operations.
     /// </remarks>
     Dictionary<string, Operation> GetOperations();
+
+    /// <summary>
+    /// Retrieves an operation instance of <see cref="VariableOperation"/>.
+    /// </summary>
+    /// <returns>
+    /// An instance of <see cref="VariableOperation"/>.
+    /// </returns>
+    /// <remarks>
+    /// </remarks>
+    Operation VariableOperation();
 }

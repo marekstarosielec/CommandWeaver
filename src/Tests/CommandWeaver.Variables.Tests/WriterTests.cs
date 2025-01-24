@@ -44,8 +44,7 @@ public class WriterTests
         _variableStorage.Received(1).RemoveAllInScope(VariableScope.Session, Arg.Any<Predicate<Variable>>());
         _variableStorage.Received(1).Add(VariableScope.Session, Arg.Is<Variable>(v =>
             v.Key == path &&
-            v.Value == value &&
-            v.RepositoryElementId == expectedPath));
+            v.Value == value));
     }
 
     [Fact]

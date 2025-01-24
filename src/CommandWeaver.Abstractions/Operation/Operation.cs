@@ -19,6 +19,11 @@ public abstract record Operation
     public string? Comment { get; set; }
     
     /// <summary>
+    /// Change to false to disable operation.
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>
     /// Gets the dictionary of parameters associated with this operation.
     /// </summary>
     /// <remarks>

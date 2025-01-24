@@ -39,6 +39,16 @@ internal static class ValuePath
            && path.EndsWith("}}") 
            && path.Trim('{', '}', ' ').Equals(variableName) 
            && path.Trim().IndexOf("{{", 2, StringComparison.Ordinal) == -1;
+    
+    /// <summary>
+    /// Checks if whole path is single variable path.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
+    public static bool WholePathIsSingleVariable(string path) 
+        => path.StartsWith("{{")
+           && path.EndsWith("}}") 
+           && path.Trim().IndexOf("{{", 2, StringComparison.Ordinal) == -1;
 
     /// <summary>
     /// Replaces variable tag in path with value.

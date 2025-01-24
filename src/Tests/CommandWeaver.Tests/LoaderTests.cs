@@ -20,7 +20,6 @@ public class LoaderTests
         var outputSettings = Substitute.For<IOutputSettings>();
         var commandService = Substitute.For<ICommandService>();
         _serializer = Substitute.For<IJsonSerializer>();
-        _serializer.Extension.Returns("json");
         var flowService = Substitute.For<IFlowService>();
         var repositoryElementStorage = Substitute.For<IRepositoryElementStorage>();
         var resourceService = Substitute.For<IResourceService>();

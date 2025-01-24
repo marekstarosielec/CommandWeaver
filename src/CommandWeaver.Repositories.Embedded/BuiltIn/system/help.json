@@ -7,7 +7,8 @@
       "parameters": [
         {
           "key": "command",
-          "description": "Name of command"
+          "description": "Name of command",
+          "enabled": false
         }
       ],
       "operations": [
@@ -55,7 +56,7 @@
               "comment": "Output commands inside category",
               "operation": "forEach",
               "list": "{{ commands }}",
-              "element": "command",
+              "element": "commandInCategory",
               "operations": [
                 {
                   "comment": "Skip all commands that do not match category",
@@ -63,23 +64,23 @@
                   "conditions": {
                     "areEqual": {
                       "value1": "{{commandCategory}}",
-                      "value2": "{{command.definition.category}}"
+                      "value2": "{{commandInCategory.definition.category}}"
                     }
                   },
                   "operations": [
                     {
                       "comment": "Output command name",
                       "operation": "output",
-                      "value": "  [[{{styles[focused].value}}]]{{command.definition.name}}",
+                      "value": "  [[{{styles[focused].value}}]]{{commandInCategory.definition.name}}",
                       "styling": "Markup"
                     },
                     {
                       "comment": "Output command description",
                       "operation": "output",
-                      "value": " - {{ command.definition.description }}",
+                      "value": " - {{ commandInCategory.definition.description }}",
                       "styling": "Markup",
                       "conditions": {
-                        "isNotNull": "{{ command.definition.description }}"
+                        "isNotNull": "{{ commandInCategory.definition.description }}"
                       }
                     },
                     {
@@ -99,6 +100,14 @@
               "styling": "MarkupLine"
             }
           ]
+        },
+        {
+          "operation": "output",
+          "value": "Use help --command [[i]]<command name>[[/]] to see details of command.",
+          "enabled": false,
+          "conditions": {
+            "isNull": "{{ command }}"
+          }
         }
       ]
     }

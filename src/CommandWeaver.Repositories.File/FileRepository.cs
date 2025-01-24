@@ -4,6 +4,8 @@
 
 public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputService outputService, IFlowService flowService) : IRepository
 {
+    private const string _workspace = "Default";
+    
     /// <inheritdoc />
     public IAsyncEnumerable<RepositoryElementInformation> GetList(RepositoryLocation repositoryLocation, string? sessionName, CancellationToken cancellationToken)
     {
@@ -135,8 +137,8 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
     public string GetPath(RepositoryLocation repositoryLocation, string? sessionName = null) =>
         repositoryLocation switch
         {
-            RepositoryLocation.Application => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CommandWeaver", "Global"),
-            RepositoryLocation.Session when !string.IsNullOrWhiteSpace(sessionName) => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CommandWeaver", "Sessions", sessionName),
+            RepositoryLocation.Application => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CommandWeaver", "Workspaces", _workspace, "Application"),
+            RepositoryLocation.Session when !string.IsNullOrWhiteSpace(sessionName) => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CommandWeaver", "Workspaces", _workspace, "Sessions", sessionName),
             RepositoryLocation.Session => throw new ArgumentException("SessionName not provided"),
             RepositoryLocation.BuiltIn => throw new InvalidOperationException("Built-in repository is not supported"),
             _ => throw new ArgumentException("Unsupported location")

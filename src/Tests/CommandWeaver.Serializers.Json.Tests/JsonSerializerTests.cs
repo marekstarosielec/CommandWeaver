@@ -65,16 +65,6 @@ public class JsonSerializerTests
         Assert.NotNull(json);
         Assert.Contains("\"operation\"", json, StringComparison.OrdinalIgnoreCase);
     }
-
-    [Fact]
-    public void Extension_ShouldReturnJson()
-    {
-        // Act
-        var extension = _serializer.Extension;
-
-        // Assert
-        Assert.Equal("json", extension);
-    }
 }
 
 internal class TestOperationConverter(Operation operation) : IOperationConverter

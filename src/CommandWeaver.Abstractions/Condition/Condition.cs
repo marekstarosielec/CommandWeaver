@@ -23,4 +23,9 @@ public record Condition
     /// Gets or sets the condition specifying that the operation should execute if both values are equal.
     /// </summary>
     public DoubleValue? AreEqual { get; init; }
+    
+    /// <summary>
+    /// Gets or sets the condition specifying that the operation should execute if both values are not equal.
+    /// </summary>
+    public DoubleValue? AreNotEqual { get; init; }
 }

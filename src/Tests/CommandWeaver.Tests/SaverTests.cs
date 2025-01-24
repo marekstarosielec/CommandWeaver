@@ -13,7 +13,6 @@ public class SaverTests
 
     public SaverTests()
     {
-        _serializer.Extension.Returns("json");
         _saver = new Saver(
             _repositoryElementStorage,
             _variableStorage,

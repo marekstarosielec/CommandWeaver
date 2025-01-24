@@ -98,7 +98,7 @@ public class Saver(
     /// <param name="id">The ID of the repository element.</param>
     /// <returns>The repository name, defaulting to "variables.json" if the ID is null or empty.</returns>
     private string GetRepositoryName(string? id) =>
-        string.IsNullOrWhiteSpace(id) ? $"variables.{serializer.Extension}" : id;
+        string.IsNullOrWhiteSpace(id) ? $"variables.{JsonHelper.Extension}" : id;
 
     /// <summary>
     /// Groups and transforms variables by their repository element ID.
