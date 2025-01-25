@@ -7,25 +7,25 @@
     {
       "key": "testO",
       "value": {
-        "fromVariable": "{{test2}}"
+        "fromVariable": "{{test1}}"
       }
     },
     {
       "key": "test1",
       "value": {
+        "operation": "block",
+        "operations": [ { "fromVariable": "{{test2}}"}]
+      }
+    },
+    {
+      "key": "test2",
+      "value": [{
         "operation": "output",
         "value": "{{output-value}}",
         "conditions": {
           "isNotNull": "{{output-value}}"
         }
-      }
-    },
-    {
-      "key": "test2",
-      "value": {
-        "operation": "block",
-        "operations": [ { "fromVariable": "{{test1}}"}]
-      }
+      }]
     }
   ],
   "commands": [

@@ -28,19 +28,21 @@ public class OperationFactory(IServiceProvider serviceProvider, IVariableService
 
     public IEnumerable<Operation> GetOperations(DynamicValue source)
     {
-        if (source.ObjectValue != null)
-            return [GetOperation(source)];
-        // if (source.ListValue != null)
-        //     return [GetOperation(source)];
-        throw new NotImplementedException();
+        var resolvedSource = ResolveVariable(source);
+
+        if (resolvedSource.ObjectValue != null)
+            return [GetOperation(resolvedSource)];
+        if (resolvedSource.ListValue != null)
+            return resolvedSource.ListValue.Select(GetOperation);
+
+        flowService.Terminate("Could not resolve operation");
+        throw new Exception($"Could not resolve operation");
     }
 
     private Operation GetOperation(DynamicValue source)
     {
-        ArgumentNullException.ThrowIfNull(source.ObjectValue);
-        var resolvedSource = ResolveVariable(source);
-        var operationInstance = GetOperationInstanceFromName(resolvedSource);
-        operationInstance = ConfigureOperation(operationInstance, resolvedSource);
+        var operationInstance = GetOperationInstanceFromName(source);
+        operationInstance = ConfigureOperation(operationInstance, source);
         return operationInstance;
     }
 
@@ -54,6 +56,9 @@ public class OperationFactory(IServiceProvider serviceProvider, IVariableService
             resolvedSource = variableService.ReadVariableValue(resolvedSource.ObjectValue["fromVariable"], false, 1);
 
         if (!string.IsNullOrWhiteSpace(resolvedSource?.ObjectValue?["operation"].TextValue)) 
+            return resolvedSource;
+        
+        if (resolvedSource?.ListValue != null && resolvedSource.ListValue.All(o => o.ObjectValue?.ContainsKey("operation") == true) == true)
             return resolvedSource;
         
         flowService.Terminate(
@@ -134,16 +139,9 @@ public class OperationFactory(IServiceProvider serviceProvider, IVariableService
             flowService.Terminate($"Operations list is missing in '{operationInstance.Name}'");
             return;
         }
-        var subOperations = source.ListValue
-            .Select<DynamicValue, Operation>(subOperationElement =>
-            {
-                var resolvedSubOperation = ResolveVariable(subOperationElement);
-                var subOperationInstance = GetOperationInstanceFromName(resolvedSubOperation);
-                subOperationInstance = ConfigureOperation(subOperationInstance, resolvedSubOperation);
-                return subOperationInstance;
-            })
-            .ToImmutableList();
-        
-        aggregateInstance.Operations = subOperations;
+
+        //TODO: Add maximum depth here to avoid StackOverflowException
+        var subOperations = source.ListValue.Select(GetOperations);
+        aggregateInstance.Operations = subOperations.SelectMany(s =>s).ToImmutableList();
     }
 }
