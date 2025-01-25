@@ -30,13 +30,11 @@ public class CommandService(
         foreach (var operation in operations)
         {
             var disabled = variableService.ReadVariableValue(operation.Enabled)?.BoolValue == false;
-            if (!disabled && conditionsService.ConditionsAreMet(operation.Conditions) &&
-                !cancellationToken.IsCancellationRequested)
-            {
-                var resolvedOperation = operationParameterResolver.PrepareOperationParameters(operation);
-                outputService.Trace($"Executing operation: {resolvedOperation.Name}");
-                await resolvedOperation.Run(cancellationToken);
-            }
+            if (disabled || !conditionsService.ConditionsAreMet(operation.Conditions) ||
+                cancellationToken.IsCancellationRequested) continue;
+            var resolvedOperation = operationParameterResolver.PrepareOperationParameters(operation);
+            outputService.Trace($"Executing operation: {resolvedOperation.Name}");
+            await resolvedOperation.Run(cancellationToken);
         }
     }
 
