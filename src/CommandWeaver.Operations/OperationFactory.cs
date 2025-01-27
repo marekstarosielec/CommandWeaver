@@ -53,14 +53,19 @@ public class OperationFactory(IServiceProvider serviceProvider, IVariableService
         
         var resolvedSource = source;
         while (resolvedSource.ObjectValue?.ContainsKey("fromVariable") == true && !string.IsNullOrEmpty(resolvedSource.ObjectValue?["fromVariable"].TextValue))
-            resolvedSource = variableService.ReadVariableValue(resolvedSource.ObjectValue["fromVariable"], false, 1);
+            resolvedSource = variableService.ReadVariableValue(resolvedSource.ObjectValue["fromVariable"], true, 1);
 
         if (!string.IsNullOrWhiteSpace(resolvedSource?.ObjectValue?["operation"].TextValue)) 
             return resolvedSource;
-        
-        if (resolvedSource?.ListValue != null && resolvedSource.ListValue.All(o => o.ObjectValue?.ContainsKey("operation") == true) == true)
+
+        if (resolvedSource?.ListValue != null)
+        {
+            //TODO: Instead of changing existing value, new list should be created. Remove index setter from DynamicValueList.
+            for (var x = 0; x < resolvedSource.ListValue.Count; x++)
+                resolvedSource.ListValue[x] = ResolveVariable(resolvedSource.ListValue[x]);
             return resolvedSource;
-        
+        }
+
         flowService.Terminate(
             $"Failed to find operation in {source.ObjectValue?["fromVariable"].TextValue}");
         throw new Exception($"Failed to find operation in {source.ObjectValue?["fromVariable"].TextValue}");

@@ -7,14 +7,14 @@
     {
       "key": "testO",
       "value": {
-        "fromVariable": "{{test1}}"
+        "fromVariable": "test1"
       }
     },
     {
       "key": "test1",
       "value": {
         "operation": "block",
-        "operations": [ { "fromVariable": "{{test2}}"}]
+        "operations": [ { "fromVariable": "test2"}]
       }
     },
     {
@@ -34,7 +34,7 @@
       "category": "tests",
       "operations": [
         {
-          "fromVariable": "{{testO}}"
+          "fromVariable": "testO"
         }
       ]
     }
