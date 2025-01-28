@@ -73,18 +73,18 @@ public class DynamicValueObjectTests
     }
 
     [Fact]
-    public void Indexer_WithNonExistingKey_ShouldThrowException()
+    public void Indexer_WithNonExistingKey_ShouldReturnEmptyValue()
     {
         // Arrange
         var dynamicValueObject = new DynamicValueObject(new Dictionary<string, DynamicValue?>());
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => dynamicValueObject["missingKey"]);
-        Assert.Contains("missingKey", exception.Message);
+        var result = dynamicValueObject["missingKey"];
+        Assert.True(result.IsNull());
     }
 
     [Fact]
-    public void Indexer_WithNullValue_ShouldThrowException()
+    public void Indexer_WithNullValue_ShouldReturnNullValue()
     {
         // Arrange
         var dictionary = new Dictionary<string, DynamicValue?>
@@ -94,8 +94,8 @@ public class DynamicValueObjectTests
         var dynamicValueObject = new DynamicValueObject(dictionary);
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => dynamicValueObject["key"]);
-        Assert.Contains("exists but its value is null", exception.Message);
+        var result = dynamicValueObject["key"];
+        Assert.True(result.IsNull());
     }
 
     [Fact]

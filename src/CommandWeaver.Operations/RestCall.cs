@@ -184,7 +184,7 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
                 return;
             }
 
-            var conditions = header.ObjectValue?.ContainsKey("conditions") == true ? header.ObjectValue?["conditions"] : null;
+            var conditions = header.ObjectValue?["conditions"];
             Condition? parsedConditions = null;
             if (conditions != null && !conditions.IsNull())
                 parsedConditions = conditionsService.GetFromDynamicValue(conditions);

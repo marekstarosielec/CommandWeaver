@@ -48,11 +48,11 @@ public class OperationFactory(IServiceProvider serviceProvider, IVariableService
 
     private DynamicValue ResolveVariable(DynamicValue source)
     {
-        if (source.ObjectValue?.ContainsKey("operation") == true && !string.IsNullOrWhiteSpace(source.ObjectValue?["operation"].TextValue))
+        if (!string.IsNullOrWhiteSpace(source.ObjectValue?["operation"].TextValue))
             return source;
         
         var resolvedSource = source;
-        while (resolvedSource.ObjectValue?.ContainsKey("fromVariable") == true && !string.IsNullOrEmpty(resolvedSource.ObjectValue?["fromVariable"].TextValue))
+        while (!string.IsNullOrEmpty(resolvedSource.ObjectValue?["fromVariable"].TextValue))
             resolvedSource = variableService.ReadVariableValue(resolvedSource.ObjectValue["fromVariable"], true, 1);
 
         if (!string.IsNullOrWhiteSpace(resolvedSource?.ObjectValue?["operation"].TextValue)) 

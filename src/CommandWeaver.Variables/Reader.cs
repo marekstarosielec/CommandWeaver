@@ -189,7 +189,7 @@ public class Reader(IFlowService flowService, IOutputService outputService, IVar
             foreach (var item in storage.ListValue)
             {
                 // Avoid adding duplicates by checking the "key" property
-                var key = item.ObjectValue?.ContainsKey("key") == true ? item.ObjectValue["key"]?.TextValue : null;
+                var key = item.ObjectValue?["key"]?.TextValue;
                 if (key == null || combinedList.All(existing => existing.ObjectValue?["key"].TextValue != key))
                     combinedList.Add(item);
             }
@@ -244,7 +244,7 @@ public class Reader(IFlowService flowService, IOutputService outputService, IVar
         {
             // Access property from object
             var propertyName = section.Groups[1].Value;
-            return currentValue.ObjectValue?.ContainsKey(propertyName) == true ? currentValue.ObjectValue[propertyName] : null; // Gracefully skip invalid properties
+            return currentValue.ObjectValue?[propertyName]; // Gracefully skip invalid properties
         }
 
         if (section.Groups[2].Success)
