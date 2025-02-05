@@ -41,7 +41,7 @@ public record Command
     /// <remarks>
     /// Each operation in this list defines a specific action or series of actions to be executed as part of the command.
     /// </remarks>
-    public List<Operation> Operations { get; set; } = [];
+    public List<DynamicValue> Operations { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the list of parameters associated with the command.

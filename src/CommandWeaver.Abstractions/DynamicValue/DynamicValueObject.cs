@@ -24,9 +24,11 @@ public record DynamicValueObject
     /// <param name="key">The key of the value to get.</param>
     /// <returns>The <see cref="DynamicValue"/> associated with the specified key.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if the key does not exist in the dictionary.</exception>
-    public DynamicValue this[string key] => _data.TryGetValue(key, out var value)
-        ? value ?? throw new ArgumentOutOfRangeException(nameof(key), $"The key '{key}' exists but its value is null.")
-        : throw new ArgumentOutOfRangeException(nameof(key), $"The key '{key}' does not exist in the dictionary.");
+    public DynamicValue this[string key] =>
+        _data.TryGetValue(key, out var value)
+            ? value
+              ?? new DynamicValue()
+            : new DynamicValue();
 
     /// <summary>
     /// Gets the collection of keys in the dictionary.

@@ -11,21 +11,22 @@ public interface IReader
     /// </summary>
     /// <param name="variableValue">The variable value to resolve.</param>
     /// <param name="treatTextValueAsVariable">If true, treats text value as variable name for resolution.</param>
+    /// <param name="maximumDepth">Maximum depth of resolving variables.</param>
     /// <returns>The resolved <see cref="DynamicValue"/> or null if unresolved.</returns>
-    DynamicValue ReadVariableValue(DynamicValue? variableValue, bool treatTextValueAsVariable = false);
+    DynamicValue ReadVariableValue(DynamicValue? variableValue, bool treatTextValueAsVariable = false, int maximumDepth = 50);
 }
 
 /// <inheritdoc />
 public class Reader(IFlowService flowService, IOutputService outputService, IVariableStorage variableStorage) : IReader
 {
     /// <inheritdoc />
-    public DynamicValue ReadVariableValue(DynamicValue? variableValue, bool treatTextValueAsVariable = false)
+    public DynamicValue ReadVariableValue(DynamicValue? variableValue, bool treatTextValueAsVariable = false, int maximumDepth = 50)
     {
         outputService.Trace($"Starting variable resolution.");
         outputService.Write(variableValue ?? new DynamicValue(), LogLevel.Trace, Styling.Raw);
         outputService.Write(new DynamicValue(Environment.NewLine), LogLevel.Trace, Styling.Raw);
 
-        return ReadVariableValue(variableValue, treatTextValueAsVariable, 0) ?? new DynamicValue();
+        return ReadVariableValue(variableValue, treatTextValueAsVariable, 0, false, maximumDepth);
     }
 
     /// <summary>
@@ -33,11 +34,12 @@ public class Reader(IFlowService flowService, IOutputService outputService, IVar
     /// </summary>
     /// <param name="variableValue">The variable value to resolve.</param>
     /// <param name="treatTextValueAsVariable">If true, treats text values as potential variable name for resolution.</param>
-    /// <param name="depth">Current resolving depth.</param>
+    /// <param name="currentDepth">Current resolving depth.</param>
     /// <param name="noResolving">If reached value which has NoResolving flag set, resolving is stopped. This is useful when we have variables containing commands.</param>
+    /// <param name="maximumDepth">Maximum depth of resolving variables.</param>
     /// <returns></returns>
-    private DynamicValue? ReadVariableValue(DynamicValue? variableValue, bool treatTextValueAsVariable, int depth,
-        bool noResolving = false)
+    private DynamicValue ReadVariableValue(DynamicValue? variableValue, bool treatTextValueAsVariable, int currentDepth,
+        bool noResolving, int maximumDepth)
     {
         if (variableValue == null)
         {
@@ -45,13 +47,10 @@ public class Reader(IFlowService flowService, IOutputService outputService, IVar
             return new DynamicValue();
         }
        
-        depth++;
-        if (depth > 50)
-        {
-            flowService.Terminate("Too deep variable resolving. Make sure that you have no circular reference.");
+        currentDepth++;
+        if (currentDepth > maximumDepth)
             return variableValue;
-        }
-
+        
         var result = variableValue with { };
 
         //Allow to stop resolving at some level, e.g. when printing command json, we don't want to have variables inside resolved.
@@ -59,7 +58,7 @@ public class Reader(IFlowService flowService, IOutputService outputService, IVar
             return result;
 
         if (result.TextValue != null)
-            result = ReadTextKey(result.TextValue, treatTextValueAsVariable, depth) ?? variableValue;
+            result = ReadTextKey(result.TextValue, treatTextValueAsVariable, currentDepth, maximumDepth) ?? variableValue;
 
         if (result.DateTimeValue.HasValue)
             return result; // DateTime values don't require further resolution
@@ -74,15 +73,15 @@ public class Reader(IFlowService flowService, IOutputService outputService, IVar
             return result; // Precision (double) values are final
 
         if (result.ObjectValue != null)
-            result = ReadObjectKey(result.ObjectValue, depth);
+            result = ReadObjectKey(result.ObjectValue, currentDepth, maximumDepth);
 
         if (result.ListValue != null)
-            result = ReadListKey(result.ListValue, depth);
+            result = ReadListKey(result.ListValue, currentDepth, maximumDepth);
 
         return result;
     }
 
-    private DynamicValue? ReadTextKey(string key, bool treatTextValueAsVariable, int depth)
+    private DynamicValue? ReadTextKey(string key, bool treatTextValueAsVariable, int currentDepth, int maximumDepth)
     {
         if (string.IsNullOrWhiteSpace(key))
             return null;
@@ -104,12 +103,12 @@ public class Reader(IFlowService flowService, IOutputService outputService, IVar
         if (!wholePathIsSingleVariable && resolvedVariable == null)
         {
             resolvedKey = ValuePath.ReplaceVariableWithValue(resolvedKey, path, string.Empty);
-            return ReadVariableValue(new DynamicValue(resolvedKey), false, depth, false);
+            return ReadVariableValue(new DynamicValue(resolvedKey), false, currentDepth, false, maximumDepth);
         }
 
         if (wholePathIsSingleVariable)
             //If whole key is variable name, it can be replaced by any type.
-            return ReadVariableValue(resolvedVariable, false, depth);
+            return ReadVariableValue(resolvedVariable, false, currentDepth, false, maximumDepth);
 
         if (resolvedVariable!.TextValue != null)
         {
@@ -118,39 +117,39 @@ public class Reader(IFlowService flowService, IOutputService outputService, IVar
             //If variable contains styling, it is replaced here so it is not applied.
             var replacement = resolvedVariable.TextValue.Replace("[[", "/[/[").Replace("]]", "/]/]");
             resolvedKey = ValuePath.ReplaceVariableWithValue(resolvedKey, path, replacement);
-            return ReadVariableValue(new DynamicValue(resolvedKey), false, depth, resolvedVariable.NoResolving);
+            return ReadVariableValue(new DynamicValue(resolvedKey), false, currentDepth, resolvedVariable.NoResolving, maximumDepth);
         }
         
-        if (resolvedVariable!.NumericValue != null)
+        if (resolvedVariable.NumericValue != null)
         {
             //Handling variable that resolved to number as part of text.
             //TODO: Add possibility to define ToString format.
             //TODO: Support other DynamicValues like precision, date, etc.
             var replacement = resolvedVariable.NumericValue.ToString() ?? string.Empty;
             resolvedKey = ValuePath.ReplaceVariableWithValue(resolvedKey, path, replacement);
-            return ReadVariableValue(new DynamicValue(resolvedKey), false, depth, resolvedVariable.NoResolving);
+            return ReadVariableValue(new DynamicValue(resolvedKey), false, currentDepth, resolvedVariable.NoResolving, maximumDepth);
         }
 
         flowService.Terminate($"{{{{ {path} }}}} resolved to a non-text value, it cannot be part of text.");
         return null;
     }
 
-    private DynamicValue ReadObjectKey(DynamicValueObject key, int depth)
+    private DynamicValue ReadObjectKey(DynamicValueObject key, int currentDepth, int maximumDepth)
     {
         var result = new Dictionary<string, DynamicValue?>();
 
         foreach (var keyProperty in key.Keys)
-            result[keyProperty] = ReadVariableValue(key[keyProperty], false, depth);
+            result[keyProperty] = ReadVariableValue(key[keyProperty], false, currentDepth, false, maximumDepth);
 
         return new DynamicValue(new DynamicValueObject(result));
     }
 
-    private DynamicValue? ReadListKey(DynamicValueList key, int depth)
+    private DynamicValue ReadListKey(DynamicValueList key, int currentDepth, int maximumDepth)
     {
         var result = new List<DynamicValue>();
 
         foreach (var listElement in key)
-            result.Add(ReadVariableValue(listElement, false, depth) ?? new DynamicValue());
+            result.Add(ReadVariableValue(listElement, false, currentDepth, false, maximumDepth));
 
         return new DynamicValue(result);
     }
@@ -190,7 +189,7 @@ public class Reader(IFlowService flowService, IOutputService outputService, IVar
             foreach (var item in storage.ListValue)
             {
                 // Avoid adding duplicates by checking the "key" property
-                var key = item.ObjectValue?["key"].TextValue;
+                var key = item.ObjectValue?["key"]?.TextValue;
                 if (key == null || combinedList.All(existing => existing.ObjectValue?["key"].TextValue != key))
                     combinedList.Add(item);
             }
@@ -245,7 +244,7 @@ public class Reader(IFlowService flowService, IOutputService outputService, IVar
         {
             // Access property from object
             var propertyName = section.Groups[1].Value;
-            return currentValue.ObjectValue?.ContainsKey(propertyName) == true ? currentValue.ObjectValue[propertyName] : null; // Gracefully skip invalid properties
+            return currentValue.ObjectValue?[propertyName]; // Gracefully skip invalid properties
         }
 
         if (section.Groups[2].Success)

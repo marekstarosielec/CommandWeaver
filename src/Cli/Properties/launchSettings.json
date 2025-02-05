@@ -34,7 +34,7 @@
     },
     "RestCall test": {
       "commandName": "Project",
-      "commandLineArgs": "ac"
+      "commandLineArgs": "auth"
     }
   }
 }

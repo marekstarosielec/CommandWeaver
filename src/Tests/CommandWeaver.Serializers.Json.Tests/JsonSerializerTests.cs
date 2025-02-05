@@ -1,4 +1,3 @@
-using System.Text.Json;
 using NSubstitute;
 
 public class JsonSerializerTests
@@ -7,32 +6,9 @@ public class JsonSerializerTests
 
     public JsonSerializerTests()
     {
-        var operationConverter = Substitute.For<IOperationConverter>();
         var dynamicValueConverter = Substitute.For<IDynamicValueConverter>();
         var commandConverter = Substitute.For<ICommandConverter>();
-        _serializer = new JsonSerializer(operationConverter, dynamicValueConverter, commandConverter);
-    }
-
-    [Fact]
-    public void TryDeserialize_ShouldReturnTrue_WhenValidJsonIsProvided()
-    {
-        // Arrange
-        var json = @"{ ""operation"": ""TestOperation"", ""parameters"": {} }";
-        var testOperation = Substitute.For<Operation>();
-        var testOperationConverter = new TestOperationConverter(testOperation);
-
-        var dynamicValueConverter = Substitute.For<IDynamicValueConverter>();
-        var commandConverter = Substitute.For<ICommandConverter>();
-        var serializer = new JsonSerializer(testOperationConverter, dynamicValueConverter, commandConverter);
-
-        // Act
-        var result = serializer.TryDeserialize<Operation>(json, out var operation, out var exception);
-
-        // Assert
-        Assert.True(result);
-        Assert.Null(exception);
-        Assert.NotNull(operation);
-        Assert.Equal(testOperation, operation);
+        _serializer = new JsonSerializer(dynamicValueConverter, commandConverter);
     }
     
     [Fact]
@@ -64,25 +40,5 @@ public class JsonSerializerTests
         Assert.Null(exception);
         Assert.NotNull(json);
         Assert.Contains("\"operation\"", json, StringComparison.OrdinalIgnoreCase);
-    }
-}
-
-internal class TestOperationConverter(Operation operation) : IOperationConverter
-{
-    public Operation Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        using var document = JsonDocument.ParseValue(ref reader);
-        var operationName = document.RootElement.GetProperty("operation").GetString();
-
-        // Ensure the operation name matches what we expect in the test
-        if (operationName == "TestOperation")
-            return operation;
-
-        throw new JsonException("Unexpected operation name");
-    }
-
-    public void Write(Utf8JsonWriter writer, Operation value, JsonSerializerOptions options)
-    {
-        throw new NotSupportedException();
     }
 }

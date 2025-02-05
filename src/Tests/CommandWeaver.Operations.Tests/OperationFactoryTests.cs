@@ -8,7 +8,11 @@ public class OperationFactoryTests
     {
         // Arrange
         var serviceProvider = CreateMockServiceProvider();
-        var factory = new OperationFactory(serviceProvider);
+        var variableServiceMock = Substitute.For<IVariableService>();
+        var flowServiceMock = Substitute.For<IFlowService>();
+        var outputServiceMock = Substitute.For<IOutputService>();
+        var conditionsServiceMock = Substitute.For<IConditionsService>();
+        var factory = new OperationFactory(serviceProvider, variableServiceMock, flowServiceMock, outputServiceMock, conditionsServiceMock);
 
         // Act
         var outputOperation = factory.GetOperation("output");
@@ -35,7 +39,11 @@ public class OperationFactoryTests
     {
         // Arrange
         var serviceProvider = CreateMockServiceProvider();
-        var factory = new OperationFactory(serviceProvider);
+        var variableServiceMock = Substitute.For<IVariableService>();
+        var flowServiceMock = Substitute.For<IFlowService>();
+        var outputServiceMock = Substitute.For<IOutputService>();
+        var conditionsServiceMock = Substitute.For<IConditionsService>();
+        var factory = new OperationFactory(serviceProvider, variableServiceMock, flowServiceMock, outputServiceMock, conditionsServiceMock);
 
         // Act
         var operation = factory.GetOperation("unknown");
@@ -49,7 +57,11 @@ public class OperationFactoryTests
     {
         // Arrange
         var serviceProvider = CreateMockServiceProvider();
-        var factory = new OperationFactory(serviceProvider);
+        var variableServiceMock = Substitute.For<IVariableService>();
+        var flowServiceMock = Substitute.For<IFlowService>();
+        var outputServiceMock = Substitute.For<IOutputService>();
+        var conditionsServiceMock = Substitute.For<IConditionsService>();
+        var factory = new OperationFactory(serviceProvider, variableServiceMock, flowServiceMock, outputServiceMock, conditionsServiceMock);
 
         // Act
         var operationTypes = GetAllOperationTypes().ToList();

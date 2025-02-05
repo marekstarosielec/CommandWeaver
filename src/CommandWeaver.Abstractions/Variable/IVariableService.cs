@@ -50,8 +50,9 @@ public interface IVariableService
     /// <param name="treatTextValueAsVariable">
     /// If <c>true</c>, the entire <c>TextValue</c> is treated as a variable name to resolve, rather than resolving individual tags within the value.
     /// </param>
+    /// <param name="maximumDepth">Maximum depth of resolving variables.</param>
     /// <returns>A <see cref="DynamicValue"/> with all variable references resolved to their corresponding values.</returns>
-    DynamicValue ReadVariableValue(DynamicValue variableValue, bool treatTextValueAsVariable = false);
+    DynamicValue ReadVariableValue(DynamicValue variableValue, bool treatTextValueAsVariable = false, int maximumDepth = 51);
 
     /// <summary>
     /// Writes a specified variable value to a path within a given scope.

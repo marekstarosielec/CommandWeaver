@@ -30,8 +30,12 @@ public record DynamicValueList : IEnumerable<DynamicValue>
     /// </summary>
     /// <param name="index">The zero-based index of the element to get.</param>
     /// <returns>The <see cref="DynamicValue"/> at the specified index.</returns>
-    public DynamicValue this[int index] => _items[index];
-
+    public DynamicValue this[int index]
+    {
+        get => _items[index];
+        set => _items = _items.SetItem(index, value);
+    }
+    
     /// <summary>
     /// Returns a new <see cref="DynamicValueList"/> with the specified item added.
     /// </summary>

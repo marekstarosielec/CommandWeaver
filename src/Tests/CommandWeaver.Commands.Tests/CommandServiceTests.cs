@@ -1,5 +1,4 @@
 using NSubstitute;
-using System.Collections.Immutable;
 
 public class CommandServiceTests
 {
@@ -11,7 +10,9 @@ public class CommandServiceTests
         var commandMetadataService = Substitute.For<ICommandMetadataService>();
         var operationParameterResolver = Substitute.For<IOperationParameterResolver>();
         var outputService = Substitute.For<IOutputService>();
-        var commandService = new CommandService(conditionsService, commandMetadataService, operationParameterResolver, outputService);
+        var operationFactory = Substitute.For<IOperationFactory>();
+        var variableService = Substitute.For<IVariableService>();
+        var commandService = new CommandService(conditionsService, commandMetadataService, operationParameterResolver, outputService, operationFactory, variableService);
         const string repositoryElementId = "repo-123";
         var commands = new List<Command>
         {
@@ -42,7 +43,9 @@ public class CommandServiceTests
         var commandMetadataService = Substitute.For<ICommandMetadataService>();
         var operationParameterResolver = Substitute.For<IOperationParameterResolver>();
         var outputService = Substitute.For<IOutputService>();
-        var commandService = new CommandService(conditionsService, commandMetadataService, operationParameterResolver, outputService);
+        var operationFactory = Substitute.For<IOperationFactory>();
+        var variableService = Substitute.For<IVariableService>();
+        var commandService = new CommandService(conditionsService, commandMetadataService, operationParameterResolver, outputService, operationFactory, variableService);
         const string repositoryElementId = "repo-123";
         var commands = new List<Command>
         {
@@ -70,7 +73,11 @@ public class CommandServiceTests
         var commandMetadataService = Substitute.For<ICommandMetadataService>();
         var operationParameterResolver = Substitute.For<IOperationParameterResolver>();
         var outputService = Substitute.For<IOutputService>();
-        var commandService = new CommandService(conditionsService, commandMetadataService, operationParameterResolver, outputService);
+        var operationFactory = Substitute.For<IOperationFactory>();
+        var variableService = Substitute.For<IVariableService>();
+        variableService.ReadVariableValue(Arg.Any<DynamicValue>()).Returns(new DynamicValue(true));
+        conditionsService.ConditionsAreMet(Arg.Any<Condition?>()).Returns(false);
+        var commandService = new CommandService(conditionsService, commandMetadataService, operationParameterResolver, outputService, operationFactory, variableService);
         var operations = new List<Operation>
         {
             new TestOperation("Op1"),
@@ -96,7 +103,11 @@ public class CommandServiceTests
         var commandMetadataService = Substitute.For<ICommandMetadataService>();
         var operationParameterResolver = Substitute.For<IOperationParameterResolver>();
         var outputService = Substitute.For<IOutputService>();
-        var commandService = new CommandService(conditionsService, commandMetadataService, operationParameterResolver, outputService);
+        var operationFactory = Substitute.For<IOperationFactory>();
+        var variableService = Substitute.For<IVariableService>();
+        variableService.ReadVariableValue(Arg.Any<DynamicValue>()).Returns(new DynamicValue(true));
+        conditionsService.ConditionsAreMet(Arg.Any<Condition?>()).Returns(true);
+        var commandService = new CommandService(conditionsService, commandMetadataService, operationParameterResolver, outputService, operationFactory, variableService);
         var cts = new CancellationTokenSource();
         cts.Cancel();
         var operations = new List<Operation>

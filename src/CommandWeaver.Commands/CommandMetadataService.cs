@@ -8,7 +8,6 @@ public interface ICommandMetadataService
     /// </summary>
     /// <param name="repositoryElementId">The ID of the repository element containing the command.</param>
     /// <param name="command">The command to process.</param>
-    /// <param name="serializedCommand">The serialized JSON representation of the command.</param>
     void StoreCommandMetadata(
         string repositoryElementId,
         Command command);
