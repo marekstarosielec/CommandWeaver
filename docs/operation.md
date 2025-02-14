@@ -55,3 +55,45 @@ Operations are defined within the `operations` section of a command.
 - The first operation prints `"Hello, CommandWeaver!"` to the console.
 - The second operation stores `"Welcome!"` in a variable named `greeting`.
 - The third operation prints the value of `greeting`, which results in `"Welcome!"`.
+
+## Loading Operations from Variables
+
+CommandWeaver allows operations to be loaded from [variables](variable.md), making it possible to reuse predefined operations across multiple commands. This approach helps avoid duplication and ensures consistency.
+
+### Example:
+```json
+{
+    "commands": [
+        {
+            "name": "example-command",
+            "operations": [
+                {
+                    "fromVariable": "common-validation"
+                },
+                {
+                    "operation": "Output",
+                    "value": "Processing completed."
+                }
+            ]
+        }
+    ],
+    "variables": [
+        {
+            "key": "common-validation",
+            "value": {
+                "operation": "Terminate",
+                "conditions": {
+                    "IsNull": "{{requiredValue}}"
+                }
+            }
+        }
+    ]
+}
+```
+
+### Explanation:
+- First operation is dynamically loaded from the `common-validation` variable.
+- Second operation prints `"Processing completed."` to the console.
+- The variable `common-validation` contains a [Terminate](operation-terminate.md) operation that stops execution if `requiredValue` is null.
+
+This mechanism enables flexible command composition, allowing commonly used operations to be defined once and reused across multiple commands.
