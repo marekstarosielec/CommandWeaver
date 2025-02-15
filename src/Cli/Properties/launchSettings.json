@@ -30,7 +30,7 @@
     },
     "Help test": {
       "commandName": "Project",
-      "commandLineArgs": "help test"
+      "commandLineArgs": "say-hello"
     },
     "RestCall test": {
       "commandName": "Project",
