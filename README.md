@@ -19,7 +19,24 @@ CommandWeaver is designed with **modularity** in mind, allowing users to extend 
 
 To begin using **CommandWeaver**, follow these steps:
 
-### 📌 Step 1: Determine File Paths
+### 📌 Step 1: Compile application
+To build CommandWeaver from source, navigate to the project directory and run:
+
+```sh
+dotnet build
+```
+
+After a successful build, the compiled executable can be found in the bin/Debug/netX.X/ directory.
+
+### 📌 Step 2: Get the List of Available Commands
+Run the following command to display all available built-in commands:
+```sh
+commandweaver help
+```
+
+Follow next steps to create your own command.
+
+### 📌 Step 3: Determine File Paths
 Run the following command to check where JSON scripts should be stored:
 ```sh
 commandweaver paths
@@ -33,7 +50,9 @@ commandweaver paths
 # Current session path: /home/youruser/.local/share/CommandWeaver/Workspaces/Default/Sessions/session1
 ```
 
-### 📌 Step 2: Create a Command Script
+This will output a list of commands along with descriptions and available parameters.
+
+### 📌 Step 4: Create a Command Script
 Save the following JSON file as `commands.json` in the `Local path` or `Current session path`:
 ```json
 {
@@ -52,7 +71,7 @@ Save the following JSON file as `commands.json` in the `Local path` or `Current 
 ```
 > **Note:** Name of the file is not important as long as it has `json` extension.
 
-### 📌 Step 3: Execute the Command
+### 📌 Step 5: Execute the Command
 ```sh
 commandweaver say-hello
 
@@ -64,11 +83,14 @@ commandweaver say-hello
 
 For more details on specific topics, check out the following:
 
-- [Command](docs/command.md) – Overview of available commands and how to use them.
-- [Command parameter](docs/command-parameter.md) – How to pass parameters to commands.
-- [Operation](docs/operation.md) – Understanding operations and execution flow.
-- [Operation parameter](docs/operation-parameter.md) – Defining and using operation parameters.
-- [Variable](docs/variable.md) – Managing dynamic variables.
-- [Variable scope](docs/variable-scope.md) – Understanding local vs global variables. 
-- [Styling](docs/styling.md) – Customizing the output and logs.
-- [Sessions](docs/session.md) – Handling session-based execution.
+- [Command](docs/command.md) – Understanding what is command and how to use it.
+- [Command parameter](docs/command-parameter.md) – How to define and validate parameters for commands.
+- [Conditions](docs/conditions.md) – Rules that determine whether an operation should execute.
+- [Operation](docs/operation.md) – Understanding operations and how they control execution flow.
+- [Repository](docs/repository.md) – Sources from which commands and variables are loaded.
+- [Resource](docs/resource.md) – Files stored in repositories, including JSON-based commands and external assets.
+- [Session](docs/session.md) – Managing session-scoped variables and execution context.
+- [Styling](docs/styling.md) – Customizing console output using text formatting and colors.
+- [Validation](docs/validation.md) – Enforcing constraints on command parameters and operation inputs.
+- [Variable](docs/variable.md) – Handling dynamic values and passing data between operations.
+- [Variable scope](docs/variable-scope.md) – Defining the lifespan and accessibility of variables.
