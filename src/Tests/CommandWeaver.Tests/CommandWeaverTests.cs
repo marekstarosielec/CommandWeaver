@@ -92,7 +92,7 @@ public class CommandWeaverTests
         // Arrange
         var command = new Command
         {
-            Name = "test-command",
+            Name = new DynamicValue("test-command"),
             Operations = new List<DynamicValue>()
         };
         _commandService.Get("test-command").Returns(command);
@@ -114,7 +114,7 @@ public class CommandWeaverTests
         // Arrange
         var command = new Command
         {
-            Name = "test-command",
+            Name = new DynamicValue("test-command"),
             Operations = new List<DynamicValue>()
         };
         _commandService.Get("test-command").Returns(command);

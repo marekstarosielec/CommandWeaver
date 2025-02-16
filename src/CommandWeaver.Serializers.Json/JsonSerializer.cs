@@ -22,6 +22,7 @@ public class JsonSerializer(IDynamicValueConverter dynamicValueConverter, IComma
         {
             result = null;
             exception = ex;
+            Console.WriteLine(content);
             return false;
         }
     }

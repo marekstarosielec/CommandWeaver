@@ -25,23 +25,25 @@ public class CommandMetadataService(
     {
         outputService.Trace($"Storing metadata for command: {command.Name}");
 
+        var mainName = command.GetAllNames().First();
+        
         // Prepare metadata for the command
         var commandInformation = new Dictionary<string, DynamicValue?>
         {
-            ["key"] = new (command.Name),
+            ["key"] = new DynamicValue(mainName),
             ["source"] = new (command.Source, true),
             ["id"] = new (repositoryElementId),
             ["definition"] = command.Definition with { NoResolving = true},
         };
 
         // Store the metadata into variables
-        var variableKey = $"commands[{command.Name}]";
+        var variableKey = $"commands[{mainName}]";
         variableService.WriteVariableValue(
             VariableScope.Command,
             variableKey,
             new DynamicValue(new DynamicValueObject(commandInformation))
         );
 
-        outputService.Debug($"Metadata for command '{command.Name}' stored with key '{variableKey}'.");
+        outputService.Debug($"Metadata for command '{mainName}' stored with key '{variableKey}'.");
     }
 }

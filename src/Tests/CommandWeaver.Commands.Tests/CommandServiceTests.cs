@@ -16,8 +16,8 @@ public class CommandServiceTests
         const string repositoryElementId = "repo-123";
         var commands = new List<Command>
         {
-            new Command { Name = "cmd1" },
-            new Command { Name = "cmd2" }
+            new Command { Name = new DynamicValue("cmd1") },
+            new Command { Name = new DynamicValue("cmd2") }
         };
 
         // Act
@@ -29,10 +29,10 @@ public class CommandServiceTests
 
         commandMetadataService.Received(1).StoreCommandMetadata(
             repositoryElementId,
-            Arg.Is<Command>(c => c.Name == "cmd1"));
+            Arg.Is<Command>(c => c.Name.TextValue == "cmd1"));
         commandMetadataService.Received(1).StoreCommandMetadata(
             repositoryElementId,
-            Arg.Is<Command>(c => c.Name == "cmd2"));
+            Arg.Is<Command>(c => c.Name.TextValue == "cmd2"));
     }
 
     [Fact]
@@ -47,9 +47,10 @@ public class CommandServiceTests
         var variableService = Substitute.For<IVariableService>();
         var commandService = new CommandService(conditionsService, commandMetadataService, operationParameterResolver, outputService, operationFactory, variableService);
         const string repositoryElementId = "repo-123";
+        var names = new List<DynamicValue> { new("cmd1"), new("alias1") };
         var commands = new List<Command>
         {
-            new Command { Name = "cmd1", OtherNames = ["alias1"] }
+            new Command { Name =  new DynamicValue(names) }
         };
 
         commandService.Add(repositoryElementId, commands);
@@ -61,8 +62,8 @@ public class CommandServiceTests
         // Assert
         Assert.NotNull(commandByName);
         Assert.NotNull(commandByAlias);
-        Assert.Equal("cmd1", commandByName.Name);
-        Assert.Equal("cmd1", commandByAlias.Name);
+        Assert.Equal("cmd1", commandByName.GetAllNames().FirstOrDefault());
+        Assert.Equal("cmd1", commandByAlias.GetAllNames().FirstOrDefault());
     }
 
     [Fact]

@@ -1,14 +1,12 @@
 {
   "commands": [
     {
-      "name": "switch session",
-      "otherNames": ["ss", "switch-session"],
+      "name": ["switch session", "ss", "switch-session"],
       "description": "change current session",
       "category": "Session management",
       "parameters": [
         {
-          "key": "name",
-          "otherNames": ["s"],
+          "name": ["name", "s"],
           "required": true
         }
       ],

@@ -12,7 +12,7 @@ public record Command
     /// Gets or sets the name of the command.
     /// </summary>
     /// <remarks>This is a required field and uniquely identifies the command.</remarks>
-    public required string Name { get; init; }
+    public required DynamicValue Name { get; init; }
 
     /// <summary>
     /// Gets or sets the description of the command.
@@ -26,14 +26,6 @@ public record Command
     /// Command category. Allows to build help list grouped into categories.
     /// </summary>
     public string? Category { get; init; } = string.Empty;
-    
-    /// <summary>
-    /// Gets or sets a list of alternative names for the command.
-    /// </summary>
-    /// <remarks>
-    /// These alternative names can be used to execute the command and provide additional flexibility in usage.
-    /// </remarks>
-    public List<string>? OtherNames { get; init; }
 
     /// <summary>
     /// Gets or sets the list of operations associated with the command.
@@ -60,4 +52,17 @@ public record Command
     /// Contains command deserialize as DynamicValue, so it can be accessed in operations. Filled by to CommandConverter.
     /// </summary>
     public DynamicValue Definition { get; set; } = new ();
+
+    public List<string> GetAllNames()
+    {
+        var result = new List<string>();
+        if (!string.IsNullOrWhiteSpace(Name.TextValue)) 
+            result.Add(Name.TextValue);
+        if (Name.ListValue == null) return result;
+        
+        foreach (var otherName in Name.ListValue)
+            if (!string.IsNullOrWhiteSpace(otherName.TextValue))
+                result.Add(otherName.TextValue);
+        return result;
+    }
 }

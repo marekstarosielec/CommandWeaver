@@ -1,8 +1,7 @@
 {
   "commands": [
     {
-      "name": "resources",
-      "otherNames": ["res"],
+      "name": ["resources", "res"],
       "category": "Help",
       "description": "displays list of all resources available",
       "operations": [

@@ -12,16 +12,6 @@ public record CommandParameter
     {
     }
 
-    [SetsRequiredMembers]
-    public CommandParameter(string key, Type? allowedEnumValues)
-    {
-        Key = key;
-        Validation = new Validation
-        {
-            AllowedEnumValues = allowedEnumValues
-        };
-    }
-
     /// <summary>
     /// Gets or sets the key for the command parameter.
     /// </summary>
@@ -29,7 +19,7 @@ public record CommandParameter
     /// This field is required and serves as the unique identifier for the parameter. It is used to 
     /// match the parameter in the command line arguments.
     /// </remarks>
-    public required string Key { get; init; }
+    public string Key => GetAllNames().First();
 
     /// <summary>
     /// Gets or sets a list of alternative names for the parameter.
@@ -37,7 +27,7 @@ public record CommandParameter
     /// <remarks>
     /// These names provide flexibility in how the parameter can be specified in command line arguments.
     /// </remarks>
-    public virtual ImmutableList<string>? OtherNames { get; init; }
+    public virtual required DynamicValue Name { get; init; }
 
     /// <summary>
     /// Change to false to disable parameter.
@@ -82,4 +72,17 @@ public record CommandParameter
      * allowed values or allowed enum value
      * allowed type
      */
+    
+    public List<string> GetAllNames()
+    {
+        var result = new List<string>();
+        if (!string.IsNullOrWhiteSpace(Name.TextValue)) 
+            result.Add(Name.TextValue);
+        if (Name.ListValue == null) return result;
+        
+        foreach (var otherName in Name.ListValue)
+            if (!string.IsNullOrWhiteSpace(otherName.TextValue))
+                result.Add(otherName.TextValue);
+        return result;
+    }
 }

@@ -4,19 +4,17 @@ public class App(ICommandWeaver commandWeaver, Parser parser)
     public async Task Run(string[] args)
     {
         /*
-            Support for prompts.
-            Support for sessions.
-            Add a command for setting a new log level.
-            Add encryption support for variables.
-            Add multiline argument support.
+         TODO: Add event support to rest operation.
+         TODO: add browser support.
+         TODO: Add help command about single command.
+         TODO: start rest server and add events.
+         TODO: change internal logging level - everything to Trace, operations to Debug
+         
+            TODO: Support for prompts.
+            TODO: Add a command for setting a new log level.
+            TODO: Add encryption support for variables.
+            TODO: Add multiline argument support.
             
-            readme:
-            general description
-            commands
-            operations
-            styling tags
-            variables + syntax + encryption
-            rest command 
         */
         var cancellationTokenSource = new CancellationTokenSource();
         cancellationTokenSource.Token.ThrowIfCancellationRequested();

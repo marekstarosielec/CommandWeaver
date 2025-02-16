@@ -1,5 +1,9 @@
 {
   "profiles": {
+    "No command": {
+      "commandName": "Project",
+      "commandLineArgs": ""
+    },
     "Command information": {
       "commandName": "Project",
       "commandLineArgs": "cmd -n cmd"
@@ -18,7 +22,7 @@
     },
     "Variable": {
       "commandName": "Project",
-      "commandLineArgs": "variable -name styles"
+      "commandLineArgs": "variable -n styles"
     },
     "Help": {
       "commandName": "Project",
@@ -26,11 +30,11 @@
     },
     "Resources": {
       "commandName": "Project",
-      "commandLineArgs": "resources"
+      "commandLineArgs": "res"
     },
     "Help test": {
       "commandName": "Project",
-      "commandLineArgs": "say-hello"
+      "commandLineArgs": "help test"
     },
     "RestCall test": {
       "commandName": "Project",
