@@ -6,7 +6,7 @@
       "description": "this screen",
       "parameters": [
         {
-          "key": "command",
+          "name": "command",
           "description": "Name of command",
           "enabled": false
         }

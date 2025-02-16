@@ -25,17 +25,13 @@
     <EmbeddedResource Include="BuiltIn\system\variables.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="BuiltIn\test\outputTest.json" />
     <None Remove="BuiltIn\system\help.json" />
     <EmbeddedResource Include="BuiltIn\system\help.json" />
     <None Remove="BuiltIn\test\helpTest.json" />
-    <EmbeddedResource Include="BuiltIn\test\helpTest.json" />
     <None Remove="BuiltIn\test\restTest.json" />
-    <EmbeddedResource Include="BuiltIn\test\restTest.json" />
     <None Remove="BuiltIn\system\session\switchSession.json" />
     <EmbeddedResource Include="BuiltIn\system\session\switchSession.json" />
     <None Remove="BuiltIn\test\temp.json" />
-    <EmbeddedResource Include="BuiltIn\test\temp.json" />
     <None Remove="BuiltIn\TestCertificate.pfx" />
     <EmbeddedResource Include="BuiltIn\TestCertificate.pfx" />
   </ItemGroup>

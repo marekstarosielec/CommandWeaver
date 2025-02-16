@@ -1,5 +1,9 @@
 {
   "profiles": {
+    "No command": {
+      "commandName": "Project",
+      "commandLineArgs": ""
+    },
     "Command information": {
       "commandName": "Project",
       "commandLineArgs": "cmd -n cmd"

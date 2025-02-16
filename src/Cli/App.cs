@@ -4,7 +4,6 @@ public class App(ICommandWeaver commandWeaver, Parser parser)
     public async Task Run(string[] args)
     {
         /*
-         TODO: Move test commands out of embedded.
          TODO: Add event support to rest operation.
          TODO: add browser support.
          TODO: Add help command about single command.
