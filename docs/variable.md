@@ -103,3 +103,71 @@ Welcome!
 ```
 
 This allows dynamic variable construction, making it easier to work with complex and structured data.
+
+## Accessing Object Properties
+
+When a variable contains an object, specific properties can be accessed using **dot notation**:  
+`{{variable.property}}`
+
+### Example:
+```json
+{
+    "commands": [
+        {
+            "name": "example-object-variable",
+            "operations": [
+                {
+                    "operation": "SetVariable",
+                    "key": "user",
+                    "value": {
+                        "name": "Alice",
+                        "age": 30,
+                        "location": "New York"
+                    }
+                },
+                {
+                    "operation": "Output",
+                    "value": "User: {{user.name}}, Age: {{user.age}}, Location: {{user.location}}"
+                }
+            ]
+        }
+    ]
+}
+```
+### Explanation
+
+- `SetVariable` operation stores an object in the `user` variable with three properties: `name`, `age`, and `location`.
+- `Output` operation prints specific properties of `user` using dot notation.
+- Expected output will be:  
+  `User: Alice, Age: 30, Location: New York`
+
+In an object, a property can contain another object, and users can access its nested properties using dot notation `{{object.property.subproperty}}`.
+
+## Working with Lists
+
+A variable can store a list containing any type of value, including text, numbers, objects, and nested lists.
+If a list contains **objects**, and each object has a `key` property, the object can be accessed using `{{list[key].property}}` notation.
+
+### Example:
+```json
+{
+    "commands": [
+        {
+            "name": "list-object-key-example",
+            "operations": [
+                {
+                    "operation": "SetVariable",
+                    "key": "users",
+                    "value": [
+                        { "key": "alice", "name": "Alice", "age": 30 },
+                        { "key": "bob", "name": "Bob", "age": 25 }
+                    ]
+                },
+                {
+                    "operation": "Output",
+                    "value": "User: {{users[alice].name}}, Age: {{users[alice].age}}"
+                }
+            ]
+        }
+    ]
+}
