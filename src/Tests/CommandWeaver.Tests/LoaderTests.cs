@@ -145,7 +145,7 @@ public class LoaderTests
         // Arrange
         var repositoryContent = new RepositoryElementContent
         {
-            Commands = ImmutableList.Create(new Command { Name = "TestCommand" })!,
+            Commands = ImmutableList.Create(new Command { Name = new DynamicValue("TestCommand") })!,
             Variables = ImmutableList.Create(new Variable { Key = "TestVariable" })!
         };
 

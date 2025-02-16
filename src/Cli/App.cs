@@ -9,6 +9,7 @@ public class App(ICommandWeaver commandWeaver, Parser parser)
          TODO: add browser support.
          TODO: Add help command about single command.
          TODO: start rest server and add events.
+         TODO: change internal logging level - everything to Trace, operations to Debug
          
             TODO: Support for prompts.
             TODO: Add a command for setting a new log level.

@@ -23,7 +23,7 @@ public class CommandService(
 
     /// <inheritdoc />
     public Command? Get(string name) =>
-        _commands.FirstOrDefault(c => c.Name == name || c.OtherNames?.Any(n => n == name) == true);
+        _commands.FirstOrDefault(c => c.GetAllNames().Any(n => n == name) == true);
     
     public async Task ExecuteOperations(IEnumerable<Operation> operations, CancellationToken cancellationToken)
     {

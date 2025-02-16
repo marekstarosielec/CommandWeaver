@@ -41,18 +41,19 @@ public class CommandValidator(IOutputService outputService) : ICommandValidator
 
         foreach (var command in repositoryElement.Content.Commands)
         {
-            if (string.IsNullOrWhiteSpace(command?.Name))
+            if (command == null)
+                continue;
+
+            var allCommandNames = command.GetAllNames();
+            
+            if (allCommandNames.Count == 0)
             {
                 outputService.Warning($"There is a command with a missing name in {repositoryElement.Id}");
                 continue;
             }
 
-            allNames.Add(new KeyValuePair<string, string>(command.Name, repositoryElement.Id));
-
-            if (command.OtherNames != null)
-                foreach (var otherName in command.OtherNames)
-                    allNames.Add(new KeyValuePair<string, string>(otherName, repositoryElement.Id));
-
+            allNames.AddRange(allCommandNames.Select(cn => new KeyValuePair<string, string>(cn, repositoryElement.Id)));
+           
             ValidateDuplicateParameters(command, repositoryElement.Id);
         }
     }

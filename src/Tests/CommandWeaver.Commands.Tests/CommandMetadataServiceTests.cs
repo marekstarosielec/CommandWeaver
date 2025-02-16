@@ -19,7 +19,7 @@ public class CommandMetadataServiceTests
         var repositoryElementId = "repo-1";
         var source = "{ \"name\": \"test-command\" }";
         var definition = new DynamicValue("mocked-definition");
-        var command = new Command { Name = "test-command", Source = source, Definition = definition };
+        var command = new Command { Name = new DynamicValue("test-command"), Source = source, Definition = definition };
         
         // Act
         _service.StoreCommandMetadata(repositoryElementId, command);

@@ -19,7 +19,7 @@ public class CommandParameterResolverTests
         // Arrange
         var command = new Command
         {
-            Name = "test-command",
+            Name = new ("test-command"),
             Parameters =
             [
                 new CommandParameter { Key = "param1", Validation = new Validation { Required = true }},
@@ -47,7 +47,7 @@ public class CommandParameterResolverTests
         // Arrange
         var command = new Command
         {
-            Name = "test-command",
+            Name = new DynamicValue("test-command"),
             Parameters =
             [
                 new CommandParameter
@@ -78,7 +78,7 @@ public class CommandParameterResolverTests
         // Arrange
         var command = new Command
         {
-            Name = "test-command",
+            Name = new DynamicValue("test-command"),
             Parameters =
             [
                 new CommandParameter { Key = "param1", IfNull = new DynamicValue("abc")},
@@ -100,7 +100,7 @@ public class CommandParameterResolverTests
         // Arrange
         var command = new Command
         {
-            Name = "test-command",
+            Name = new DynamicValue("test-command"),
             Parameters =
             [
                 new CommandParameter { Key = "param1", IfNull = new DynamicValue(new List<DynamicValue>

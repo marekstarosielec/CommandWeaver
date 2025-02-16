@@ -26,11 +26,11 @@
     },
     "Resources": {
       "commandName": "Project",
-      "commandLineArgs": "resources"
+      "commandLineArgs": "res"
     },
     "Help test": {
       "commandName": "Project",
-      "commandLineArgs": "say-hello"
+      "commandLineArgs": "help test"
     },
     "RestCall test": {
       "commandName": "Project",

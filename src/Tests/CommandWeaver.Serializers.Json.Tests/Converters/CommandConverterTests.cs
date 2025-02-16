@@ -9,9 +9,9 @@ public class CommandConverterTests
         // Arrange
         var json = "{\"Name\": \"TestCommand\"}";
         var options = new JsonSerializerOptions();
-        options.Converters.Add(new ConverterWrapper<Command>(new CommandConverter()));
-
         var converter = new CommandConverter();
+        options.Converters.Add(new ConverterWrapper<Command>(converter));
+        options.Converters.Add(new ConverterWrapper<DynamicValue?>(new DynamicValueConverter()));
         var reader = new Utf8JsonReader(new ReadOnlySpan<byte>(System.Text.Encoding.UTF8.GetBytes(json)));
 
         // Act
@@ -19,7 +19,7 @@ public class CommandConverterTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("TestCommand", result?.Name);
+        Assert.Equal("TestCommand", result?.Name?.TextValue);
         Assert.NotNull(result?.Definition);
         Assert.Equal(json, result.Source);
     }
@@ -58,7 +58,7 @@ public class CommandConverterTests
         // Arrange
         var command = new Command
         {
-            Name = "TestCommand",
+            Name = new ("TestCommand"),
             Source = "{\"Name\": \"TestCommand\", \"Parameters\": {\"Key\": \"Value\"}}"
         };
 
@@ -83,9 +83,9 @@ public class CommandConverterTests
         // Arrange
         var json = "{\"Name\": \"TestCommand\"}";
         var options = new JsonSerializerOptions();
-        options.Converters.Add(new ConverterWrapper<Command>(new CommandConverter()));
-    
         var converter = new CommandConverter();
+        options.Converters.Add(new ConverterWrapper<Command>(converter));
+        options.Converters.Add(new ConverterWrapper<DynamicValue?>(new DynamicValueConverter()));
         var jsonBytes = System.Text.Encoding.UTF8.GetBytes(json);
         var reader = new Utf8JsonReader(jsonBytes);
 
@@ -94,7 +94,7 @@ public class CommandConverterTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("TestCommand", result?.Name);
+        Assert.Equal("TestCommand", result?.Name?.TextValue);
 
         // Confirm original options still contain the ConverterWrapper
         Assert.Contains(options.Converters, c => c is ConverterWrapper<Command>);

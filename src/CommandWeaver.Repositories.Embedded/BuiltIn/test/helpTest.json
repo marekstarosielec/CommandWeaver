@@ -30,7 +30,7 @@
   ],
   "commands": [
     {
-      "name": "help test",
+      "name": ["help test", "abc"],
       "category": "tests",
       "operations": [
         {
