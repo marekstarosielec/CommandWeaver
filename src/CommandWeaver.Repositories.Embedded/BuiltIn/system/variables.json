@@ -6,8 +6,7 @@
       "description": "shows variable value",
       "parameters": [
         {
-          "key": "name",
-          "otherNames": ["n"],
+          "name": ["name", "n"],
           "description": "Name of variable",
           "required": true
         }

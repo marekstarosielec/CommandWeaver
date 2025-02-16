@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Castle.Components.DictionaryAdapter;
 using NSubstitute;
 
 public class CommandParameterResolverTests
@@ -22,8 +23,8 @@ public class CommandParameterResolverTests
             Name = new ("test-command"),
             Parameters =
             [
-                new CommandParameter { Key = "param1", Validation = new Validation { Required = true }},
-                new CommandParameter { Key = "param2" }
+                new CommandParameter { Name = new("param1"), Validation = new Validation { Required = true }},
+                new CommandParameter { Name = new("param2") }
             ]
         };
 
@@ -44,6 +45,7 @@ public class CommandParameterResolverTests
     [Fact]
     public void PrepareCommandParameters_ShouldResolveFromOtherNames()
     {
+        var names = new List<DynamicValue> { new ("param1"), new ("alias1"), new ("alias2") };
         // Arrange
         var command = new Command
         {
@@ -52,7 +54,7 @@ public class CommandParameterResolverTests
             [
                 new CommandParameter
                 {
-                    Key = "param1", OtherNames = new List<string> { "alias1", "alias2" }.ToImmutableList(),
+                    Name = new (names),
                     Validation = new Validation { Required = true }
                 }
             ]
@@ -81,7 +83,7 @@ public class CommandParameterResolverTests
             Name = new DynamicValue("test-command"),
             Parameters =
             [
-                new CommandParameter { Key = "param1", IfNull = new DynamicValue("abc")},
+                new CommandParameter { Name = new DynamicValue("param1"), IfNull = new DynamicValue("abc")},
             ]
         };
         _variableService.ReadVariableValue(Arg.Is<DynamicValue>(v => v.TextValue == "abc")).Returns(new DynamicValue("abc"));
@@ -103,7 +105,7 @@ public class CommandParameterResolverTests
             Name = new DynamicValue("test-command"),
             Parameters =
             [
-                new CommandParameter { Key = "param1", IfNull = new DynamicValue(new List<DynamicValue>
+                new CommandParameter { Name = new("param1"), IfNull = new DynamicValue(new List<DynamicValue>
                 {
                     new ("{{abc}}"),
                     new (123)

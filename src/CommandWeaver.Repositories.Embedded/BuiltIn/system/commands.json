@@ -6,8 +6,7 @@
       "description": "outputs source json of single command",
       "parameters": [
         {
-          "key": "name",
-          "otherNames": ["n"],
+          "name": ["name", "n"],
           "description": "Name of command",
           "required": true
         }

@@ -6,8 +6,7 @@
       "category": "Session management",
       "parameters": [
         {
-          "key": "name",
-          "otherNames": ["s"],
+          "name": ["name", "s"],
           "required": true
         }
       ],

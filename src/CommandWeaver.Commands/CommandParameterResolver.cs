@@ -87,20 +87,14 @@ public class CommandParameterResolver(
     /// <returns></returns>
     private string? GetArgumentValue(CommandParameter parameter, Dictionary<string, string> arguments)
     {
-        arguments.TryGetValue(parameter.Key, out var argumentValue);
-        outputService.Debug(argumentValue != null
-            ? $"Argument found for key '{parameter.Key}': {argumentValue}"
-            : $"Argument not found for key '{parameter.Key}'. Checking alternative names.");
-
-        // Check alternative names if the main key is not found
-        if (argumentValue == null && parameter.OtherNames != null)
-            foreach (var otherName in parameter.OtherNames)
-                if (arguments.TryGetValue(otherName, out var otherValue))
-                {
-                    argumentValue = otherValue;
-                    outputService.Debug($"Argument resolved using alternative name '{otherName}': {argumentValue}");
-                    break;
-                }
+        string? argumentValue = null;
+        foreach (var name in parameter.GetAllNames())
+            if (arguments.TryGetValue(name, out var otherValue))
+            {
+                argumentValue = otherValue;
+                outputService.Debug($"Argument resolved using name '{name}': {argumentValue}");
+                break;
+            }
 
         return argumentValue;
     }
