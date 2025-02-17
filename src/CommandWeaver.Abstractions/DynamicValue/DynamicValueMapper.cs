@@ -1,4 +1,7 @@
+using System;
+using System.Linq;
 using System.Reflection;
+using System.Collections;
 
 internal static class DynamicValueMapper
 {
@@ -15,13 +18,25 @@ internal static class DynamicValueMapper
             return default;
 
         var target = new T();
-        MapObject(dynamicValue.ObjectValue, target);
+        MapObject(dynamicValue.ObjectValue, target, typeof(T));
         return target;
     }
 
-    private static void MapObject(DynamicValueObject dynamicObject, object target)
+    private static void MapObject(DynamicValueObject dynamicObject, object target, Type targetType)
     {
-        var targetType = target.GetType();
+        // Ensure all keys in dynamicObject match a property in the target type
+        if (targetType != typeof(DynamicValue))
+        {
+            var targetProperties = targetType
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase)
+                .ToDictionary(p => p.Name.ToLower(), p => p);
+
+            var invalidKeys = dynamicObject.Keys.Where(key => !targetProperties.ContainsKey(key.ToLower())).ToList();
+            if (invalidKeys.Any())
+                throw new InvalidOperationException(
+                    $"Invalid properties found in DynamicValue for target type {targetType.Name}: {string.Join(", ", invalidKeys)}");
+        }
+        
 
         foreach (var key in dynamicObject.Keys)
         {
@@ -29,7 +44,6 @@ internal static class DynamicValueMapper
             if (property == null || !property.CanWrite) continue;
 
             var value = dynamicObject.GetValueOrDefault(key);
-
             if (value == null) continue;
 
             if (property.PropertyType.IsPrimitive || property.PropertyType == typeof(string) || property.PropertyType == typeof(DateTime))
@@ -43,8 +57,38 @@ internal static class DynamicValueMapper
                 if (value.ObjectValue != null)
                 {
                     var nestedInstance = Activator.CreateInstance(property.PropertyType);
-                    MapObject(value.ObjectValue, nestedInstance!);
+                    if (nestedInstance == null) continue;
+                    MapObject(value.ObjectValue, nestedInstance, property.PropertyType);
                     property.SetValue(target, nestedInstance);
+                }
+                // Handle lists
+                else if (value.ListValue != null && typeof(IEnumerable).IsAssignableFrom(property.PropertyType))
+                {
+                    var listType = property.PropertyType.IsGenericType
+                        ? property.PropertyType.GetGenericArguments()[0]
+                        : property.PropertyType.GetElementType();
+
+                    if (listType == null) continue;
+                    
+                    var listInstance = Activator.CreateInstance(typeof(List<>).MakeGenericType(listType)) as IList;
+                    foreach (var item in value.ListValue)
+                    {
+                        object? mappedItem = null;
+
+                        if (item.ObjectValue != null)
+                        {
+                            mappedItem = Activator.CreateInstance(listType);
+                            if (listType == typeof(DynamicValue))
+                                mappedItem = new DynamicValue(item.ObjectValue);
+                            else if (mappedItem != null)
+                                MapObject(item.ObjectValue, mappedItem, listType);
+                        }
+                        else
+                            mappedItem = Convert.ChangeType(item.GetTextValue(), listType);
+
+                        listInstance?.Add(mappedItem);
+                    }
+                    property.SetValue(target, listInstance);
                 }
             }
         }
