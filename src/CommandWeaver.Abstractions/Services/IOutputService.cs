@@ -61,7 +61,7 @@ public interface IOutputService
     
     void WriteException(Exception exception);
     
-    Task WriteRequest(HttpRequestMessage request);
-    
-    Task WriteResponse(HttpResponseMessage response);
+    // Task WriteRequest(HttpRequestMessage request);
+    //
+    // Task WriteResponse(HttpResponseMessage response);
 }

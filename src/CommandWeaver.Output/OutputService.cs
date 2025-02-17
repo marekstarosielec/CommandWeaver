@@ -70,56 +70,56 @@
         outputWriter.WriteException(exception);
     }
 
-    public async Task WriteRequest(HttpRequestMessage request)
-    {
-        outputWriter.WriteMarkup($"[[{outputSettings.Styles?["trace"]}]]----------------------------------------------------------------------------------[[/]]\r\n");
-        outputWriter.WriteMarkup($"[[#005f87]]{request.Method.Method}[[/]]");
-        outputWriter.WriteMarkup($" {request.RequestUri?.AbsoluteUri}");
-        outputWriter.WriteMarkup($" [[{outputSettings.Styles?["trace"]}]]({DateTime.UtcNow:o})[[/]]\r\n\r\n");
-        var headers = request.Headers.ToList().Concat(request.Content?.Headers.ToList() ?? []);
-        foreach (var header in headers)
-        {
-            outputWriter.WriteMarkup($"[[{outputSettings.Styles?["trace"]}]]{header.Key}: [[/]]");
-            outputWriter.WriteMarkup($"[[{outputSettings.Styles?["debug"]}]]{string.Join(',', header.Value)}[[/]]\r\n");
-        }
-        outputWriter.WriteMarkup("\r\n");
-        if (request.Content == null)
-            return;
-        
-        var body = await request.Content.ReadAsStringAsync();
-        if (!JsonHelper.IsJson(body))
-            outputWriter.WriteRaw(body);
-        else
-            outputWriter.WriteJson(body);
-        
-        outputWriter.WriteMarkup("\r\n");
-    }
-
-    public async Task WriteResponse(HttpResponseMessage response)
-    {
-        outputWriter.WriteMarkup($"[[{outputSettings.Styles?["trace"]}]]----------------------------------------------------------------------------------[[/]]\r\n");
-        outputWriter.WriteMarkup($"[[#005f87]]{(int) response.StatusCode}[[/]]");
-        outputWriter.WriteMarkup($" {response.RequestMessage?.RequestUri?.AbsoluteUri}");
-        outputWriter.WriteMarkup($" [[{outputSettings.Styles?["trace"]}]]({DateTime.UtcNow:o})[[/]]\r\n\r\n");
-        var headers = response.Headers.ToList().Concat(response.Content?.Headers.ToList() ?? []);
-        foreach (var header in headers)
-        {
-            outputWriter.WriteMarkup($"[[{outputSettings.Styles?["trace"]}]]{header.Key}: [[/]]");
-            outputWriter.WriteMarkup($"[[{outputSettings.Styles?["debug"]}]]{string.Join(',', header.Value)}[[/]]\r\n");
-        }
-        outputWriter.WriteMarkup("\r\n");
-        
-        if (response.Content == null)
-            return;
-        
-        var body = await response.Content.ReadAsStringAsync();
-        if (!JsonHelper.IsJson(body))
-            outputWriter.WriteRaw(body);
-        else
-            outputWriter.WriteJson(body);
-        
-        outputWriter.WriteMarkup("\r\n");
-    }
+    // public async Task WriteRequest(HttpRequestMessage request)
+    // {
+    //     outputWriter.WriteMarkup($"[[{outputSettings.Styles?["trace"]}]]----------------------------------------------------------------------------------[[/]]\r\n");
+    //     outputWriter.WriteMarkup($"[[#005f87]]{request.Method.Method}[[/]]");
+    //     outputWriter.WriteMarkup($" {request.RequestUri?.AbsoluteUri}");
+    //     outputWriter.WriteMarkup($" [[{outputSettings.Styles?["trace"]}]]({DateTime.UtcNow:o})[[/]]\r\n\r\n");
+    //     var headers = request.Headers.ToList().Concat(request.Content?.Headers.ToList() ?? []);
+    //     foreach (var header in headers)
+    //     {
+    //         outputWriter.WriteMarkup($"[[{outputSettings.Styles?["trace"]}]]{header.Key}: [[/]]");
+    //         outputWriter.WriteMarkup($"[[{outputSettings.Styles?["debug"]}]]{string.Join(',', header.Value)}[[/]]\r\n");
+    //     }
+    //     outputWriter.WriteMarkup("\r\n");
+    //     if (request.Content == null)
+    //         return;
+    //     
+    //     var body = await request.Content.ReadAsStringAsync();
+    //     if (!JsonHelper.IsJson(body))
+    //         outputWriter.WriteRaw(body);
+    //     else
+    //         outputWriter.WriteJson(body);
+    //     
+    //     outputWriter.WriteMarkup("\r\n");
+    // }
+    //
+    // public async Task WriteResponse(HttpResponseMessage response)
+    // {
+    //     outputWriter.WriteMarkup($"[[{outputSettings.Styles?["trace"]}]]----------------------------------------------------------------------------------[[/]]\r\n");
+    //     outputWriter.WriteMarkup($"[[#005f87]]{(int) response.StatusCode}[[/]]");
+    //     outputWriter.WriteMarkup($" {response.RequestMessage?.RequestUri?.AbsoluteUri}");
+    //     outputWriter.WriteMarkup($" [[{outputSettings.Styles?["trace"]}]]({DateTime.UtcNow:o})[[/]]\r\n\r\n");
+    //     var headers = response.Headers.ToList().Concat(response.Content?.Headers.ToList() ?? []);
+    //     foreach (var header in headers)
+    //     {
+    //         outputWriter.WriteMarkup($"[[{outputSettings.Styles?["trace"]}]]{header.Key}: [[/]]");
+    //         outputWriter.WriteMarkup($"[[{outputSettings.Styles?["debug"]}]]{string.Join(',', header.Value)}[[/]]\r\n");
+    //     }
+    //     outputWriter.WriteMarkup("\r\n");
+    //     
+    //     if (response.Content == null)
+    //         return;
+    //     
+    //     var body = await response.Content.ReadAsStringAsync();
+    //     if (!JsonHelper.IsJson(body))
+    //         outputWriter.WriteRaw(body);
+    //     else
+    //         outputWriter.WriteJson(body);
+    //     
+    //     outputWriter.WriteMarkup("\r\n");
+    // }
 
     private string TraceStyle => outputSettings.Styles?["trace"] ?? "#c0c0c0";
     private string DebugStyle => outputSettings.Styles?["debug"] ?? "#808080";
