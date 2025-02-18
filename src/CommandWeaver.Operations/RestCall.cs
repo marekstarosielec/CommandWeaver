@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
-public record RestCall(IConditionsService conditionsService, IVariableService variableServices, IJsonSerializer serializer, IFlowService flowService, IOutputService outputService) : Operation
+public record RestCall(IConditionsService conditionsService, IVariableService variableServices, IJsonSerializer serializer, IFlowService flowService, IOutputService outputService, ICommandService commandService) : Operation
 {
     public override string Name => nameof(RestCall);
 
@@ -14,24 +14,39 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         {"body", new OperationParameter { Description = "Data sent with the request"} },
         {"timeout", new OperationParameter { Description = "Seconds to wait for a response before failing"} },
         {"certificate", new OperationParameter { Description = "Path to certificate file"} },
-        {"certificatePassword", new OperationParameter { Description = "Certificate password if any"} }
+        {"certificatePassword", new OperationParameter { Description = "Certificate password if any"} },
+        {"events", new OperationParameter { Description = "Operations executed in response to given event", Validation = new Validation{ AllowedStrongType = typeof(RestCallEvents)}} }
     }.ToImmutableDictionary();
     
     public override async Task Run(CancellationToken cancellationToken)
     {
         using var handler = GetHttpClientHandler();
         using var httpClient = new HttpClient(handler);
-        
+        var events = Parameters["events"].Value.GetAsObject<RestCallEvents>();
+
         using var request = GetHttpRequestMessage(httpClient);
-        await outputService.WriteRequest(request);
+        var requestVariable = await GetRequestAsVariable(request);
+        variableServices.WriteVariableValue(VariableScope.Command, "rest_request", requestVariable);
+        
+        if (events?.RequestPrepared != null)
+            await commandService.ExecuteOperations(events.RequestPrepared, cancellationToken);
+        
+        //await outputService.WriteRequest(request);
         
         var response = await httpClient.SendAsync(request, cancellationToken);
-        await outputService.WriteResponse(response);
         
-        var lastRestCall = new Dictionary<string, DynamicValue?>();
-        lastRestCall["request"] = await GetRequestAsVariable(request);
-        lastRestCall["response"] = await GetResponseAsVariable(response); 
-        variableServices.WriteVariableValue(VariableScope.Command, "lastRestCall", new DynamicValue(lastRestCall));
+        //await outputService.WriteResponse(response);
+        
+        var responseVariable = await GetResponseAsVariable(response);
+        variableServices.WriteVariableValue(VariableScope.Command, "rest_response", responseVariable);
+
+        if (events?.ResponseReceived != null)
+            await commandService.ExecuteOperations(events.ResponseReceived, cancellationToken);
+
+        // var lastRestCall = new Dictionary<string, DynamicValue?>();
+        // lastRestCall["request"] = await GetRequestAsVariable(request);
+        // lastRestCall["response"] = await GetResponseAsVariable(response); 
+        // variableServices.WriteVariableValue(VariableScope.Command, "lastRestCall", new DynamicValue(lastRestCall));
     }
 
     private async Task<DynamicValue> GetRequestAsVariable(HttpRequestMessage request)
@@ -39,14 +54,14 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         var result = new Dictionary<string, DynamicValue?>
         {
             ["method"] = new (request.Method.ToString()),
-            ["url"] = new (request.RequestUri?.AbsoluteUri)
+            ["url"] = new (request.RequestUri?.AbsoluteUri),
+            ["created"] = new (DateTime.UtcNow.ToString("O"))
         };
         var body = request.Content != null ? await request.Content.ReadAsStringAsync() : null;
         
+        result["body"] = new DynamicValue(body);
         if (!string.IsNullOrWhiteSpace(body) && JsonHelper.IsJson(body) && serializer.TryDeserialize(body, out DynamicValue? bodyModel, out _))
-            result["body"] = bodyModel;
-        else
-            result["body"] = new DynamicValue(body);
+            result["body_json"] = bodyModel;
 
         var headers = new List<DynamicValue>();
         foreach (var header in request.Headers.Concat(request.Content?.Headers.ToList() ?? []))
@@ -66,15 +81,16 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
     {
         var result = new Dictionary<string, DynamicValue?>
         {
-            ["status"] = new ((int)response.StatusCode)
+            ["status"] = new ((int)response.StatusCode),
+            ["created"] = new (DateTime.UtcNow.ToString("O")),
+            ["success"] = new (response.IsSuccessStatusCode)
         };
         var body = await response.Content.ReadAsStringAsync();
         
+        result["body"] = new DynamicValue(body);
         if (!string.IsNullOrWhiteSpace(body) && JsonHelper.IsJson(body) && serializer.TryDeserialize(body, out DynamicValue? bodyModel, out _))
-            result["body"] = bodyModel;
-        else
-            result["body"] = new DynamicValue(body);
-
+            result["body_json"] = bodyModel;
+            
         var headers = new List<DynamicValue>();
         foreach (var header in response.Headers.Concat(response.Content.Headers))
         {
@@ -211,5 +227,12 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
     private record Certificate
     {
         public string? FromResource { get; set; }
+    }
+
+    private record RestCallEvents
+    {
+        public List<DynamicValue>? RequestPrepared { get; set; }
+        public List<DynamicValue>? ResponseReceived { get; set; }
+        
     }
 }

@@ -60,8 +60,4 @@ public interface IOutputService
     void Write(DynamicValue value, LogLevel? logLevel, Styling styling);
     
     void WriteException(Exception exception);
-    
-    Task WriteRequest(HttpRequestMessage request);
-    
-    Task WriteResponse(HttpResponseMessage response);
 }

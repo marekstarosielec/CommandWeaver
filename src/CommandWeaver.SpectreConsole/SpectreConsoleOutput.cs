@@ -18,6 +18,7 @@ public class SpectreConsoleOutput : IOutputWriter
         try
         {
             AnsiConsole.Write(new JsonText(json));
+            AnsiConsole.WriteLine();
         }
         catch
         {

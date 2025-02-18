@@ -37,6 +37,8 @@ public class ValidationService(IFlowService flowService) : IValidationService
         AllowedEnumValuesValidation(validation, valueToValidate, parameterKey);
 
         AllowedTypeValidation(validation, valueToValidate, parameterKey);
+        
+        AllowedStrongTypeValidation(validation, valueToValidate, parameterKey);
     }
 
     private void AllowedTypeValidation(Validation validation, DynamicValue valueToValidate, string parameterKey)
@@ -50,6 +52,14 @@ public class ValidationService(IFlowService flowService) : IValidationService
                 break;
             //case "number":
         }
+    }
+    
+    private void AllowedStrongTypeValidation(Validation validation, DynamicValue valueToValidate, string parameterKey)
+    {
+        if (valueToValidate.IsNull())
+            return;
+        
+  
     }
 
     private void AllowedEnumValuesValidation(Validation validation, DynamicValue valueToValidate, string parameterKey)

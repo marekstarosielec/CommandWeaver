@@ -34,6 +34,8 @@
     <None Remove="BuiltIn\test\temp.json" />
     <None Remove="BuiltIn\TestCertificate.pfx" />
     <EmbeddedResource Include="BuiltIn\TestCertificate.pfx" />
+    <None Remove="BuiltIn\system\restCall.json" />
+    <EmbeddedResource Include="BuiltIn\system\restCall.json" />
   </ItemGroup>
 
   <ItemGroup>

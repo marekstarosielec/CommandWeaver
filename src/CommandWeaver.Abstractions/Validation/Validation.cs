@@ -37,6 +37,11 @@ public record Validation
     public string? AllowedType { get; set; }
     
     /// <summary>
+    /// Indicates what c# type is allowed. Use only from code.
+    /// </summary>
+    public Type? AllowedStrongType { get; set; }
+    
+    /// <summary>
     /// Indicates whether list should be used. <c>true</c> - only lists are allowed. <c>false</c> - lists are not allowed. 
     /// </summary>
     public bool? List { get; set; }
