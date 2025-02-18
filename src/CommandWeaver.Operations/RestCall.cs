@@ -54,7 +54,8 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         var result = new Dictionary<string, DynamicValue?>
         {
             ["method"] = new (request.Method.ToString()),
-            ["url"] = new (request.RequestUri?.AbsoluteUri)
+            ["url"] = new (request.RequestUri?.AbsoluteUri),
+            ["created"] = new (DateTime.UtcNow.ToString("O"))
         };
         var body = request.Content != null ? await request.Content.ReadAsStringAsync() : null;
         
@@ -80,7 +81,8 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
     {
         var result = new Dictionary<string, DynamicValue?>
         {
-            ["status"] = new ((int)response.StatusCode)
+            ["status"] = new ((int)response.StatusCode),
+            ["created"] = new (DateTime.UtcNow.ToString("O"))
         };
         var body = await response.Content.ReadAsStringAsync();
         

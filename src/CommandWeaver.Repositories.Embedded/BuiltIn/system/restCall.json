@@ -1,0 +1,131 @@
+{
+  "variables":[
+    {
+      "key": "output-request",
+      "value": [
+        {
+          "comment": "divider",
+          "operation": "output",
+          "value": "[[{{styles[trace].value}}]]----------------------------------------------------------------------------------[[/]]"
+        },
+        {
+          "comment": "method",
+          "operation": "output",
+          "value": "[[#005f87]]{{rest_request.method}}[[/]]",
+          "styling": "Markup"
+        },
+        {
+          "comment": "url",
+          "operation": "output",
+          "value": " {{rest_request.url}}",
+          "styling": "Markup"
+        },
+        {
+          "comment": "date",
+          "operation": "output",
+          "value": " [[{{styles[trace].value}}]]({{rest_request.created}})[[/]]"
+        },
+        {
+          "comment": "headers",
+          "operation": "forEach",
+          "list": "{{rest_request.headers}}",
+          "element": "header",
+          "operations": [{
+            "comment": "header",
+            "operation": "output",
+            "value": "[[{{styles[trace].value}}]]{{header.key}}[[/]]: [[{{styles[debug].value}}]]{{header.value}}[[/]]"
+          }]
+        },
+        {
+          "comment": "empty line before body",
+          "operation": "output",
+          "value": "\r\n",
+          "styling": "raw"
+        },
+        {
+          "comment": "body as json",
+          "operation": "output",
+          "value": "{{rest_request.body_json}}",
+          "styling": "json",
+          "conditions": {
+            "isNotNull": "{{rest_request.body_json}}"
+          }
+        },
+        {
+          "comment": "body as text",
+          "operation": "output",
+          "value": "{{rest_request.body}}\r\n",
+          "styling": "raw",
+          "conditions": {
+            "isNull": "{{rest_request.body_json}}",
+            "isNotNull": "{{rest_request.body}}"
+          }
+        }
+      ]
+    },
+    {
+      "key": "output-response",
+      "value": [
+        {
+          "comment": "empty line as divider",
+          "operation": "output",
+          "value": "\r\n",
+          "styling": "Markup"
+        },
+        {
+          "comment": "method",
+          "operation": "output",
+          "value": "[[#005f87]]{{rest_response.status}}[[/]]",
+          "styling": "Markup"
+        },
+        {
+          "comment": "url",
+          "operation": "output",
+          "value": " {{rest_request.url}}",
+          "styling": "Markup"
+        },
+        {
+          "comment": "date",
+          "operation": "output",
+          "value": " [[{{styles[trace].value}}]]({{rest_response.created}})[[/]]"
+        },
+        {
+          "comment": "headers",
+          "operation": "forEach",
+          "list": "{{rest_response.headers}}",
+          "element": "header",
+          "operations": [{
+            "comment": "header",
+            "operation": "output",
+            "value": "[[{{styles[trace].value}}]]{{header.key}}[[/]]: [[{{styles[debug].value}}]]{{header.value}}[[/]]"
+          }]
+        },
+        {
+          "comment": "empty line before body",
+          "operation": "output",
+          "value": "\r\n",
+          "styling": "raw"
+        },
+        {
+          "comment": "body as json",
+          "operation": "output",
+          "value": "{{rest_response.body_json}}",
+          "styling": "json",
+          "conditions": {
+            "isNotNull": "{{rest_response.body_json}}"
+          }
+        },
+        {
+          "comment": "body as text",
+          "operation": "output",
+          "value": "{{rest_response.body}}\r\n",
+          "styling": "raw",
+          "conditions": {
+            "isNull": "{{rest_response.body_json}}",
+            "isNotNull": "{{rest_response.body}}"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -65,10 +65,7 @@
             outputWriter.WriteMarkup(value.NumericValue.Value.ToString());
     }
 
-    public void WriteException(Exception exception)
-    {
-        outputWriter.WriteException(exception);
-    }
+    public void WriteException(Exception exception) => outputWriter.WriteException(exception);
 
     // public async Task WriteRequest(HttpRequestMessage request)
     // {
