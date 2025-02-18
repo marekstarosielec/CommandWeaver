@@ -82,7 +82,8 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         var result = new Dictionary<string, DynamicValue?>
         {
             ["status"] = new ((int)response.StatusCode),
-            ["created"] = new (DateTime.UtcNow.ToString("O"))
+            ["created"] = new (DateTime.UtcNow.ToString("O")),
+            ["success"] = new (response.IsSuccessStatusCode)
         };
         var body = await response.Content.ReadAsStringAsync();
         

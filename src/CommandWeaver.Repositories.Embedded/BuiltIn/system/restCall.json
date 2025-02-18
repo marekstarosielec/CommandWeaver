@@ -73,10 +73,28 @@
           "styling": "Markup"
         },
         {
-          "comment": "method",
+          "comment": "status when success",
           "operation": "output",
           "value": "[[#005f87]]{{rest_response.status}}[[/]]",
-          "styling": "Markup"
+          "styling": "Markup",
+          "conditions": {
+            "areEqual": {
+              "value1": "{{rest_response.success}}",
+              "value2": true
+            }
+          }
+        },
+        {
+          "comment": "status when fail",
+          "operation": "output",
+          "value": "[[{{styles[error].value}}]]{{rest_response.status}}[[/]]",
+          "styling": "Markup",
+          "conditions": {
+            "areEqual": {
+              "value1": "{{rest_response.success}}",
+              "value2": false
+            }
+          }
         },
         {
           "comment": "url",
