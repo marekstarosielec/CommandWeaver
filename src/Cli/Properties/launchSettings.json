@@ -36,9 +36,9 @@
       "commandName": "Project",
       "commandLineArgs": "help test"
     },
-    "RestCall test": {
+    "Authorize": {
       "commandName": "Project",
-      "commandLineArgs": "restTest"
+      "commandLineArgs": "auth"
     }
   }
 }

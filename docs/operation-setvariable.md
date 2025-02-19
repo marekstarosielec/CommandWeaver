@@ -8,7 +8,7 @@ The SetVariable operation assigns a value to a variable, optionally specifying i
 
 | Parameter | Description | Required | Allowed Values |
 |-----------|-------------|----------|---------------|
-| **key** | The name of the variable to set. | ✅ Yes | `text` |
+| **name** | The name of the variable to set. | ✅ Yes | `text` |
 | **value** | The value to assign to the variable. | No | Any type |
 | **scope** | The scope of the variable. If not specified, it defaults to the command scope. | No | `Command`, `Session`, `Application` |
 | **id** | The optional file name where the variable should be stored. Ignored for `Command` scope variables. | No | `text` |
@@ -30,7 +30,7 @@ The SetVariable operation creates or updates a variable.
       "operations": [
         {
           "operation": "SetVariable",
-          "key": "username",
+          "name": "username",
           "value": "Alice",
           "id": "user-config.json"
         },
@@ -59,7 +59,7 @@ A variable can be assigned a specific scope.
 ```json
 {
   "operation": "SetVariable",
-  "key": "sessionUser",
+  "name": "sessionUser",
   "value": "Alice",
   "scope": "Session",
   "id": "session-data.json"

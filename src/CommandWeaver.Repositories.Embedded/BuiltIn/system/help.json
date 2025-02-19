@@ -71,7 +71,7 @@
                     {
                       "comment": "Output command name",
                       "operation": "output",
-                      "value": "  [[{{styles[focused].value}}]]{{commandInCategory.definition.name}}",
+                      "value": "  [[{{styles[focused].value}}]]{{commandInCategory.key}}",
                       "styling": "Markup"
                     },
                     {

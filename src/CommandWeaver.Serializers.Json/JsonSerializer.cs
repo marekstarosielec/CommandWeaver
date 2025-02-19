@@ -1,3 +1,4 @@
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -39,6 +40,7 @@ public class JsonSerializer(IDynamicValueConverter dynamicValueConverter, IComma
                     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                     Converters = { new ConverterWrapper<DynamicValue?>(dynamicValueConverter), new ConverterWrapper<Command>(commandConverter) },
                     WriteIndented = true,
+                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // Prevents escaping `&`, `<`, `>`, `+`
                 });
             exception = null;
             return true;

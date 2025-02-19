@@ -39,7 +39,7 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         
         var responseVariable = await GetResponseAsVariable(response);
         variableServices.WriteVariableValue(VariableScope.Command, "rest_response", responseVariable);
-
+        var t = variableServices.ReadVariableValue(new DynamicValue("{{rest_response.body_json.nextStages}}"));
         if (events?.ResponseReceived != null)
             await commandService.ExecuteOperations(events.ResponseReceived, cancellationToken);
 
@@ -90,7 +90,7 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         result["body"] = new DynamicValue(body);
         if (!string.IsNullOrWhiteSpace(body) && JsonHelper.IsJson(body) && serializer.TryDeserialize(body, out DynamicValue? bodyModel, out _))
             result["body_json"] = bodyModel;
-            
+        
         var headers = new List<DynamicValue>();
         foreach (var header in response.Headers.Concat(response.Content.Headers))
         {
