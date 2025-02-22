@@ -4,11 +4,13 @@ public class App(ICommandWeaver commandWeaver, Parser parser)
     public async Task Run(string[] args)
     {
         /*
-         TODO: Add event support to rest operation.
+         TODO: Add validation AllowedStrongTypeValidation for rest call.
+         TODO: DefaultValue for operation parameter should be DynamicValue and should be filled automatically when evaluating, instead on in GetEnumValue
          TODO: add browser support.
          TODO: Add help command about single command.
          TODO: start rest server and add events.
          TODO: change internal logging level - everything to Trace, operations to Debug
+         TODO: fail if unexpected command parameter was provided
          
             TODO: Support for prompts.
             TODO: Add a command for setting a new log level.

@@ -171,3 +171,38 @@ If a list contains **objects**, and each object has a `key` property, the object
         }
     ]
 }
+```
+
+### Accessing List Elements by Index
+
+Lists also support **index-based access**, allowing retrieval of specific elements using zero-based indexing.
+
+#### Example:
+```json
+{
+    "commands": [
+        {
+            "name": "list-index-example",
+            "operations": [
+                {
+                    "operation": "SetVariable",
+                    "key": "items",
+                    "value": ["apple", "banana", "cherry"]
+                },
+                {
+                    "operation": "Output",
+                    "value": "First item: {{items[0]}}, Last item: {{items[2]}}"
+                }
+            ]
+        }
+    ]
+}
+```
+
+#### Explanation:
+- `SetVariable` creates a list `items` with three elements.
+- `Output` retrieves elements using their index:
+  - `{{items[0]}}` resolves to `"apple"`.
+  - `{{items[2]}}` resolves to `"cherry"`.
+
+This allows direct access to list elements without iteration.

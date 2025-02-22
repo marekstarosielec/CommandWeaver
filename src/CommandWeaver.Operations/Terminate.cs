@@ -7,12 +7,14 @@ public record Terminate(IFlowService flowService) : Operation
     public override ImmutableDictionary<string, OperationParameter> Parameters { get; init; } = new Dictionary<string, OperationParameter>
     {
         { "message", new OperationParameter { Description = "Message displayed before terminating" } },
-        //TODO: Add exit code - need to check numeric DynamicValue handling.
+        { "exitCode", new OperationParameter { Description = "Application exit code", Validation = new Validation { AllowedType = "number"} } },
     }.ToImmutableDictionary(); 
 
     public override Task Run(CancellationToken cancellationToken)
     {
-        flowService.Terminate(Parameters["message"].Value.TextValue);
+        //TODO: Add Default value to parameter when it is implemented.
+        var exitCode = Parameters["exitCode"]?.Value.NumericValue ?? 1;
+        flowService.Terminate(Parameters["message"].Value.TextValue, (int) exitCode);
         return Task.CompletedTask;
     }
 }

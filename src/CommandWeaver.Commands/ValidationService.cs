@@ -50,7 +50,9 @@ public class ValidationService(IFlowService flowService) : IValidationService
             case "text" when valueToValidate.TextValue == null:
                 flowService.Terminate($"'{parameterKey}' requires text value.");
                 break;
-            //case "number":
+            case "number" when valueToValidate.NumericValue == null:
+                flowService.Terminate($"'{parameterKey}' requires number.");
+                break;
         }
     }
     
@@ -59,7 +61,7 @@ public class ValidationService(IFlowService flowService) : IValidationService
         if (valueToValidate.IsNull())
             return;
         
-  
+        
     }
 
     private void AllowedEnumValuesValidation(Validation validation, DynamicValue valueToValidate, string parameterKey)
