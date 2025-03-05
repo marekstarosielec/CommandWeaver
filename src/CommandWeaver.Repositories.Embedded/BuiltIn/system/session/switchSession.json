@@ -13,7 +13,7 @@
       "operations": [
         {
           "operation": "setVariable",
-          "key": "current-session-name",
+          "name": "current-session-name",
           "value": "{{name}}",
           "scope": "Application"
         },
