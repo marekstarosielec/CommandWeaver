@@ -7,11 +7,12 @@ public class CommandParameterResolverTests
     private readonly IOutputService _outputService = Substitute.For<IOutputService>();
     private readonly IVariableService _variableService = Substitute.For<IVariableService>();
     private readonly IValidationService _validationService = Substitute.For<IValidationService>();
+    private readonly IFlowService _flowServiceService = Substitute.For<IFlowService>();
     private readonly CommandParameterResolver _resolver;
 
     public CommandParameterResolverTests()
     {
-        _resolver = new CommandParameterResolver(_outputService, _variableService, _validationService);
+        _resolver = new CommandParameterResolver(_outputService, _variableService, _validationService, _flowServiceService);
     }
 
     [Fact]
