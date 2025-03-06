@@ -5,7 +5,6 @@ public class App(ICommandWeaver commandWeaver, Parser parser)
     {
         /*
             TODO: DefaultValue for operation parameter should be DynamicValue and should be filled automatically when evaluating, instead on in GetEnumValue
-            TODO: fail if unexpected command parameter was provided
             TODO: add browser support.
             TODO: start rest server and add events.
             TODO: change internal logging level - everything to Trace, operations to Debug     

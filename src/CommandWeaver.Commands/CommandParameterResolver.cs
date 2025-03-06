@@ -15,25 +15,41 @@ public interface ICommandParameterResolver
 public class CommandParameterResolver(
     IOutputService outputService,
     IVariableService variableService,
-    IValidationService validationService) : ICommandParameterResolver
+    IValidationService validationService,
+    IFlowService flowService) : ICommandParameterResolver
 {
     /// <inheritdoc />
     public void PrepareCommandParameters(Command command, Dictionary<string, string> arguments)
     {
         outputService.Trace($"Preparing parameters for command: {command.Name}");
 
+        var allParameters = command.Parameters.Union(BuiltInCommandParameters.List).ToList();
+        var knownKeys = allParameters.Where(p => p.Enabled).SelectMany(p => p.GetAllNames()).ToHashSet(StringComparer.OrdinalIgnoreCase);
+    
+        // Detect unknown arguments
+        var unknownArguments = arguments.Keys
+            .Where(k => !knownKeys.Contains(k, StringComparer.OrdinalIgnoreCase))
+            .ToList();
+        if (unknownArguments.Any())
+        {
+            flowService.Terminate($"Unknown arguments: {string.Join(", ", unknownArguments)}");
+            throw new InvalidOperationException(
+                $"Command '{command.Name}' received unknown arguments: {string.Join(", ", unknownArguments)}");
+        }
+
         // Convert command parameters (both defined by command and built-in) to variables with values from arguments.
-        foreach (var parameter in command.Parameters.Union(BuiltInCommandParameters.List))
+        foreach (var parameter in allParameters)
         {
             if (!parameter.Enabled)
                 continue;
-            
+
             var resolvedValue = ResolveArgument(parameter, arguments);
             variableService.WriteVariableValue(VariableScope.Command, parameter.Key, resolvedValue);
         }
-        
+
         outputService.Trace($"Parameters for command '{command.Name}' prepared successfully.");
     }
+
     
     /// <summary>
     /// Resolves the argument for a given command parameter by validating and checking constraints.
