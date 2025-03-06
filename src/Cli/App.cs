@@ -12,6 +12,8 @@ public class App(ICommandWeaver commandWeaver, Parser parser)
             TODO: Add a command for setting a new log level.
             TODO: Add encryption support for variables.
             TODO: Add multiline argument support.
+            TODO: Replace flow.terminate with exception throwing.
+            TODO: Review all classes - refactor, check coverage.
         */
         
         var cancellationTokenSource = new CancellationTokenSource();
