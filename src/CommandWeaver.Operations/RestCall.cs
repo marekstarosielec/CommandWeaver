@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
@@ -224,6 +225,5 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
     {
         public List<DynamicValue>? RequestPrepared { get; set; }
         public List<DynamicValue>? ResponseReceived { get; set; }
-        
     }
 }

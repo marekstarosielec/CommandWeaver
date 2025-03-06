@@ -4,20 +4,17 @@ public class App(ICommandWeaver commandWeaver, Parser parser)
     public async Task Run(string[] args)
     {
         /*
-         TODO: Add validation AllowedStrongTypeValidation for rest call.
-         TODO: DefaultValue for operation parameter should be DynamicValue and should be filled automatically when evaluating, instead on in GetEnumValue
-         TODO: add browser support.
-         TODO: Add help command about single command.
-         TODO: start rest server and add events.
-         TODO: change internal logging level - everything to Trace, operations to Debug
-         TODO: fail if unexpected command parameter was provided
-         
+            TODO: DefaultValue for operation parameter should be DynamicValue and should be filled automatically when evaluating, instead on in GetEnumValue
+            TODO: fail if unexpected command parameter was provided
+            TODO: add browser support.
+            TODO: start rest server and add events.
+            TODO: change internal logging level - everything to Trace, operations to Debug     
             TODO: Support for prompts.
             TODO: Add a command for setting a new log level.
             TODO: Add encryption support for variables.
             TODO: Add multiline argument support.
-            
         */
+        
         var cancellationTokenSource = new CancellationTokenSource();
         cancellationTokenSource.Token.ThrowIfCancellationRequested();
 
