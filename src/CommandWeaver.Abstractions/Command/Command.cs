@@ -41,8 +41,8 @@ public record Command
     /// <remarks>
     /// These parameters provide additional context or configuration for the command and its operations.
     /// </remarks>
-    public List<CommandParameter> Parameters { get; set; } = [];
-    
+    public List<DynamicValue> Parameters { get; set; } = [];
+ 
     /// <summary>
     /// Contains json definition of command. Filled by to CommandConverter.
     /// </summary>

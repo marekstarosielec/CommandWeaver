@@ -7,7 +7,7 @@
       "operations": [
         {
           "operation": "output",
-          "value": "Local path: [[u]]{{ LocalPath }}[[/]]"
+          "value": "Application path: [[u]]{{ LocalPath }}[[/]]"
         },
         {
           "operation": "output",

@@ -4,12 +4,13 @@ public class CommandMetadataServiceTests
 {
     private readonly IVariableService _variableService = Substitute.For<IVariableService>();
     private readonly IOutputService _outputService = Substitute.For<IOutputService>();
+    private readonly ICommandParameterResolver _commandParameterResolver = Substitute.For<ICommandParameterResolver>();
 
     private readonly CommandMetadataService _service;
 
     public CommandMetadataServiceTests()
     {
-        _service = new CommandMetadataService(_variableService, _outputService);
+        _service = new CommandMetadataService(_variableService, _outputService, _commandParameterResolver);
     }
 
     [Fact]
@@ -20,7 +21,9 @@ public class CommandMetadataServiceTests
         var source = "{ \"name\": \"test-command\" }";
         var definition = new DynamicValue("mocked-definition");
         var command = new Command { Name = new DynamicValue("test-command"), Source = source, Definition = definition };
-        
+        _commandParameterResolver.GetCommandParameters(command).Returns([]);
+        //_commandParameterResolver.GetCommandParameterAsDynamicValue(Arg.Any<CommandParameter>()).Returns(new DynamicValue("t"));
+       
         // Act
         _service.StoreCommandMetadata(repositoryElementId, command);
 

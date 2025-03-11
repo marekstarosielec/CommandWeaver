@@ -7,7 +7,9 @@
       "parameters": [
         {
           "name": ["name", "s"],
-          "required": true
+          "validation": {
+            "required": true
+          }
         }
       ],
       "operations": [

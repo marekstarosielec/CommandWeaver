@@ -51,6 +51,8 @@ internal static class DynamicValueMapper
                 // Map simple types directly
                 property.SetValue(target, Convert.ChangeType(value.GetTextValue(), property.PropertyType));
             }
+            else if (property.PropertyType == typeof(DynamicValue))
+                property.SetValue(target, value);
             else if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
             {
                 // Handle nested objects

@@ -141,206 +141,212 @@
     },
     {
       "key": "command-help",
-      "value": [
-        {
-          "comment": "Check all commands",
-          "operation": "forEach",
-          "list": "{{ commands }}",
-          "element": "everyCommand",
-          "operations": [
-            {
-              "comment": "Check name of each command",
-              "operation": "forEach",
-              "list": "{{ everyCommand.definition.name }}",
-              "element": "everyCommandName",
-              "operations": [
-                {
-                  "comment": "Continue if it matches name in parameter",
-                  "operation": "block",
-                  "conditions": {
-                    "areEqual": {
-                      "value1": "{{everyCommandName}}",
-                      "value2": "{{command}}"
-                    }
-                  },
-                  "operations": [
-                    {
-                      "comment": "usage line",
-                      "operation": "block",
-                      "operations": [
-                        {
-                          "operation": "output",
-                          "value": "Usage:\r\n"
-                        },
-                        {
-                          "operation": "output",
-                          "value": "[[{{styles[focused].value}}]]  {{everyCommand.key}}[[/]]",
-                          "styling": "Markup"
-                        },
-                        {
-                          "comment": "Output every command parameter in usage line",
-                          "operation": "forEach",
-                          "list": "{{ everyCommand.definition.parameters }}",
-                          "element": "everyCommandParameter",
-                          "operations": [
-                            {
-                              "comment": "space between parameters",
-                              "operation": "output",
-                              "value": " ",
-                              "styling": "Markup"
-                            },
-                            {
-                              "comment": "output optional parameter opening bracket",
-                              "operation": "output",
-                              "value": "[",
-                              "styling": "Markup",
-                              "conditions": {
-                                "areNotEqual": {
-                                  "value1": "{{everyCommandParameter.validation.required}}",
-                                  "value2": true
-                                }
-                              }
-                            },
-                            {
-                              "comment": "output parameter name",
-                              "operation": "output",
-                              "value": "--{{everyCommandParameter.name[0]}} <value>",
-                              "styling": "Markup"
-                            },
-                            {
-                              "comment": "output optional parameter opening bracket",
-                              "operation": "output",
-                              "value": "]",
-                              "styling": "Markup",
-                              "conditions": {
-                                "areNotEqual": {
-                                  "value1": "{{everyCommandParameter.validation.required}}",
-                                  "value2": true
-                                }
-                              }
-                            }
-                          ],
-                          "conditions": {
-                            "isNotNull": "{{everyCommand.definition.parameters}}"
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "comment": "name and aliases",
-                      "operation": "block",
-                      "operations": [
-                        {
-                          "operation": "output",
-                          "value": "\r\n\r\n\r\nName and aliases:\r\n"
-                        },
-                        {
-                          "comment": "Output command names",
-                          "operation": "forEach",
-                          "list": "{{ everyCommand.definition.name }}",
-                          "element": "everyCommandMatchingName",
-                          "operations": [
-                            {
-                              "comment": "Output every command name",
-                              "operation": "output",
-                              "value": "  [[{{styles[focused].value}}]]{{everyCommandMatchingName}}[[/]]"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "comment": "arguments",
-                      "operation": "block",
-                      "operations": [
-                        {
-                          "operation": "output",
-                          "value": "\r\n\r\nArguments:\r\n  "
-                        },
-                        {
-                          "comment": "Output every command parameter",
-                          "operation": "forEach",
-                          "list": "{{ everyCommand.definition.parameters }}",
-                          "element": "everyCommandParameter",
-                          "operations": [
-                            {
-                              "comment": "Output every command parameter name",
-                              "operation": "forEach",
-                              "list": "{{ everyCommandParameter.name }}",
-                              "element": "everyCommandParameterName",
-                              "operations": [
-                                {
-                                  "comment": "parameter name",
-                                  "operation": "output",
-                                  "value": "--{{everyCommandParameterName}}, ",
-                                  "styling": "Markup"
-                                }
-                              ]
-                            },
-                            {
-                              "comment": "remove last command parameter separator",
-                              "operation": "output",
-                              "value": "\b\b \u001b[30G",
-                              "styling": "Markup"
-                            },
-                            {
-                              "comment": "parameter optional",
-                              "operation": "output",
-                              "value": " - Optional.",
-                              "styling": "Markup",
-                              "conditions": {
-                                "areNotEqual": {
-                                  "value1": "{{everyCommandParameter.validation.required}}",
-                                  "value2": true
-                                }
-                              }
-                            },
-                            {
-                              "comment": "parameter optional",
-                              "operation": "output",
-                              "value": " - Required.",
-                              "styling": "Markup",
-                              "conditions": {
-                                "areEqual": {
-                                  "value1": "{{everyCommandParameter.validation.required}}",
-                                  "value2": true
-                                }
-                              }
-                            },
-                            {
-                              "comment": "description",
-                              "operation": "output",
-                              "value": " {{ everyCommandParameter.description }}"
-                            }
-                          ]
-                        }
-                      ],
-                      "conditions": {
-                        "isNotNull": "{{everyCommand.definition.parameters}}"
+      "value": {
+        "operation": "block",
+        "conditions": {
+          "isNotNull": "{{ command }}"
+        },
+        "operations": [
+          {
+            "comment": "Check all commands",
+            "operation": "forEach",
+            "list": "{{ commands }}",
+            "element": "everyCommand",
+            "operations": [
+              {
+                "comment": "Check name of each command",
+                "operation": "forEach",
+                "list": "{{ everyCommand.definition.name }}",
+                "element": "everyCommandName",
+                "operations": [
+                  {
+                    "comment": "Continue if it matches name in parameter",
+                    "operation": "block",
+                    "conditions": {
+                      "areEqual": {
+                        "value1": "{{everyCommandName}}",
+                        "value2": "{{command}}"
                       }
                     },
-                    {
-                      "comment": "description",
-                      "operation": "output",
-                      "value": "\r\n\r\n{{everyCommand.definition.description}}"
-                    },
-                    {
-                      "comment": "Command help was printed, stop flow.",
-                      "operation": "terminate",
-                      "exitCode": 0
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "comment": "If flow was not terminated earlier, means command with given name was not found.",
-          "operation": "output",
-          "value": "[[{{styles[error].value}}]]Command {{command}} not found."
-        }
-      ]
+                    "operations": [
+                      {
+                        "comment": "usage line",
+                        "operation": "block",
+                        "operations": [
+                          {
+                            "operation": "output",
+                            "value": "Usage:\r\n"
+                          },
+                          {
+                            "operation": "output",
+                            "value": "[[{{styles[focused].value}}]]  {{everyCommand.key}}[[/]]",
+                            "styling": "Markup"
+                          },
+                          {
+                            "comment": "Output every command parameter in usage line",
+                            "operation": "forEach",
+                            "list": "{{ everyCommand.parameters }}",
+                            "element": "everyCommandParameter",
+                            "operations": [
+                              {
+                                "comment": "space between parameters",
+                                "operation": "output",
+                                "value": " ",
+                                "styling": "Markup"
+                              },
+                              {
+                                "comment": "output optional parameter opening bracket",
+                                "operation": "output",
+                                "value": "[",
+                                "styling": "Markup",
+                                "conditions": {
+                                  "areNotEqual": {
+                                    "value1": "{{everyCommandParameter.validation.required}}",
+                                    "value2": true
+                                  }
+                                }
+                              },
+                              {
+                                "comment": "output parameter name",
+                                "operation": "output",
+                                "value": "--{{everyCommandParameter.name[0]}} <value>",
+                                "styling": "Markup"
+                              },
+                              {
+                                "comment": "output optional parameter opening bracket",
+                                "operation": "output",
+                                "value": "]",
+                                "styling": "Markup",
+                                "conditions": {
+                                  "areNotEqual": {
+                                    "value1": "{{everyCommandParameter.validation.required}}",
+                                    "value2": true
+                                  }
+                                }
+                              }
+                            ],
+                            "conditions": {
+                              "isNotNull": "{{everyCommand.parameters}}"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "comment": "name and aliases",
+                        "operation": "block",
+                        "operations": [
+                          {
+                            "operation": "output",
+                            "value": "\r\n\r\n\r\nName and aliases:\r\n"
+                          },
+                          {
+                            "comment": "Output command names",
+                            "operation": "forEach",
+                            "list": "{{ everyCommand.definition.name }}",
+                            "element": "everyCommandMatchingName",
+                            "operations": [
+                              {
+                                "comment": "Output every command name",
+                                "operation": "output",
+                                "value": "  [[{{styles[focused].value}}]]{{everyCommandMatchingName}}[[/]]"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "comment": "arguments",
+                        "operation": "block",
+                        "operations": [
+                          {
+                            "operation": "output",
+                            "value": "\r\n\r\nArguments:\r\n  "
+                          },
+                          {
+                            "comment": "Output every command parameter",
+                            "operation": "forEach",
+                            "list": "{{ everyCommand.parameters }}",
+                            "element": "everyCommandParameter",
+                            "operations": [
+                              {
+                                "comment": "Output every command parameter name",
+                                "operation": "forEach",
+                                "list": "{{ everyCommandParameter.name }}",
+                                "element": "everyCommandParameterName",
+                                "operations": [
+                                  {
+                                    "comment": "parameter name",
+                                    "operation": "output",
+                                    "value": "--{{everyCommandParameterName}}, ",
+                                    "styling": "Markup"
+                                  }
+                                ]
+                              },
+                              {
+                                "comment": "remove last command parameter separator",
+                                "operation": "output",
+                                "value": "\b\b \u001b[30G",
+                                "styling": "Markup"
+                              },
+                              {
+                                "comment": "parameter optional",
+                                "operation": "output",
+                                "value": " - Optional.",
+                                "styling": "Markup",
+                                "conditions": {
+                                  "areNotEqual": {
+                                    "value1": "{{everyCommandParameter.validation.required}}",
+                                    "value2": true
+                                  }
+                                }
+                              },
+                              {
+                                "comment": "parameter optional",
+                                "operation": "output",
+                                "value": " - Required.",
+                                "styling": "Markup",
+                                "conditions": {
+                                  "areEqual": {
+                                    "value1": "{{everyCommandParameter.validation.required}}",
+                                    "value2": true
+                                  }
+                                }
+                              },
+                              {
+                                "comment": "description",
+                                "operation": "output",
+                                "value": " {{ everyCommandParameter.description }}"
+                              }
+                            ]
+                          }
+                        ],
+                        "conditions": {
+                          "isNotNull": "{{everyCommand.parameters}}"
+                        }
+                      },
+                      {
+                        "comment": "description",
+                        "operation": "output",
+                        "value": "\r\n\r\n{{everyCommand.description}}"
+                      },
+                      {
+                        "comment": "Command help was printed, stop flow.",
+                        "operation": "terminate",
+                        "exitCode": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "comment": "If flow was not terminated earlier, means command with given name was not found.",
+            "operation": "output",
+            "value": "[[{{styles[error].value}}]]Command {{command}} not found."
+          }
+        ]
+      }
     }
   ]
 }

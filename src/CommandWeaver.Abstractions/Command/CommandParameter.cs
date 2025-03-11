@@ -27,7 +27,7 @@ public record CommandParameter
     /// <remarks>
     /// These names provide flexibility in how the parameter can be specified in command line arguments.
     /// </remarks>
-    public virtual required DynamicValue Name { get; init; }
+    public virtual DynamicValue Name { get; init; } = new();
 
     /// <summary>
     /// Change to false to disable parameter.
