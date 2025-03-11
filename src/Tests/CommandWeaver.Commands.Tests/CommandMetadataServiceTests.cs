@@ -22,8 +22,7 @@ public class CommandMetadataServiceTests
         var definition = new DynamicValue("mocked-definition");
         var command = new Command { Name = new DynamicValue("test-command"), Source = source, Definition = definition };
         _commandParameterResolver.GetCommandParameters(command).Returns([]);
-        //_commandParameterResolver.GetCommandParameterAsDynamicValue(Arg.Any<CommandParameter>()).Returns(new DynamicValue("t"));
-       
+ 
         // Act
         _service.StoreCommandMetadata(repositoryElementId, command);
 
