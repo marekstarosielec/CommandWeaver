@@ -18,4 +18,10 @@ public interface IBackgroundService
     /// </summary>
     /// <returns></returns>
     Task WaitToComplete();
+
+    /// <summary>
+    /// Stops all background tasks.
+    /// </summary>
+    /// <returns></returns>
+    void Stop();
 }
