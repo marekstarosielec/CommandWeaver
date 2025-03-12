@@ -10,17 +10,145 @@ internal static class DynamicValueMapper
     /// <typeparam name="T">The target type to map the values to.</typeparam>
     /// <param name="dynamicValue">The <see cref="DynamicValue"/> containing the values to map.</param>
     /// <returns>A new instance of type <typeparamref name="T"/> populated with the mapped values.</returns>
-    public static T? MapTo<T>(DynamicValue dynamicValue) where T : new()
+    public static T? MapTo<T>(DynamicValue dynamicValue) 
     {
-        if (dynamicValue.ObjectValue == null)
-            return default;
+        // var target = CreateInstance(typeof(T));
+        // if (target == null)
+        //     throw new InvalidOperationException($"Failed to create instance of {typeof(T).FullName}");
+        var targetWrapper = new TargetWrapper();
+        
+        Map(dynamicValue, targetWrapper, typeof(T));
+        return (T?) targetWrapper.Target;
+        
+        // if (dynamicValue.ObjectValue == null)
+        //     return default;
+        // MapObjectOld(dynamicValue.ObjectValue, target, typeof(T));
+        // return (T?) target;
+    }
+    
+    // public static T? MapToNew<T>(DynamicValue dynamicValue) where T : new()
+    // {
+    //     if (dynamicValue.ObjectValue == null)
+    //         return default;
+    //
+    //     var target = new T();
+    //     //MapObject(dynamicValue.ObjectValue, target, typeof(T));
+    //     Map(dynamicValue, target, typeof(T));
+    //     return target;
+    // }
 
-        var target = new T();
-        MapObject(dynamicValue.ObjectValue, target, typeof(T));
-        return target;
+    private static bool TypeIsEnumerable(Type type)
+        => type.IsAssignableTo(typeof(IEnumerable)) && type != typeof(string);
+
+    private static bool TypeIsOrImplementsEnumerableOf(Type targetType, Type type)
+    {
+        if (targetType == type)
+            return true;
+
+        if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+            return targetType.GetGenericArguments()[0] == type;
+
+        return targetType.GetInterfaces()
+            .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>) 
+                                      && i.GetGenericArguments()[0] == type);
+    }
+    
+    private static bool TypeIsObject(Type type)
+        => type.IsClass && type != typeof(string);
+
+    private static PropertyInfo? GetProperty(Type type, string propertyName) => type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+
+
+    /// <summary>
+    /// Create instance of given type. Supports lists and dictionaries.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="Exception"></exception>
+    private static object? CreateInstance(Type type)
+    {
+        if (type == typeof(string))
+            return string.Empty; // Default value for string
+        
+        if (type == typeof(int))
+            return string.Empty; // Default value for string
+
+        var constructor = type.GetConstructor(Type.EmptyTypes);
+        if (constructor == null)
+            throw new InvalidOperationException($"Type {type.FullName} does not have a parameterless constructor.");
+        
+        if (type.IsInterface || type.IsAbstract)
+            throw new Exception("Cannot create instance of type " + type.FullName);
+        
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+            type = typeof(List<>).MakeGenericType(type.GetGenericArguments()[0]);
+        
+        var result = Activator.CreateInstance(type);
+        if (result == null)
+            throw new InvalidOperationException($"Failed to create instance of {type.FullName}");
+
+        return result;
+    }
+    
+    private static void Map(DynamicValue dynamicValue, TargetWrapper targetWrapper, Type targetType)
+    {
+        if (targetType == typeof(DynamicValue))
+            MapDynamicValue(dynamicValue, targetWrapper, targetType);
+        else if (TypeIsOrImplementsEnumerableOf(targetType, typeof(string)) && !TypeIsEnumerable(targetType))
+            MapString(dynamicValue, targetWrapper, targetType);
+        else if (TypeIsOrImplementsEnumerableOf(targetType, typeof(string)) && TypeIsEnumerable(targetType))
+            MapStringIntoList(dynamicValue, targetWrapper, targetType);
+        else if (dynamicValue.ObjectValue != null && TypeIsObject(targetType))
+            MapObject(dynamicValue.ObjectValue, targetWrapper, targetType);
+        else if (dynamicValue.ListValue != null && TypeIsEnumerable(targetType))
+            MapList(dynamicValue.ListValue, targetWrapper, targetType);
+        
     }
 
-    private static void MapObject(DynamicValueObject dynamicObject, object target, Type targetType)
+    private static void MapDynamicValue(DynamicValue dynamicValue, TargetWrapper targetWrapper, Type targetType)
+    {
+        targetWrapper.Target = dynamicValue;
+    }
+    
+    private static void MapString(DynamicValue dynamicValue, TargetWrapper targetWrapper, Type targetType)
+    {
+        targetWrapper.Target = dynamicValue.TextValue;
+    }
+    
+    private static void MapStringIntoList(DynamicValue dynamicValue, TargetWrapper targetWrapper, Type targetType)
+    {
+        if (targetWrapper.Target is not ICollection<string>)
+            targetWrapper.Target = CreateInstance(targetType);
+        ((ICollection<string>)targetWrapper.Target!).Add(dynamicValue.TextValue ?? string.Empty);
+    }
+    
+    // private static void MapDateTime(DynamicValue dynamicValue, TargetWrapper targetWrapper, Type targetType)
+    // {
+    //     targetWrapper.Target = dynamicValue.TextValue;
+    // }
+    
+    private static void MapList(DynamicValueList dynamicValueList, TargetWrapper targetWrapper, Type targetType)
+    {
+        
+    }
+    
+    private static void MapObject(DynamicValueObject dynamicValueObject, TargetWrapper targetWrapper, Type targetType)
+    {
+        targetWrapper.Target = CreateInstance(targetType);
+        foreach (var key in dynamicValueObject.Keys)
+        {
+            var property = GetProperty(targetType, key);
+            if (property == null || !property.CanWrite) 
+                throw new InvalidOperationException(
+                    $"Property {key} does not exist or is not writable in type {targetType.Name}");
+           
+            var innerTargetWrapper = new TargetWrapper();
+            Map(dynamicValueObject[key], innerTargetWrapper, property.PropertyType);
+            property.SetValue(targetWrapper.Target, innerTargetWrapper.Target);
+        }
+    }
+
+    private static void MapObjectOld(DynamicValueObject dynamicObject, object target, Type targetType)
     {
         // Ensure all keys in dynamicObject match a property in the target type
         if (targetType != typeof(DynamicValue))
@@ -90,7 +218,7 @@ internal static class DynamicValueMapper
                 {
                     var nestedInstance = Activator.CreateInstance(property.PropertyType);
                     if (nestedInstance == null) continue;
-                    MapObject(value.ObjectValue, nestedInstance, property.PropertyType);
+                    MapObjectOld(value.ObjectValue, nestedInstance, property.PropertyType);
                     property.SetValue(target, nestedInstance);
                 }
                 // Handle lists
@@ -113,7 +241,7 @@ internal static class DynamicValueMapper
                             if (listType == typeof(DynamicValue))
                                 mappedItem = new DynamicValue(item.ObjectValue);
                             else if (mappedItem != null)
-                                MapObject(item.ObjectValue, mappedItem, listType);
+                                MapObjectOld(item.ObjectValue, mappedItem, listType);
                         }
                         else
                             mappedItem = Convert.ChangeType(item.GetTextValue(), listType);
@@ -124,5 +252,10 @@ internal static class DynamicValueMapper
                 }
             }
         }
+    }
+
+    private class TargetWrapper
+    {
+        public object? Target { get; set; }
     }
 }
