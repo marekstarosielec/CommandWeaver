@@ -28,7 +28,7 @@ Validation rules can be applied to command parameters to enforce input constrain
       "name": "validate-example",
       "parameters": [
         {
-          "key": "mode",
+          "name": "mode",
           "required": true,
           "allowedTextValues": ["auto", "manual"]
         }
