@@ -251,8 +251,22 @@ public class Reader(IFlowService flowService, IOutputService outputService, IVar
         {
             // Access element from list by key
             var indexKey = section.Groups[2].Value;
-            return currentValue.ListValue?
+            var result = currentValue.ListValue?
                 .FirstOrDefault(v => v.ObjectValue?["key"].TextValue?.Equals(indexKey) == true);
+            if (result != null)
+                return result;
+
+            //Access element from list by index
+            if (!int.TryParse(indexKey, out var index))
+                return result;
+            
+            if (index == 0 && currentValue.ListValue == null)
+                return currentValue;
+            
+            if (currentValue.ListValue?.Count <= index)
+                return result;
+            
+            return currentValue.ListValue?[index];
         }
 
         flowService.Terminate($"Invalid section in key '{key}'");

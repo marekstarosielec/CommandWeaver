@@ -1,3 +1,6 @@
+using System.Collections;
+using System.ComponentModel.DataAnnotations;
+
 public interface IValidationService
 {
     void Validate(Validation? validatable, DynamicValue valueToValidate, string parameterKey);
@@ -50,16 +53,123 @@ public class ValidationService(IFlowService flowService) : IValidationService
             case "text" when valueToValidate.TextValue == null:
                 flowService.Terminate($"'{parameterKey}' requires text value.");
                 break;
-            //case "number":
+            case "number" when valueToValidate.NumericValue == null:
+                flowService.Terminate($"'{parameterKey}' requires number.");
+                break;
         }
     }
-    
+
     private void AllowedStrongTypeValidation(Validation validation, DynamicValue valueToValidate, string parameterKey)
     {
-        if (valueToValidate.IsNull())
+        if (valueToValidate.IsNull() || validation.AllowedStrongType == null)
             return;
-        
-  
+
+        var targetType = validation.AllowedStrongType;
+
+        try
+        {
+            ValidateDynamicValue(valueToValidate, targetType);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidCastException(
+                $"Parameter '{parameterKey}' cannot be cast to {targetType.FullName}. Error: {ex.Message}", ex);
+        }
+    }
+
+    private void ValidateDynamicValue(DynamicValue value, Type targetType)
+    {
+        if (value.IsNull())
+            return;
+
+        // Skip validation if targetType is DynamicValue
+        if (targetType == typeof(DynamicValue))
+            return;
+
+        // Skip validation if targetType is a collection of DynamicValue
+        if ((targetType.IsGenericType &&
+             typeof(IEnumerable<>).IsAssignableFrom(targetType.GetGenericTypeDefinition()) ||
+             targetType.IsArray) && targetType.GetElementType() == typeof(DynamicValue) ||
+            targetType.GenericTypeArguments.FirstOrDefault() == typeof(DynamicValue))
+            return;
+
+        // Validate primitive types
+        if (targetType == typeof(string) && value.TextValue != null)
+            return;
+        if (targetType == typeof(bool) && value.BoolValue.HasValue)
+            return;
+        if (targetType == typeof(int) && value.NumericValue.HasValue)
+            return;
+        if (targetType == typeof(long) && value.NumericValue.HasValue)
+            return;
+        if (targetType == typeof(double) && value.PrecisionValue.HasValue)
+            return;
+        if (targetType == typeof(DateTimeOffset) && value.DateTimeValue.HasValue)
+            return;
+
+        // Validate collections and arrays
+        if (typeof(IEnumerable).IsAssignableFrom(targetType) && value.ListValue != null)
+        {
+            var elementType = targetType.IsArray
+                ? targetType.GetElementType()
+                : targetType.GenericTypeArguments.FirstOrDefault();
+
+            if (elementType != null)
+            {
+                foreach (var item in value.ListValue)
+                    ValidateDynamicValue(item, elementType);
+                return;
+            }
+        }
+
+        // Validate enums
+        if (targetType.IsEnum && value.TextValue != null && Enum.TryParse(targetType, value.TextValue, true, out _))
+            return;
+
+        // Validate complex objects
+        if (value.ObjectValue != null)
+        {
+            var targetProperties = targetType.GetProperties()
+                .Where(p => p.CanWrite)
+                .ToDictionary(p => p.Name, p => p, StringComparer.OrdinalIgnoreCase);
+
+            var providedKeys = value.ObjectValue.Keys.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            // Detect unknown properties (case-insensitive)
+            var unknownProperties =
+                providedKeys.Except(targetProperties.Keys, StringComparer.OrdinalIgnoreCase).ToList();
+            if (unknownProperties.Any())
+                throw new InvalidCastException(
+                    $"Parameter contains unknown properties that do not exist in {targetType.FullName}: {string.Join(", ", unknownProperties)}.");
+
+            // Validate required properties
+            var requiredProperties = targetProperties.Values
+                .Where(p => p.GetCustomAttributes(typeof(RequiredAttribute), true).Any())
+                .ToList();
+
+            var missingRequiredProperties = requiredProperties
+                .Where(p => !providedKeys.Any(k => k.Equals(p.Name, StringComparison.OrdinalIgnoreCase)) ||
+                            value.ObjectValue[
+                                providedKeys.First(k => k.Equals(p.Name, StringComparison.OrdinalIgnoreCase))].IsNull())
+                .Select(p => p.Name)
+                .ToList();
+
+            if (missingRequiredProperties.Any())
+                throw new InvalidCastException(
+                    $"Missing required properties in {targetType.FullName}: {string.Join(", ", missingRequiredProperties)}.");
+
+            // Validate nested properties
+            foreach (var property in targetProperties.Values)
+            {
+                var matchingKey =
+                    providedKeys.FirstOrDefault(k => k.Equals(property.Name, StringComparison.OrdinalIgnoreCase));
+                if (matchingKey != null && value.ObjectValue.ContainsKey(matchingKey))
+                {
+                    var propertyValue = value.ObjectValue[matchingKey];
+                    ValidateDynamicValue(propertyValue, property.PropertyType);
+                }
+            }
+        }
     }
 
     private void AllowedEnumValuesValidation(Validation validation, DynamicValue valueToValidate, string parameterKey)

@@ -3,11 +3,11 @@
     {
       "name": "paths",
       "category": "Help",
-      "description": "paths of application and session files",
+      "description": "Shows paths of application and session files.",
       "operations": [
         {
           "operation": "output",
-          "value": "Local path: [[u]]{{ LocalPath }}[[/]]"
+          "value": "Application path: [[u]]{{ LocalPath }}[[/]]"
         },
         {
           "operation": "output",

@@ -1,6 +1,7 @@
 # Command Parameters
 
 **Command Parameters** allow customization of commands by enabling users to pass arguments when executing **CommandWeaver**. Parameters define what input a command expects.
+Parameter can be stored inside variable, so it can be reused in multiple commands.
 
 Each **Command Parameter** consists of:
 - **Key** – The unique identifier for the parameter.
@@ -25,7 +26,7 @@ Command parameters are defined inside the `parameters` section of a command.
             "name": "configure",
             "parameters": [
                 {
-                    "key": "mode",
+                    "name": "mode",
                     "description": "Defines the operating mode",
                     "validation": {
                         "allowedTextValues": ["auto", "manual"]
@@ -33,6 +34,9 @@ Command parameters are defined inside the `parameters` section of a command.
                     "ifNull": {
                         "value": "auto"
                     }
+                },
+                {
+                    "fromVariable": "default-parameter"
                 }
             ],
             "operations": [
@@ -41,6 +45,15 @@ Command parameters are defined inside the `parameters` section of a command.
                     "value": "Running in {{mode}} mode."
                 }
             ]
+        }
+    ],
+    "variables": [
+        {
+            "key": "default-parameter",
+            "value": {
+                "name": "type",
+                "description": "Defines input type"
+            }
         }
     ]
 }
@@ -51,3 +64,4 @@ Command parameters are defined inside the `parameters` section of a command.
 - The [validation](validation.md) ensures only `auto` or `manual` are accepted.
 - If no value is provided, `auto` is used as the fallback (`ifNull`).
 - When a value is passed, it is stored as a [variable](variable.md) named `mode` with [scope](variable-scope.md) `Command`. 
+- Second parameter is loaded from variable named `default-parameter`.

@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
@@ -31,22 +32,13 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         if (events?.RequestPrepared != null)
             await commandService.ExecuteOperations(events.RequestPrepared, cancellationToken);
         
-        //await outputService.WriteRequest(request);
-        
         var response = await httpClient.SendAsync(request, cancellationToken);
-        
-        //await outputService.WriteResponse(response);
         
         var responseVariable = await GetResponseAsVariable(response);
         variableServices.WriteVariableValue(VariableScope.Command, "rest_response", responseVariable);
-
+        
         if (events?.ResponseReceived != null)
             await commandService.ExecuteOperations(events.ResponseReceived, cancellationToken);
-
-        // var lastRestCall = new Dictionary<string, DynamicValue?>();
-        // lastRestCall["request"] = await GetRequestAsVariable(request);
-        // lastRestCall["response"] = await GetResponseAsVariable(response); 
-        // variableServices.WriteVariableValue(VariableScope.Command, "lastRestCall", new DynamicValue(lastRestCall));
     }
 
     private async Task<DynamicValue> GetRequestAsVariable(HttpRequestMessage request)
@@ -90,7 +82,7 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         result["body"] = new DynamicValue(body);
         if (!string.IsNullOrWhiteSpace(body) && JsonHelper.IsJson(body) && serializer.TryDeserialize(body, out DynamicValue? bodyModel, out _))
             result["body_json"] = bodyModel;
-            
+        
         var headers = new List<DynamicValue>();
         foreach (var header in response.Headers.Concat(response.Content.Headers))
         {
@@ -233,6 +225,5 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
     {
         public List<DynamicValue>? RequestPrepared { get; set; }
         public List<DynamicValue>? ResponseReceived { get; set; }
-        
     }
 }

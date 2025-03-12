@@ -10,7 +10,8 @@ public class TerminateTests
         var mockFlowService = Substitute.For<IFlowService>();
         var parameters = new Dictionary<string, OperationParameter>
         {
-            { "message", new OperationParameter { Value = new DynamicValue("Goodbye!"), Description = "description" } }
+            { "message", new OperationParameter { Value = new DynamicValue("Goodbye!"), Description = "description" } },
+            { "exitCode", new OperationParameter { Description = "test" } }
         }.ToImmutableDictionary();
 
         var terminate = new Terminate(mockFlowService) { Parameters = parameters };
@@ -29,7 +30,8 @@ public class TerminateTests
         var mockFlowService = Substitute.For<IFlowService>();
         var parameters = new Dictionary<string, OperationParameter>
         {
-            { "message", new OperationParameter { Value = new DynamicValue(), Description = "description" } }
+            { "message", new OperationParameter { Value = new DynamicValue(), Description = "description" } },
+            { "exitCode", new OperationParameter { Description = "test" } }
         }.ToImmutableDictionary();
 
         var terminate = new Terminate(mockFlowService) { Parameters = parameters };
@@ -48,7 +50,8 @@ public class TerminateTests
         var mockFlowService = Substitute.For<IFlowService>();
         var parameters = new Dictionary<string, OperationParameter>
         {
-            { "message", new OperationParameter { Value = new DynamicValue(), Description = "description" } }
+            { "message", new OperationParameter { Value = new DynamicValue(), Description = "description" } },
+            { "exitCode", new OperationParameter { Description = "test" } }
         }.ToImmutableDictionary();
 
         var terminate = new Terminate(mockFlowService) { Parameters = parameters };

@@ -16,7 +16,8 @@ public interface ICommandMetadataService
 /// <inheritdoc />
 public class CommandMetadataService(
     IVariableService variableService,
-    IOutputService outputService) : ICommandMetadataService
+    IOutputService outputService,
+    ICommandParameterResolver commandParameterResolver) : ICommandMetadataService
 {
     /// <inheritdoc />
     public void StoreCommandMetadata(
@@ -26,14 +27,16 @@ public class CommandMetadataService(
         outputService.Trace($"Storing metadata for command: {command.Name}");
 
         var mainName = command.GetAllNames().First();
-        
+        var resolvedParameters = commandParameterResolver.GetCommandParameters(command).Select(commandParameterResolver.GetCommandParameterAsDynamicValue).ToList();
+
         // Prepare metadata for the command
         var commandInformation = new Dictionary<string, DynamicValue?>
         {
-            ["key"] = new DynamicValue(mainName),
+            ["key"] = new (mainName),
             ["source"] = new (command.Source, true),
             ["id"] = new (repositoryElementId),
-            ["definition"] = command.Definition with { NoResolving = true},
+            ["parameters"] = new (new DynamicValueList( resolvedParameters)),
+            ["definition"] = command.Definition with { NoResolving = true },
         };
 
         // Store the metadata into variables

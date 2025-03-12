@@ -53,26 +53,7 @@ public class CommandValidator(IOutputService outputService) : ICommandValidator
             }
 
             allNames.AddRange(allCommandNames.Select(cn => new KeyValuePair<string, string>(cn, repositoryElement.Id)));
-           
-            ValidateDuplicateParameters(command, repositoryElement.Id);
         }
-    }
-
-    /// <summary>
-    /// Validates duplicate parameters within a single command.
-    /// </summary>
-    /// <param name="command">The command to validate.</param>
-    /// <param name="repositoryId">The identifier of the repository containing the command.</param>
-    private void ValidateDuplicateParameters(Command command, string repositoryId)
-    {
-        var duplicatedParameters = command.Parameters
-            .GroupBy(p => p.Key)
-            .Where(g => g.Count() > 1)
-            .Select(p => p.Key)
-            .ToList();
-
-        foreach (var duplicatedParameter in duplicatedParameters)
-            outputService.Warning($"More than one parameter named {duplicatedParameter} is defined in command {command.Name} in {repositoryId}");
     }
 
     /// <summary>

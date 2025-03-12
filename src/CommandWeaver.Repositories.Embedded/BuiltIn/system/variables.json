@@ -8,7 +8,9 @@
         {
           "name": ["name", "n"],
           "description": "Name of variable",
-          "required": true
+          "validation": {
+            "required": true
+          }
         }
       ],
       "operations": [

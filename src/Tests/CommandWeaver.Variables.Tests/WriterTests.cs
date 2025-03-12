@@ -31,7 +31,6 @@ public class WriterTests
         var path = "variable1";
         var value = new DynamicValue("value");
         var repositoryElementId = "repository1";
-        var expectedPath = "basePath\\repository1";
 
         SetupRepositoryPath("basePath");
 

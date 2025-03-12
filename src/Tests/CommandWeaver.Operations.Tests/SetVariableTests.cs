@@ -13,7 +13,7 @@ public class SetVariableTests
         var mockVariableService = Substitute.For<IVariableService>();
         var parameters = new Dictionary<string, OperationParameter>
         {
-            { "key", new OperationParameter { Value = new DynamicValue("TestKey"), Description = "TestDescription" } },
+            { "name", new OperationParameter { Value = new DynamicValue("TestKey"), Description = "TestDescription" } },
             { "value", new OperationParameter { Value = new DynamicValue("TestValue"), Description = "TestDescription" } },
             { "scope", new OperationParameter { Value = new DynamicValue("Command"), Description = "TestDescription", Validation = new Validation { AllowedEnumValues = typeof(VariableScope) }} },
             { "id", new OperationParameter { Value = new DynamicValue("TestId"), Description = "TestDescription" } }
@@ -41,7 +41,7 @@ public class SetVariableTests
         var parameters = new Dictionary<string, OperationParameter>
         {
             { "id", new OperationParameter { Value = new DynamicValue(), Description = "TestDescription" } },
-            { "key", new OperationParameter { Value = new DynamicValue("TestKey"), Description = "TestDescription" } },
+            { "name", new OperationParameter { Value = new DynamicValue("TestKey"), Description = "TestDescription" } },
             { "scope", new OperationParameter { Value = new DynamicValue(), Description = "TestDescription" } },
             { "value", new OperationParameter { Value = new DynamicValue("TestValue"), Description = "TestDescription" } }
         }.ToImmutableDictionary();

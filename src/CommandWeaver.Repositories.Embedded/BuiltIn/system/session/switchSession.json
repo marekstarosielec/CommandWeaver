@@ -7,13 +7,15 @@
       "parameters": [
         {
           "name": ["name", "s"],
-          "required": true
+          "validation": {
+            "required": true
+          }
         }
       ],
       "operations": [
         {
           "operation": "setVariable",
-          "key": "current-session-name",
+          "name": "current-session-name",
           "value": "{{name}}",
           "scope": "Application"
         },
