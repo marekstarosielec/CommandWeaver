@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using System.Reflection;
 using System.Collections;
 
@@ -46,10 +44,42 @@ internal static class DynamicValueMapper
             var value = dynamicObject.GetValueOrDefault(key);
             if (value == null) continue;
 
-            if (property.PropertyType.IsPrimitive || property.PropertyType == typeof(string) || property.PropertyType == typeof(DateTime))
+            var propertyType = property.PropertyType;
+            // if (property.PropertyType != typeof(string) && typeof(IEnumerable).IsAssignableFrom(property.PropertyType))
+            // {
+            //     if (property.PropertyType.IsArray)
+            //         // Property is an array type, get element type directly
+            //         propertyType = property.PropertyType.GetElementType();
+            //     else if (property.PropertyType.IsGenericType)
+            //         // For IEnumerable<T> or IList<T>, get generic argument
+            //         propertyType = property.PropertyType.GetGenericArguments()[0];
+            //     else
+            //         // Handle cases like non-generic IEnumerable
+            //         propertyType = typeof(object);
+            // }
+            // if (propertyType == null)
+            //     propertyType = property.PropertyType;
+            
+            if (propertyType.IsPrimitive || propertyType == typeof(string) || propertyType == typeof(DateTime))
             {
-                // Map simple types directly
-                property.SetValue(target, Convert.ChangeType(value.GetTextValue(), property.PropertyType));
+                // if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType) && property.PropertyType != typeof(string))
+                // {
+                //     // Target is IEnumerable<T>, create list and add primitive value
+                //     var listType = property.PropertyType.IsGenericType
+                //         ? property.PropertyType.GetGenericArguments()[0]
+                //         : property.PropertyType.GetElementType();
+                //
+                //     if (listType == null) continue;
+                //
+                //     //What if list is already created?
+                //     var listInstance = Activator.CreateInstance(typeof(List<>).MakeGenericType(listType)) as IList;
+                //     listInstance?.Add(Convert.ChangeType(value.GetTextValue(), listType));
+                //
+                //     property.SetValue(target, listInstance);
+                // }
+                // else
+                    // Map simple types directly
+                    property.SetValue(target, Convert.ChangeType(value.GetTextValue(), property.PropertyType));
             }
             else if (property.PropertyType == typeof(DynamicValue))
                 property.SetValue(target, value);

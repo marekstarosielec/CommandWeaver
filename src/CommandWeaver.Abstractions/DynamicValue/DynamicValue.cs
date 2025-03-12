@@ -169,6 +169,21 @@ public record DynamicValue
     public T? GetAsObject<T>() 
         where T : new()
         => DynamicValueMapper.MapTo<T>(this);
+
+    /// <summary>
+    /// Returns value casted to list of given type.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public IEnumerable<T?> GetAsObjectList<T>()
+        where T : new()
+    {
+        if (ListValue == null)
+            yield return DynamicValueMapper.MapTo<T>(this);   
+        else
+            foreach (var listElement in ListValue)
+                yield return listElement.GetAsObject<T>();
+    }
     
     /// <summary>
     /// Returns first encountered value as text. 

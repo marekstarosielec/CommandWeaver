@@ -17,11 +17,22 @@ public record RestServer(IBackgroundService backgroundService) : Operation
                     Validation = new Validation { Required = true, AllowedType = "number" }
                 }
             },
+            { 
+                "endpoints",
+                new OperationParameter
+                {
+                    Description = "Definition of endpoints and operations executed when request is received",
+                    Validation = new Validation { Required = true }
+                }
+            }
         }.ToImmutableDictionary();
     
     public override Task Run(CancellationToken cancellationToken)
     {
         var port = Parameters["port"].Value.NumericValue!.Value;
+        var endpoints = Parameters["endpoints"].Value;
+        var t = endpoints.GetAsObjectList<EndpointDefinition>().ToList();
+        
         backgroundService.CreateHttpListener((int)port, RequestReceived, cancellationToken);
         return Task.CompletedTask;
     }
@@ -46,4 +57,9 @@ public record RestServer(IBackgroundService backgroundService) : Operation
         await response.OutputStream.WriteAsync(buffer, 0, buffer.Length, cancellationToken);
         response.OutputStream.Close();
     }
+}
+
+public class EndpointDefinition
+{
+    public List<string> Url { get; set; }
 }

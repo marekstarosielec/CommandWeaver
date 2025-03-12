@@ -38,9 +38,7 @@ public class CommandWeaver(
         await commandService.ExecuteOperations(commandToExecute!.Operations, cancellationToken);
         await saver.Execute(cancellationToken);
         outputService.Trace($"Awaiting background tasks to complete");
-        //await backgroundService.WaitToComplete();
-        await Task.Delay(5000);
-        backgroundService.Stop();
+        await backgroundService.WaitToComplete();
         outputService.Trace($"Execution completed for command: {commandName}");
     }
 

@@ -8,10 +8,20 @@ public class BackgroundService(IFlowService flowService) : IBackgroundService
     /// <inheritdoc />
     public void CreateHttpListener(int port, Func<HttpListenerContext, CancellationToken, Task> requestHandler, CancellationToken cancellationToken)
     {
+        if (_httpListeners.Count > 0)
+        {
+            flowService.Terminate($"There is already active listener on port {_httpListeners.FirstOrDefault().Key}. Only one active listener is allowed.");
+            //TODO: This is workaround to avoid concurrency problem when accessing variables.
+            // Ideas how to solve this problem:
+            // 1. Allow to define variable name containing incoming request, but this will not allow to use operations in variables (they will not know which variable contains request).
+            // 2. Allow to define context identifier for execution (e.g. port number). Variable service would access variables from given context, or from no context, but never from another context. Seems complicated and might not solve problem.
+            // 3. Instead of running operations in own thread, add it to queue of operations in main thread, so they are executed linearly. This might be tricky, but can solve lots of problems.
+            return;
+        }
         if (_httpListeners.ContainsKey(port))
         {
             flowService.Terminate($"There is already a listener on port {port}");
-            throw new Exception($"There is already a listener on port {port}");
+            return;
         }
         
         var httpListener = new HttpListener();
@@ -35,10 +45,6 @@ public class BackgroundService(IFlowService flowService) : IBackgroundService
             catch (ObjectDisposedException)
             {
                 //Listener was closed externally
-            }
-            catch (Exception ex)
-            {
-                flowService.Terminate($"Unexpected error in http listener on port {port}: {ex.Message}");
             }
         }, cancellationToken);
         _httpListeners.Add(port, new HttpListenerInformation(httpListener, listenerTask));
