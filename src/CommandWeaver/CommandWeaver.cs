@@ -8,7 +8,8 @@ public class CommandWeaver(
     IOutputSettings outputSettings,
     ICommandParameterResolver commandParameterResolver,
     ICommandValidator commandValidator,
-    IRepositoryElementStorage repositoryElementStorage) : ICommandWeaver
+    IRepositoryElementStorage repositoryElementStorage,
+    IBackgroundService backgroundService) : ICommandWeaver
 {
     /// <inheritdoc />
     public async Task Run(string commandName, Dictionary<string, string> arguments, CancellationToken cancellationToken)
@@ -36,7 +37,8 @@ public class CommandWeaver(
         commandParameterResolver.PrepareCommandParameters(commandToExecute!, arguments);
         await commandService.ExecuteOperations(commandToExecute!.Operations, cancellationToken);
         await saver.Execute(cancellationToken);
-
+        outputService.Trace($"Awaiting background tasks to complete");
+        await backgroundService.WaitToComplete();
         outputService.Trace($"Execution completed for command: {commandName}");
     }
 

@@ -88,8 +88,10 @@ public class OperationFactoryTests
         var jsonSerializer = Substitute.For<IJsonSerializer>();
         var outputService = Substitute.For<IOutputService>();
         var commandService = Substitute.For<ICommandService>();
+        var backgroundService = Substitute.For<IBackgroundService>();
 
         // Mock the IServiceProvider.GetService behavior
+        //TODO: Use implemented registration.
         serviceProvider.GetService(typeof(Output))
             .Returns(new Output(outputService));
         serviceProvider.GetService(typeof(ExtractFromNameValue))
@@ -102,6 +104,8 @@ public class OperationFactoryTests
             .Returns(new ForEach(Substitute.For<ICommandService>(), variableService, outputService));
         serviceProvider.GetService(typeof(RestCall))
             .Returns(new RestCall(conditionsService, variableService, jsonSerializer, flowService, outputService,commandService));
+        serviceProvider.GetService(typeof(RestServer))
+            .Returns(new RestServer(backgroundService));
         serviceProvider.GetService(typeof(Block))
             .Returns(new Block(Substitute.For<ICommandService>()));
         serviceProvider.GetService(typeof(ListGroup))

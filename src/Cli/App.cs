@@ -14,6 +14,7 @@ public class App(ICommandWeaver commandWeaver, Parser parser)
             TODO: Add multiline argument support.
             TODO: Replace flow.terminate with exception throwing.
             TODO: Review all classes - refactor, check coverage.
+            TODO: make sure that cancellationToken is used everywhere it can.
         */
         
         var cancellationTokenSource = new CancellationTokenSource();

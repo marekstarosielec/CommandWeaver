@@ -66,6 +66,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReadMe", "ReadMe", "{B3DF69
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandWeaver.Background", "CommandWeaver.Background\CommandWeaver.Background.csproj", "{C40FB6C3-1104-499F-9EB9-2E28A6EB589B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -172,6 +174,10 @@ Global
 		{F7CE4CB4-DD2A-4399-B7B9-9D2C8A5921C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7CE4CB4-DD2A-4399-B7B9-9D2C8A5921C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7CE4CB4-DD2A-4399-B7B9-9D2C8A5921C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C40FB6C3-1104-499F-9EB9-2E28A6EB589B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C40FB6C3-1104-499F-9EB9-2E28A6EB589B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C40FB6C3-1104-499F-9EB9-2E28A6EB589B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C40FB6C3-1104-499F-9EB9-2E28A6EB589B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -204,6 +210,7 @@ Global
 		{A9075F2F-EABA-46BF-A489-D06DC04B8376} = {BCA91B36-E5CD-48B8-810A-0F3245D89B7E}
 		{FDAD56B4-3F29-4728-B288-6A316747E5F2} = {BCA91B36-E5CD-48B8-810A-0F3245D89B7E}
 		{F7CE4CB4-DD2A-4399-B7B9-9D2C8A5921C3} = {F9AD6CE4-D9C4-49AB-BFB1-4CB6BCFC0191}
+		{C40FB6C3-1104-499F-9EB9-2E28A6EB589B} = {BCA91B36-E5CD-48B8-810A-0F3245D89B7E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9B522DBE-B32A-492B-9F23-430E5CBF100B}

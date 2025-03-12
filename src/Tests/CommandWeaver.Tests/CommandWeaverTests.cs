@@ -11,6 +11,7 @@ public class CommandWeaverTests
     private readonly ICommandParameterResolver _commandParameterResolver;
     private readonly ICommandValidator _commandValidator;
     private readonly IRepositoryElementStorage _repositoryElementStorage;
+    private readonly IBackgroundService _backgroundService;
     private readonly CommandWeaver _commandWeaver;
     public CommandWeaverTests()
     {
@@ -23,7 +24,8 @@ public class CommandWeaverTests
         _commandParameterResolver = Substitute.For<ICommandParameterResolver>();
         _commandValidator = Substitute.For<ICommandValidator>();
         _repositoryElementStorage = Substitute.For<IRepositoryElementStorage>();
-        
+        _backgroundService = Substitute.For<IBackgroundService>();
+
         _commandWeaver = new CommandWeaver(
             _commandService,
             _flowService,
@@ -33,7 +35,8 @@ public class CommandWeaverTests
             _outputSettings,
             _commandParameterResolver,
             _commandValidator,
-            _repositoryElementStorage
+            _repositoryElementStorage,
+            _backgroundService
         );
     }
 

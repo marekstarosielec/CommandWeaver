@@ -11,6 +11,7 @@ public class OperationFactory(IServiceProvider serviceProvider, IVariableService
         { "terminate", serviceProvider.GetRequiredService<Terminate> },
         { "forEach", serviceProvider.GetRequiredService<ForEach> },
         { "restCall", serviceProvider.GetRequiredService<RestCall> },
+        { "restServer", serviceProvider.GetRequiredService<RestServer> },
         { "block", serviceProvider.GetRequiredService<Block> },
         { "extractFromNameValue", serviceProvider.GetRequiredService<ExtractFromNameValue> },
         { "listGroup", serviceProvider.GetRequiredService<ListGroup> }
