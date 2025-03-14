@@ -61,19 +61,18 @@ public class ValidationService(IFlowService flowService) : IValidationService
 
     private void AllowedStrongTypeValidation(Validation validation, DynamicValue valueToValidate, string parameterKey)
     {
-        if (valueToValidate.IsNull() || validation.AllowedStrongType == null)
+        if (validation.AllowedStrongType == null)
             return;
 
         var targetType = validation.AllowedStrongType;
-
         try
         {
-            ValidateDynamicValue(valueToValidate, targetType);
+            valueToValidate.GetAsObject(targetType);
         }
         catch (Exception ex)
         {
-            throw new InvalidCastException(
-                $"Parameter '{parameterKey}' cannot be cast to {targetType.FullName}. Error: {ex.Message}", ex);
+            flowService.Terminate(ex.Message);
+            throw;
         }
     }
 

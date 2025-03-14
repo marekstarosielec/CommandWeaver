@@ -162,16 +162,24 @@ public record DynamicValue
         : null;
 
     /// <summary>
-    /// Returns value casted to given type.
+    /// Returns value converted to given type.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     public T? GetAsObject<T>() 
         where T : new()
         => DynamicValueMapper.MapTo<T>(this);
+    
+    /// <summary>
+    /// Returns value converted to given type as dynamic.
+    /// </summary>
+    /// <param name="targetType"></param>
+    /// <returns></returns>
+    public dynamic? GetAsObject(Type targetType) 
+        => DynamicValueMapper.MapTo(this, targetType);
 
     /// <summary>
-    /// Returns value casted to list of given type.
+    /// Returns value converted to list of given type.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>

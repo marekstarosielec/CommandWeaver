@@ -11,11 +11,21 @@ internal static class DynamicValueMapper
     /// <typeparam name="T">The target type to map the values to.</typeparam>
     /// <param name="dynamicValue">The <see cref="DynamicValue"/> containing the values to map.</param>
     /// <returns>A new instance of type <typeparamref name="T"/> populated with the mapped values.</returns>
-    public static T? MapTo<T>(DynamicValue dynamicValue) 
+    public static T? MapTo<T>(DynamicValue dynamicValue) => (T?)MapTo(dynamicValue, typeof(T));
+
+    /// <summary>
+    /// Maps the values from a <see cref="DynamicValue"/> to a new instance of the specified type.
+    /// Supports deep property mapping for nested objects.
+    /// </summary>
+    /// <param name="dynamicValue"></param>
+    /// <param name="targetType"></param>
+    /// <returns></returns>
+    /// <exception cref="ValidationException"></exception>
+    public static dynamic? MapTo(DynamicValue dynamicValue, Type targetType) 
     {
-        var result = (T?)Map(dynamicValue, typeof(T));
+        var result = Map(dynamicValue, targetType);
         
-        var requiredProperties = typeof(T).GetProperties()
+        var requiredProperties = targetType.GetProperties()
             .Where(p => p.CanWrite && p.GetCustomAttribute<RequiredAttribute>() != null)
             .ToDictionary(p => p.Name, p => p, StringComparer.OrdinalIgnoreCase);
 
@@ -23,10 +33,8 @@ internal static class DynamicValueMapper
             throw new ValidationException($"Property {requiredProperties.First().Value.Name} is required but was not provided.");
         
         foreach (var property in requiredProperties.Values)
-        {
             if (property.GetValue(result) == null)
                 throw new ValidationException($"Property {property.Name} is required but was not provided.");
-        }
         
         return result;
     }
@@ -96,9 +104,10 @@ internal static class DynamicValueMapper
 
     private static dynamic? MapPrimitive(DynamicValue dynamicValue, Type targetType)
     {
+        //TODO: Add automatic conversion to given type
         var underlyingType = Nullable.GetUnderlyingType(targetType) ?? targetType;
         if (underlyingType == typeof(string))
-            return dynamicValue.TextValue;
+            return dynamicValue.TextValue; 
         if (underlyingType == typeof(int))
         {
             var value = dynamicValue.NumericValue;
