@@ -1,6 +1,5 @@
 using System.Reflection;
 using System.Collections;
-using System.Collections.ObjectModel;
 
 internal static class DynamicValueMapper
 {
@@ -13,45 +12,13 @@ internal static class DynamicValueMapper
     /// <returns>A new instance of type <typeparamref name="T"/> populated with the mapped values.</returns>
     public static T? MapTo<T>(DynamicValue dynamicValue) 
     {
-        // var target = CreateInstance(typeof(T));
-        // if (target == null)
-        //     throw new InvalidOperationException($"Failed to create instance of {typeof(T).FullName}");
-
-
-        return (T?)Map(dynamicValue, typeof(T));
-
-        // if (dynamicValue.ObjectValue == null)
-        //     return default;
-        // MapObjectOld(dynamicValue.ObjectValue, target, typeof(T));
-        // return (T?) target;
+        var result = (T?)Map(dynamicValue, typeof(T));
+        
+        return result;
     }
-    
-    // public static T? MapToNew<T>(DynamicValue dynamicValue) where T : new()
-    // {
-    //     if (dynamicValue.ObjectValue == null)
-    //         return default;
-    //
-    //     var target = new T();
-    //     //MapObject(dynamicValue.ObjectValue, target, typeof(T));
-    //     Map(dynamicValue, target, typeof(T));
-    //     return target;
-    // }
 
     private static bool TypeIsEnumerable(Type type)
         => type.IsAssignableTo(typeof(IEnumerable)) && type != typeof(string);
-
-    private static bool TypeIsOrImplementsEnumerableOf(Type targetType, Type type)
-    {
-        if (targetType == type)
-            return true;
-
-        if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-            return targetType.GetGenericArguments()[0] == type;
-
-        return targetType.GetInterfaces()
-            .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>) 
-                                      && i.GetGenericArguments()[0] == type);
-    }
     
     private static Type GetGenericCollectionType(Type type)
     {
@@ -79,14 +46,8 @@ internal static class DynamicValueMapper
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
     /// <exception cref="Exception"></exception>
-    private static dynamic? CreateInstance(Type type)
+    private static dynamic CreateInstance(Type type)
     {
-        if (type == typeof(string))
-            return (string?) null;
-        
-        if (type == typeof(int))
-            return (int?) null;
-
         var constructor = type.GetConstructor(Type.EmptyTypes);
         if (constructor == null)
             throw new InvalidOperationException($"Type {type.Name} does not have a parameterless constructor.");
@@ -108,46 +69,70 @@ internal static class DynamicValueMapper
     {
         if (targetType == typeof(DynamicValue))
             return MapDynamicValue(dynamicValue);
-        if (targetType == typeof(string) && dynamicValue.TextValue != null)
-            return MapString(dynamicValue); 
-        if (TypeIsOrImplementsEnumerableOf(targetType, typeof(string)) && dynamicValue.TextValue != null)
-            return MapStringIntoList(dynamicValue, targetType);
         if (TypeIsObject(targetType) && dynamicValue.ObjectValue != null)
             return MapObject(dynamicValue.ObjectValue, targetType);
         if (TypeIsEnumerable(targetType) && dynamicValue.ListValue != null)
             return MapList(dynamicValue.ListValue, targetType);
+        if (TypeIsEnumerable(targetType))
+            return MapPrimitiveIntoList(dynamicValue, targetType);
+        return MapPrimitive(dynamicValue, targetType); 
+    }
+
+    private static dynamic MapDynamicValue(DynamicValue dynamicValue) => dynamicValue;
+
+    private static dynamic? MapPrimitive(DynamicValue dynamicValue, Type targetType)
+    {
+        if (targetType == typeof(string))
+            return dynamicValue.TextValue;
+        if (targetType == typeof(int) || targetType == typeof(int?))
+        {
+            var value = dynamicValue.NumericValue;
+            if (value is >= int.MinValue and <= int.MaxValue)
+                return (int) value.Value;
+            throw new InvalidOperationException($"Cannot convert {dynamicValue.NumericValue} to int.");
+        }
+        if (targetType == typeof(DateTime) || targetType == typeof(DateTime?))
+            return dynamicValue.DateTimeValue?.DateTime;
+        if (targetType == typeof(DateTimeOffset) || targetType == typeof(DateTimeOffset?))
+            return dynamicValue.DateTimeValue;
+        if (targetType == typeof(long) || targetType == typeof(long?))
+            return dynamicValue.NumericValue;
+        if (targetType == typeof(double) || targetType == typeof(double?))
+            return dynamicValue.PrecisionValue;
+        if (targetType == typeof(decimal) || targetType == typeof(decimal?))
+        {
+            var value = dynamicValue.PrecisionValue;
+            if (value is >= (double)decimal.MinValue and <= (double)decimal.MaxValue)
+                return (decimal) value.Value;
+            throw new InvalidOperationException($"Cannot convert {dynamicValue.PrecisionValue} to decimal.");
+        }
+        if (targetType == typeof(bool) || targetType == typeof(bool?))
+            return dynamicValue.BoolValue;
+
         return null;
     }
 
-    private static dynamic? MapDynamicValue(DynamicValue dynamicValue) => dynamicValue;
-
-    private static dynamic? MapString(DynamicValue dynamicValue)
-        => dynamicValue.TextValue;
-
-
-    private static dynamic? MapStringIntoList(DynamicValue dynamicValue, Type targetType)
+    private static dynamic MapPrimitiveIntoList(DynamicValue dynamicValue, Type targetType)
     {
         var result = CreateInstance(targetType);
-        if (result is not ICollection<string> collection)
-            throw new InvalidCastException("List must implement ICollection in order to be filled");
-        collection.Add(dynamicValue.TextValue ?? string.Empty);
-        return collection;
+        var listType = GetGenericCollectionType(targetType);
+        result.Add(MapPrimitive(dynamicValue, listType));
+        return result;
     }
     
-    private static dynamic? MapList(DynamicValueList dynamicValueList, Type targetType)
+    private static dynamic MapList(DynamicValueList dynamicValueList, Type targetType)
     {
         var result = CreateInstance(targetType);
-        
         var listType = GetGenericCollectionType(targetType);
         foreach (var listItem in dynamicValueList)
         {
             var resultElement = Map(listItem, listType);
-            result!.Add(resultElement);
+            result.Add(resultElement);
         }
         return result;
     }
     
-    private static dynamic? MapObject(DynamicValueObject dynamicValueObject,Type targetType)
+    private static dynamic MapObject(DynamicValueObject dynamicValueObject,Type targetType)
     {
         var result = CreateInstance(targetType);
         foreach (var key in dynamicValueObject.Keys)
@@ -162,111 +147,5 @@ internal static class DynamicValueMapper
         }
 
         return result;
-    }
-
-    private static void MapObjectOld(DynamicValueObject dynamicObject, object target, Type targetType)
-    {
-        // Ensure all keys in dynamicObject match a property in the target type
-        if (targetType != typeof(DynamicValue))
-        {
-            var targetProperties = targetType
-                .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase)
-                .ToDictionary(p => p.Name.ToLower(), p => p);
-
-            var invalidKeys = dynamicObject.Keys.Where(key => !targetProperties.ContainsKey(key.ToLower())).ToList();
-            if (invalidKeys.Any())
-                throw new InvalidOperationException(
-                    $"Invalid properties found in DynamicValue for target type {targetType.Name}: {string.Join(", ", invalidKeys)}");
-        }
-        
-
-        foreach (var key in dynamicObject.Keys)
-        {
-            var property = targetType.GetProperty(key, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-            if (property == null || !property.CanWrite) continue;
-
-            var value = dynamicObject.GetValueOrDefault(key);
-            if (value == null) continue;
-
-            var propertyType = property.PropertyType;
-            // if (property.PropertyType != typeof(string) && typeof(IEnumerable).IsAssignableFrom(property.PropertyType))
-            // {
-            //     if (property.PropertyType.IsArray)
-            //         // Property is an array type, get element type directly
-            //         propertyType = property.PropertyType.GetElementType();
-            //     else if (property.PropertyType.IsGenericType)
-            //         // For IEnumerable<T> or IList<T>, get generic argument
-            //         propertyType = property.PropertyType.GetGenericArguments()[0];
-            //     else
-            //         // Handle cases like non-generic IEnumerable
-            //         propertyType = typeof(object);
-            // }
-            // if (propertyType == null)
-            //     propertyType = property.PropertyType;
-            
-            if (propertyType.IsPrimitive || propertyType == typeof(string) || propertyType == typeof(DateTime))
-            {
-                // if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType) && property.PropertyType != typeof(string))
-                // {
-                //     // Target is IEnumerable<T>, create list and add primitive value
-                //     var listType = property.PropertyType.IsGenericType
-                //         ? property.PropertyType.GetGenericArguments()[0]
-                //         : property.PropertyType.GetElementType();
-                //
-                //     if (listType == null) continue;
-                //
-                //     //What if list is already created?
-                //     var listInstance = Activator.CreateInstance(typeof(List<>).MakeGenericType(listType)) as IList;
-                //     listInstance?.Add(Convert.ChangeType(value.GetTextValue(), listType));
-                //
-                //     property.SetValue(target, listInstance);
-                // }
-                // else
-                    // Map simple types directly
-                    property.SetValue(target, Convert.ChangeType(value.GetTextValue(), property.PropertyType));
-            }
-            else if (property.PropertyType == typeof(DynamicValue))
-                property.SetValue(target, value);
-            else if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
-            {
-                // Handle nested objects
-                if (value.ObjectValue != null)
-                {
-                    var nestedInstance = Activator.CreateInstance(property.PropertyType);
-                    if (nestedInstance == null) continue;
-                    MapObjectOld(value.ObjectValue, nestedInstance, property.PropertyType);
-                    property.SetValue(target, nestedInstance);
-                }
-                // Handle lists
-                else if (value.ListValue != null && typeof(IEnumerable).IsAssignableFrom(property.PropertyType))
-                {
-                    var listType = property.PropertyType.IsGenericType
-                        ? property.PropertyType.GetGenericArguments()[0]
-                        : property.PropertyType.GetElementType();
-
-                    if (listType == null) continue;
-                    
-                    var listInstance = Activator.CreateInstance(typeof(List<>).MakeGenericType(listType)) as IList;
-                    foreach (var item in value.ListValue)
-                    {
-                        object? mappedItem = null;
-
-                        if (item.ObjectValue != null)
-                        {
-                            mappedItem = Activator.CreateInstance(listType);
-                            if (listType == typeof(DynamicValue))
-                                mappedItem = new DynamicValue(item.ObjectValue);
-                            else if (mappedItem != null)
-                                MapObjectOld(item.ObjectValue, mappedItem, listType);
-                        }
-                        else
-                            mappedItem = Convert.ChangeType(item.GetTextValue(), listType);
-
-                        listInstance?.Add(mappedItem);
-                    }
-                    property.SetValue(target, listInstance);
-                }
-            }
-        }
     }
 }
