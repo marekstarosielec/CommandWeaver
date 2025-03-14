@@ -1,6 +1,9 @@
 // ReSharper disable ClassNeverInstantiated.Local
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Local
 // ReSharper disable UnusedAutoPropertyAccessor.Local
+
+using System.ComponentModel.DataAnnotations;
+
 public class DynamicValueMapperTests
 {
     [Fact]
@@ -342,6 +345,26 @@ public class DynamicValueMapperTests
     
         // Assert
         Assert.Equal(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc), person?.DateTimeOffsetValue);
+    }
+    
+    [Fact]
+    public void MapTo_Required_ShouldShouldThrowWhenRequiredIsNotFilled()
+    {
+        // Arrange
+        var dynamicValue = new DynamicValue(new Dictionary<string, DynamicValue?>
+        {
+            { "NotRequired", new ( "abc") }
+        });
+        
+        // Act and Assert
+        Assert.Throws<ValidationException>(() => DynamicValueMapper.MapTo<ClassWithRequired>(dynamicValue));
+    }
+    
+    private class ClassWithRequired
+    {
+        [Required]
+        public string? Required { get; set; }
+        public string? NotRequired { get; set; }
     }
     
     private class Person

@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Collections;
+using System.ComponentModel.DataAnnotations;
 
 internal static class DynamicValueMapper
 {
@@ -13,6 +14,19 @@ internal static class DynamicValueMapper
     public static T? MapTo<T>(DynamicValue dynamicValue) 
     {
         var result = (T?)Map(dynamicValue, typeof(T));
+        
+        var requiredProperties = typeof(T).GetProperties()
+            .Where(p => p.CanWrite && p.GetCustomAttribute<RequiredAttribute>() != null)
+            .ToDictionary(p => p.Name, p => p, StringComparer.OrdinalIgnoreCase);
+
+        if (requiredProperties.Any() && result == null)
+            throw new ValidationException($"Property {requiredProperties.First().Value.Name} is required but was not provided.");
+        
+        foreach (var property in requiredProperties.Values)
+        {
+            if (property.GetValue(result) == null)
+                throw new ValidationException($"Property {property.Name} is required but was not provided.");
+        }
         
         return result;
     }
@@ -82,31 +96,32 @@ internal static class DynamicValueMapper
 
     private static dynamic? MapPrimitive(DynamicValue dynamicValue, Type targetType)
     {
-        if (targetType == typeof(string))
+        var underlyingType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+        if (underlyingType == typeof(string))
             return dynamicValue.TextValue;
-        if (targetType == typeof(int) || targetType == typeof(int?))
+        if (underlyingType == typeof(int))
         {
             var value = dynamicValue.NumericValue;
             if (value is >= int.MinValue and <= int.MaxValue)
                 return (int) value.Value;
             throw new InvalidOperationException($"Cannot convert {dynamicValue.NumericValue} to int.");
         }
-        if (targetType == typeof(DateTime) || targetType == typeof(DateTime?))
+        if (underlyingType == typeof(DateTime))
             return dynamicValue.DateTimeValue?.DateTime;
-        if (targetType == typeof(DateTimeOffset) || targetType == typeof(DateTimeOffset?))
+        if (underlyingType == typeof(DateTimeOffset))
             return dynamicValue.DateTimeValue;
-        if (targetType == typeof(long) || targetType == typeof(long?))
+        if (underlyingType == typeof(long))
             return dynamicValue.NumericValue;
-        if (targetType == typeof(double) || targetType == typeof(double?))
+        if (underlyingType == typeof(double))
             return dynamicValue.PrecisionValue;
-        if (targetType == typeof(decimal) || targetType == typeof(decimal?))
+        if (underlyingType == typeof(decimal))
         {
             var value = dynamicValue.PrecisionValue;
             if (value is >= (double)decimal.MinValue and <= (double)decimal.MaxValue)
                 return (decimal) value.Value;
             throw new InvalidOperationException($"Cannot convert {dynamicValue.PrecisionValue} to decimal.");
         }
-        if (targetType == typeof(bool) || targetType == typeof(bool?))
+        if (underlyingType == typeof(bool))
             return dynamicValue.BoolValue;
 
         return null;
