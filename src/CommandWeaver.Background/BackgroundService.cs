@@ -15,7 +15,7 @@ public class BackgroundService(IFlowService flowService) : IBackgroundService
             // Ideas how to solve this problem:
             // 1. Allow to define variable name containing incoming request, but this will not allow to use operations in variables (they will not know which variable contains request).
             // 2. Allow to define context identifier for execution (e.g. port number). Variable service would access variables from given context, or from no context, but never from another context. Seems complicated and might not solve problem.
-            // 3. Instead of running operations in own thread, add it to queue of operations in main thread, so they are executed linearly. This might be tricky, but can solve lots of problems.
+            // 3. Instead of running operations in own thread, add it to queue of operations in main thread, so they are executed linearly. This might be tricky, but can solve lots of problems. Problem: how to send response to sender.
             return;
         }
         if (_httpListeners.ContainsKey(port))

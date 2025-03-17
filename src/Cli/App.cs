@@ -15,6 +15,7 @@ public class App(ICommandWeaver commandWeaver, Parser parser)
             TODO: Replace flow.terminate with exception throwing.
             TODO: Review all classes - refactor, check coverage.
             TODO: make sure that cancellationToken is used everywhere it can.
+            IDEA: Refactor Operation Parameters to always return 1 parameter of type defined in operation (each operation has own type). Map Dynamic value of whole operation to that type. Include validation, description, etc in every property.
         */
         
         var cancellationTokenSource = new CancellationTokenSource();

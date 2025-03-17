@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
-public record RestCall(IConditionsService conditionsService, IVariableService variableServices, IJsonSerializer serializer, IFlowService flowService, IOutputService outputService, ICommandService commandService) : Operation
+public record RestCall(IConditionsService conditionsService, IVariableService variableService, IJsonSerializer serializer, IFlowService flowService, IOutputService outputService, ICommandService commandService) : Operation
 {
     public override string Name => nameof(RestCall);
 
@@ -27,7 +27,7 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
 
         using var request = GetHttpRequestMessage(httpClient);
         var requestVariable = await GetRequestAsVariable(request);
-        variableServices.WriteVariableValue(VariableScope.Command, "rest_request", requestVariable);
+        variableService.WriteVariableValue(VariableScope.Command, "rest_request", requestVariable);
         
         if (events?.RequestPrepared != null)
             await commandService.ExecuteOperations(events.RequestPrepared, cancellationToken);
@@ -35,7 +35,7 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         var response = await httpClient.SendAsync(request, cancellationToken);
         
         var responseVariable = await GetResponseAsVariable(response);
-        variableServices.WriteVariableValue(VariableScope.Command, "rest_response", responseVariable);
+        variableService.WriteVariableValue(VariableScope.Command, "rest_response", responseVariable);
         
         if (events?.ResponseReceived != null)
             await commandService.ExecuteOperations(events.ResponseReceived, cancellationToken);
@@ -128,7 +128,7 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
             if (!string.IsNullOrWhiteSpace(certificateInformation?.FromResource))
             {
                 var resourceKey = $"{{{{resources[{certificateInformation.FromResource}].binary}}}}";
-                var certificateBinaryContent = variableServices.ReadVariableValue(new DynamicValue(resourceKey));
+                var certificateBinaryContent = variableService.ReadVariableValue(new DynamicValue(resourceKey));
                 if (certificateBinaryContent.LazyBinaryValue?.Value != null)
                 {
                     try

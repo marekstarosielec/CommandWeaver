@@ -105,7 +105,7 @@ public class OperationFactoryTests
         serviceProvider.GetService(typeof(RestCall))
             .Returns(new RestCall(conditionsService, variableService, jsonSerializer, flowService, outputService,commandService));
         serviceProvider.GetService(typeof(RestServer))
-            .Returns(new RestServer(backgroundService));
+            .Returns(new RestServer(backgroundService, outputService, commandService, variableService, jsonSerializer));
         serviceProvider.GetService(typeof(Block))
             .Returns(new Block(Substitute.For<ICommandService>()));
         serviceProvider.GetService(typeof(ListGroup))
