@@ -25,9 +25,16 @@ public class BackgroundService(IFlowService flowService) : IBackgroundService
         }
         
         var httpListener = new HttpListener();
-        httpListener.Prefixes.Add($"http://localhost:{port}/");
-        httpListener.Start();
-
+        httpListener.Prefixes.Add($"http://127.0.0.1:{port}/");
+        try
+        {
+            httpListener.Start();
+        }
+        catch (HttpListenerException e) when (e.Message == "Address already in use")
+        {
+            flowService.Terminate($"There is already a listener on port {port}");
+        }
+        
         var listenerTask = Task.Run(async () =>
         {
             try

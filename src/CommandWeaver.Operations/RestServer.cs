@@ -46,6 +46,7 @@ public record RestServer(IBackgroundService backgroundService, IOutputService ou
     private async Task RequestReceived(HttpListenerContext context, CancellationToken cancellationToken)
     {
         var endpoints = Parameters["endpoints"].Value.GetAsObject<List<EndpointDefinition>>() ?? [];
+        var originalEndpoints = Parameters["endpoints"].OriginalValue.GetAsObject<List<EndpointDefinition>>() ?? [];
 
         var request = context.Request;
         var response = context.Response;
@@ -53,25 +54,30 @@ public record RestServer(IBackgroundService backgroundService, IOutputService ou
         var requestVariable = await GetRequestAsVariable(request, cancellationToken);
         variableService.WriteVariableValue(VariableScope.Command, "rest_request", requestVariable);
 
-        foreach (var endpoint in endpoints)
+        for (var index = 0; index < endpoints.Count; index++)
+        {
+            var endpoint = endpoints[index];
+            var originalEndpoint = originalEndpoints[index];
             foreach (var url in endpoint.Url ?? ["^.*$"])
                 if (Regex.IsMatch(request.Url?.AbsoluteUri ?? string.Empty, url))
                 {
-                    if (endpoint.Events?.RequestReceived != null)
-                        await commandService.ExecuteOperations(endpoint.Events.RequestReceived, cancellationToken);
-                    
+                    //Need to call original endpoint definition, otherwise operations there were resolved before "rest_request" was created.
+                    if (originalEndpoint.Events?.RequestReceived != null)
+                        await commandService.ExecuteOperations(originalEndpoint.Events.RequestReceived,
+                            cancellationToken);
+
                     response.StatusCode = endpoint.ResponseCode;
                     if (endpoint.ResponseBody != null)
                     {
                         var buffer = Encoding.UTF8.GetBytes(endpoint.ResponseBody);
                         await response.OutputStream.WriteAsync(buffer, 0, buffer.Length, cancellationToken);
                     }
+
                     response.OutputStream.Close();
                     return;
                 }
-     
-        // var defaultResponseBuffer = Encoding.UTF8.GetBytes("Request received.");
-        // await response.OutputStream.WriteAsync(defaultResponseBuffer, 0, defaultResponseBuffer.Length, cancellationToken);
+        }
+
         response.OutputStream.Close();
     }
     
@@ -109,6 +115,7 @@ public record RestServer(IBackgroundService backgroundService, IOutputService ou
     
     public class RestServerEvents
     {
+        //[DelayedResolve]
         public List<DynamicValue>? RequestReceived { get; set; }
     }
     

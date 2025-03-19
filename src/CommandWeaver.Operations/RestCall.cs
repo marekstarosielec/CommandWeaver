@@ -23,8 +23,8 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
     {
         using var handler = GetHttpClientHandler();
         using var httpClient = new HttpClient(handler);
-        var events = Parameters["events"].Value.GetAsObject<RestCallEvents>();
-
+        var events = Parameters["events"].OriginalValue.GetAsObject<RestCallEvents>();
+       
         using var request = GetHttpRequestMessage(httpClient);
         var requestVariable = await GetRequestAsVariable(request);
         variableService.WriteVariableValue(VariableScope.Command, "rest_request", requestVariable);
