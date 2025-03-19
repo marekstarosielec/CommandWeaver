@@ -17,7 +17,7 @@ CommandWeaver currently supports the following operations:
 - [Output](operation-output.md) – Prints a message or variable to the console.
 - [RestCall](operation-restcall.md) – Performs HTTP requests to interact with REST APIs.
 - [RestServer](operation-restserver.md) – Sets up HTTP server that listens for incoming requests.
-- [RestServer](operation-restserverkill.md) – Stops HTTP server.
+- [RestServerKill](operation-restserverkill.md) – Stops HTTP server.
 - [SetVariable](operation-setvariable.md) – Assigns a value to a variable for later use.
 - [Terminate](operation-terminate.md) – Stops command execution based on specified conditions.
 
