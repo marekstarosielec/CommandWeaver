@@ -4,9 +4,9 @@ The `RestServer` operation sets up HTTP server that listens for incoming request
 
 ---
 
-> 👉 **Only one server can be started at the same time.**  
-> 👉 **To stop the server, execute the** [`RestServerKill`](operation-restserverkill.md) **operation.**  
-> 👉 **If the server is not stopped, the application will keep running until terminated manually (e.g., with a kill signal from the console).**
+👉 **Only one server can be started at the same time.**  
+👉 **To stop the server, execute the** [`RestServerKill`](operation-restserverkill.md) **operation.**  
+👉 **If the server is not stopped, the application will keep running until terminated manually (e.g., with a kill signal from the console).**
 
 ---
 
