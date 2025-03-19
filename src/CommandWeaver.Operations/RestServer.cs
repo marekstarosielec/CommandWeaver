@@ -115,7 +115,6 @@ public record RestServer(IBackgroundService backgroundService, IOutputService ou
     
     public class RestServerEvents
     {
-        //[DelayedResolve]
         public List<DynamicValue>? RequestReceived { get; set; }
     }
     

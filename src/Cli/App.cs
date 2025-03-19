@@ -1,5 +1,5 @@
 // Application entry class
-public class App(ICommandWeaver commandWeaver, Parser parser)
+public class App(ICommandWeaver commandWeaver, IBackgroundService backgroundService, Parser parser)
 {
     public async Task Run(string[] args)
     {
@@ -19,13 +19,17 @@ public class App(ICommandWeaver commandWeaver, Parser parser)
         */
         
         var cancellationTokenSource = new CancellationTokenSource();
-        cancellationTokenSource.Token.ThrowIfCancellationRequested();
-
+        
         Console.CancelKeyPress += (_, cancelArgs) => {
             cancelArgs.Cancel = true; // Prevent default termination
             cancellationTokenSource.Cancel();       // Trigger cancellation
         };
 
+        AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) =>
+        {
+            cancellationTokenSource.Cancel();
+        };
+        
         try
         {
             parser.ParseFullCommandLine(Environment.CommandLine, out var command, out var arguments);
@@ -34,10 +38,12 @@ public class App(ICommandWeaver commandWeaver, Parser parser)
         catch (OperationCanceledException)
         {
             Console.WriteLine("User abort...");
+            backgroundService.Stop();
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
+            backgroundService.Stop();
         }
         
     }

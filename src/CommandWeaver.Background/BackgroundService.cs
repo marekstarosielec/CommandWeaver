@@ -35,15 +35,38 @@ public class BackgroundService(IFlowService flowService) : IBackgroundService
             flowService.Terminate($"There is already a listener on port {port}");
         }
         
+        // Register cancellation to close the listener immediately
+        cancellationToken.Register(() => httpListener.Stop());
+        
         var listenerTask = Task.Run(async () =>
         {
             try
             {
-                while (!cancellationToken.IsCancellationRequested) // Keep running until stopped
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    var context = await httpListener.GetContextAsync();
+                    HttpListenerContext context;
+                    try
+                    {
+                        context = await httpListener.GetContextAsync();
+                    }
+                    catch (HttpListenerException ex) when (ex.ErrorCode == 995) // Operation aborted
+                    {
+                        if (cancellationToken.IsCancellationRequested)
+                            break;
+
+                        flowService.Terminate($"Listener error on port {port}: {ex.Message}");
+                        break;
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // Listener was closed externally or due to cancellation
+                        break;
+                    }
+
                     await requestHandler(context, cancellationToken);
                 }
+
+                cancellationToken.ThrowIfCancellationRequested();
             }
             catch (HttpListenerException ex)
             {

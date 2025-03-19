@@ -29,6 +29,7 @@ public class CommandService(
     {
         foreach (var operation in operations)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var disabled = variableService.ReadVariableValue(operation.Enabled).BoolValue == false || string.Equals(variableService.ReadVariableValue(operation.Enabled).TextValue, "false", StringComparison.OrdinalIgnoreCase);
             if (disabled || !conditionsService.ConditionsAreMet(operation.Conditions) ||
                 cancellationToken.IsCancellationRequested) continue;
