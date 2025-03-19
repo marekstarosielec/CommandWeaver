@@ -1,6 +1,6 @@
 # RestServer Operation
 
-The `RestServer` operation sets up an HTTP server that listens for incoming requests and executes predefined operations based on configured endpoints. It allows defining response behavior, custom event handling, and request processing.
+The `RestServer` operation sets up HTTP server that listens for incoming requests and executes predefined operations based on configured endpoints. It allows defining response behavior, custom event handling, and request processing.
 
 ---
 
