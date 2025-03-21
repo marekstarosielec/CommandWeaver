@@ -52,10 +52,10 @@
           }
         },
         {
-          "comment": "body as text",
+          "comment": "body as text (but try to output as json anyways)",
           "operation": "output",
           "value": "{{rest_request.body}}\r\n",
-          "styling": "raw",
+          "styling": "json",
           "conditions": {
             "isNull": "{{rest_request.body_json}}",
             "isNotNull": "{{rest_request.body}}"
