@@ -1,6 +1,6 @@
-# Base64Decrypt Operation
+# Base64DecodeOperation
 
-The `Base64Decrypt` operation decodes a Base64-encoded string into plain text and saves the result into a variable. It is useful for handling encoded values passed between systems or stored in configuration.
+The `Base64Decode` operation decodes a Base64-encoded string into plain text and saves the result into a variable. It is useful for handling encoded values passed between systems or stored in configuration.
 
 ---
 
@@ -29,7 +29,7 @@ The `Base64Decrypt` operation decodes a Base64-encoded string into plain text an
       "name": "decodeExample",
       "operations": [
         {
-          "operation": "Base64Decrypt",
+          "operation": "Base64Decode",
           "value": "SGVsbG8gd29ybGQh",
           "saveTo": "decodedText"
         },

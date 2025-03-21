@@ -1,8 +1,8 @@
 using System.Collections.Immutable;
 
-public record Base64Decrypt(IVariableService variableService, IFlowService flowService) : Operation
+public record Base64Decode(IVariableService variableService, IFlowService flowService) : Operation
 {
-    public override string Name => nameof(Base64Decrypt);
+    public override string Name => nameof(Base64Decode);
 
     public override ImmutableDictionary<string, OperationParameter> Parameters { get; init; } = new Dictionary<string, OperationParameter>
     {
