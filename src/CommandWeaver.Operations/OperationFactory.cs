@@ -7,6 +7,7 @@ public class OperationFactory(IServiceProvider serviceProvider, IVariableService
     private readonly Dictionary<string, Func<Operation>> _operations = new(StringComparer.OrdinalIgnoreCase)
     {
         { "output", serviceProvider.GetRequiredService<Output> },
+        { "base64Decrypt", serviceProvider.GetRequiredService<Base64Decrypt> },
         { "setVariable", serviceProvider.GetRequiredService<SetVariable> },
         { "terminate", serviceProvider.GetRequiredService<Terminate> },
         { "forEach", serviceProvider.GetRequiredService<ForEach> },

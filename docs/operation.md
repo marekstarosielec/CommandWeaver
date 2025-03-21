@@ -10,14 +10,13 @@ Every operation has its own parameters, which control how the operation behaves.
 
 CommandWeaver currently supports the following operations:
 
+- [Base64Decode](operation-base64decode.md) – Decodes a Base64-encoded string into plain text.
 - [Block](operation-block.md) – Groups multiple operations and executes them as a unit.
 - [ExtractFromNameValue](operation-extractfromnamevalue.md) – Extracts values from structured name-value pairs.
 - [ForEach](operation-foreach.md) – Iterates over a list and executes nested operations for each item.
 - [ListGroup](operation-listgroup.md) – Groups items in a list based on specified criteria.
 - [Output](operation-output.md) – Prints a message or variable to the console.
 - [RestCall](operation-restcall.md) – Performs HTTP requests to interact with REST APIs.
-- [RestServer](operation-restserver.md) – Sets up HTTP server that listens for incoming requests.
-- [RestServerKill](operation-restserverkill.md) – Stops HTTP server.
 - [SetVariable](operation-setvariable.md) – Assigns a value to a variable for later use.
 - [Terminate](operation-terminate.md) – Stops command execution based on specified conditions.
 

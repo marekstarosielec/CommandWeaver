@@ -94,6 +94,8 @@ public class OperationFactoryTests
         //TODO: Use implemented registration.
         serviceProvider.GetService(typeof(Output))
             .Returns(new Output(outputService));
+        serviceProvider.GetService(typeof(Base64Decrypt))
+            .Returns(new Base64Decrypt(variableService, flowService));
         serviceProvider.GetService(typeof(ExtractFromNameValue))
             .Returns(new ExtractFromNameValue(variableService));
         serviceProvider.GetService(typeof(SetVariable))
