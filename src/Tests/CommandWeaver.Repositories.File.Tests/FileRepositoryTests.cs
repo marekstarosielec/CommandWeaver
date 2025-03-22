@@ -127,7 +127,7 @@ public class FileRepositoryTests
 
         // Assert
         Assert.Null(result);
-        _outputService.Received(1).Debug(Arg.Is<string>(msg => msg.Contains("Skipping hidden/system file")));
+        _outputService.Received(1).Trace(Arg.Is<string>(msg => msg.Contains("Skipping hidden/system file")));
     }
 
     [Fact]

@@ -68,8 +68,8 @@ public class SaverTests
         await _saver.Execute(CancellationToken.None);
 
         // Assert
-        _outputService.Received().Debug(Arg.Is<string>(msg => msg.Contains("Starting the save process")));
-        _outputService.Received().Debug(Arg.Is<string>(msg => msg.Contains("Save process completed")));
+        _outputService.Received().Trace(Arg.Is<string>(msg => msg.Contains("Starting the save process")));
+        _outputService.Received().Trace(Arg.Is<string>(msg => msg.Contains("Save process completed")));
     }
 
     [Fact]

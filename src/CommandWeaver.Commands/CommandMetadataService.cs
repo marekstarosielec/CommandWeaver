@@ -47,6 +47,6 @@ public class CommandMetadataService(
             new DynamicValue(new DynamicValueObject(commandInformation))
         );
 
-        outputService.Debug($"Metadata for command '{mainName}' stored with key '{variableKey}'.");
+        outputService.Trace($"Metadata for command '{mainName}' stored with key '{variableKey}'.");
     }
 }

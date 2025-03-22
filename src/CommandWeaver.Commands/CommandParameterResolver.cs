@@ -152,7 +152,7 @@ public class CommandParameterResolver(
             if (arguments.TryGetValue(name, out var otherValue))
             {
                 argumentValue = otherValue;
-                outputService.Debug($"Argument resolved using name '{name}': {argumentValue}");
+                outputService.Trace($"Argument resolved using name '{name}': {argumentValue}");
                 break;
             }
 

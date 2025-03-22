@@ -6,8 +6,7 @@ public class App(ICommandWeaver commandWeaver, IBackgroundService backgroundServ
         /*
             TODO: DefaultValue for operation parameter should be DynamicValue and should be filled automatically when evaluating, instead on in GetEnumValue
             TODO: add browser support.
-            TODO: start rest server and add events.
-            TODO: change internal logging level - everything to Trace, operations to Debug     
+            TODO: review all operations, add debugs     
             TODO: Support for prompts.
             TODO: Add a command for setting a new log level.
             TODO: Add encryption support for variables.
