@@ -3,16 +3,14 @@ using NSubstitute;
 public class ConditionsServiceTests
 {
     private readonly IOutputService _outputService;
-    private readonly IFlowService _flowService;
     private readonly IVariableService _variableService;
     private readonly ConditionsService _conditionsService;
 
     public ConditionsServiceTests()
     {
         _outputService = Substitute.For<IOutputService>();
-        _flowService = Substitute.For<IFlowService>();
         _variableService = Substitute.For<IVariableService>();
-        _conditionsService = new ConditionsService(_outputService, _flowService, _variableService);
+        _conditionsService = new ConditionsService(_outputService, _variableService);
     }
 
     [Fact]
@@ -164,7 +162,7 @@ public class ConditionsServiceTests
     }
 
     [Fact]
-    public void GetFromDynamicValue_ShouldCallFlowTerminate_WhenUnknownPropertyIsFound()
+    public void GetFromDynamicValue_ShouldTerminate_WhenUnknownPropertyIsFound()
     {
         // Arrange
         var dynamicValue = new DynamicValue(new DynamicValueObject(new Dictionary<string, DynamicValue?>
@@ -173,8 +171,6 @@ public class ConditionsServiceTests
         }));
 
         // Act & Assert
-        _conditionsService.GetFromDynamicValue(dynamicValue);
-
-        _flowService.Received(1).Terminate(Arg.Is<string>(msg => msg.Contains("Unknown condition property")));
+       Assert.Throws<CommandWeaverException>(() => _conditionsService.GetFromDynamicValue(dynamicValue));
     }
 }

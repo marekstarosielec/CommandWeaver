@@ -9,10 +9,9 @@ public class OperationFactoryTests
         // Arrange
         var serviceProvider = CreateMockServiceProvider();
         var variableServiceMock = Substitute.For<IVariableService>();
-        var flowServiceMock = Substitute.For<IFlowService>();
         var outputServiceMock = Substitute.For<IOutputService>();
         var conditionsServiceMock = Substitute.For<IConditionsService>();
-        var factory = new OperationFactory(serviceProvider, variableServiceMock, flowServiceMock, outputServiceMock, conditionsServiceMock);
+        var factory = new OperationFactory(serviceProvider, variableServiceMock, outputServiceMock, conditionsServiceMock);
 
         // Act
         var outputOperation = factory.GetOperation("output");
@@ -40,10 +39,9 @@ public class OperationFactoryTests
         // Arrange
         var serviceProvider = CreateMockServiceProvider();
         var variableServiceMock = Substitute.For<IVariableService>();
-        var flowServiceMock = Substitute.For<IFlowService>();
         var outputServiceMock = Substitute.For<IOutputService>();
         var conditionsServiceMock = Substitute.For<IConditionsService>();
-        var factory = new OperationFactory(serviceProvider, variableServiceMock, flowServiceMock, outputServiceMock, conditionsServiceMock);
+        var factory = new OperationFactory(serviceProvider, variableServiceMock, outputServiceMock, conditionsServiceMock);
 
         // Act
         var operation = factory.GetOperation("unknown");
@@ -58,10 +56,9 @@ public class OperationFactoryTests
         // Arrange
         var serviceProvider = CreateMockServiceProvider();
         var variableServiceMock = Substitute.For<IVariableService>();
-        var flowServiceMock = Substitute.For<IFlowService>();
         var outputServiceMock = Substitute.For<IOutputService>();
         var conditionsServiceMock = Substitute.For<IConditionsService>();
-        var factory = new OperationFactory(serviceProvider, variableServiceMock, flowServiceMock, outputServiceMock, conditionsServiceMock);
+        var factory = new OperationFactory(serviceProvider, variableServiceMock, outputServiceMock, conditionsServiceMock);
 
         // Act
         var operationTypes = GetAllOperationTypes().ToList();
@@ -83,7 +80,6 @@ public class OperationFactoryTests
     {
         var serviceProvider = Substitute.For<IServiceProvider>();
         var variableService = Substitute.For<IVariableService>();
-        var flowService = Substitute.For<IFlowService>();
         var conditionsService = Substitute.For<IConditionsService>();
         var jsonSerializer = Substitute.For<IJsonSerializer>();
         var outputService = Substitute.For<IOutputService>();
@@ -95,17 +91,17 @@ public class OperationFactoryTests
         serviceProvider.GetService(typeof(Output))
             .Returns(new Output(outputService));
         serviceProvider.GetService(typeof(Base64Decode))
-            .Returns(new Base64Decode(variableService, flowService));
+            .Returns(new Base64Decode(variableService));
         serviceProvider.GetService(typeof(ExtractFromNameValue))
             .Returns(new ExtractFromNameValue(variableService));
         serviceProvider.GetService(typeof(SetVariable))
             .Returns(new SetVariable(variableService));
         serviceProvider.GetService(typeof(Terminate))
-            .Returns(new Terminate(flowService));
+            .Returns(new Terminate());
         serviceProvider.GetService(typeof(ForEach))
             .Returns(new ForEach(Substitute.For<ICommandService>(), variableService, outputService));
         serviceProvider.GetService(typeof(RestCall))
-            .Returns(new RestCall(conditionsService, variableService, jsonSerializer, flowService, outputService,commandService));
+            .Returns(new RestCall(conditionsService, variableService, jsonSerializer, outputService,commandService));
         serviceProvider.GetService(typeof(RestServer))
             .Returns(new RestServer(backgroundService, outputService, commandService, variableService, jsonSerializer));
         serviceProvider.GetService(typeof(RestServerKill))

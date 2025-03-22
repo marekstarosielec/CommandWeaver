@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-public record Terminate(IFlowService flowService) : Operation
+public record Terminate : Operation
 {
     public override string Name => nameof(Terminate);
 
@@ -14,7 +14,6 @@ public record Terminate(IFlowService flowService) : Operation
     {
         //TODO: Add Default value to parameter when it is implemented.
         var exitCode = Parameters["exitCode"]?.Value.NumericValue ?? 1;
-        flowService.Terminate(Parameters["message"].Value.TextValue, (int) exitCode);
-        return Task.CompletedTask;
+        throw new CommandWeaverException(Parameters["message"].Value.TextValue ?? string.Empty, (int) exitCode);
     }
 }

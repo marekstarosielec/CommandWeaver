@@ -4,14 +4,12 @@ using System.Collections.Immutable;
 public class OperationParameterResolverTests
 {
     private readonly IVariableService _variableService;
-    private readonly IFlowService _flowService;
     private readonly OperationParameterResolver _resolver;
     private readonly IValidationService _validationService = Substitute.For<IValidationService>();
 
     public OperationParameterResolverTests()
     {
         _variableService = Substitute.For<IVariableService>();
-        _flowService = Substitute.For<IFlowService>();
         _resolver = new OperationParameterResolver(_variableService, _validationService);
     }
 

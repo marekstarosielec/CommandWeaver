@@ -17,7 +17,7 @@ public interface IReader
 }
 
 /// <inheritdoc />
-public class Reader(IFlowService flowService, IOutputService outputService, IVariableStorage variableStorage) : IReader
+public class Reader(IOutputService outputService, IVariableStorage variableStorage) : IReader
 {
     /// <inheritdoc />
     public DynamicValue ReadVariableValue(DynamicValue? variableValue, bool treatTextValueAsVariable = false, int maximumDepth = 50)
@@ -130,8 +130,7 @@ public class Reader(IFlowService flowService, IOutputService outputService, IVar
             return ReadVariableValue(new DynamicValue(resolvedKey), false, currentDepth, resolvedVariable.NoResolving, maximumDepth);
         }
 
-        flowService.Terminate($"{{{{ {path} }}}} resolved to a non-text value, it cannot be part of text.");
-        return null;
+        throw new CommandWeaverException($"{{{{ {path} }}}} resolved to a non-text value, it cannot be part of text.");
     }
 
     private DynamicValue ReadObjectKey(DynamicValueObject key, int currentDepth, int maximumDepth)
@@ -226,13 +225,9 @@ public class Reader(IFlowService flowService, IOutputService outputService, IVar
             return variablesList.FirstOrDefault(v => v.Key.Equals(section.Groups[1].Value))?.Value;
         
         if (section.Groups[2].Success)
-        {
-            flowService.Terminate($"Invalid key '{key}' - cannot start with an index.");
-            return null;
-        }
+            throw new CommandWeaverException($"Invalid key '{key}' - cannot start with an index.");
 
-        flowService.Terminate($"Invalid key '{key}' - no valid groups found.");
-        return null;
+        throw new CommandWeaverException($"Invalid key '{key}' - no valid groups found.");
     }
 
     private DynamicValue? ResolveNestedKey(DynamicValue? currentValue, Match section, string key)
@@ -269,8 +264,7 @@ public class Reader(IFlowService flowService, IOutputService outputService, IVar
             return currentValue.ListValue?[index];
         }
 
-        flowService.Terminate($"Invalid section in key '{key}'");
-        return null;
+        throw new CommandWeaverException($"Invalid section in key '{key}'");
     }
 
 }

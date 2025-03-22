@@ -49,7 +49,7 @@
 }
 
 /// <inheritdoc />
-public class PhysicalFileProvider(IFlowService flowService, IOutputService outputService) : IPhysicalFileProvider
+public class PhysicalFileProvider(IOutputService outputService) : IPhysicalFileProvider
 {
     /// <inheritdoc />
     public void CreateDirectoryIfItDoesNotExist(string directoryPath)
@@ -73,13 +73,13 @@ public class PhysicalFileProvider(IFlowService flowService, IOutputService outpu
         }
         catch (UnauthorizedAccessException ex)
         {
-            flowService.NonFatalException(ex);
+            outputService.WriteException(ex);
             outputService.Warning($"Failed to list files in {directoryPath}");
             return [];
         }
         catch (DirectoryNotFoundException ex)
         {
-            flowService.NonFatalException(ex);
+            outputService.WriteException(ex);
             outputService.Warning($"Failed to list files in {directoryPath}");
             return [];
         }
@@ -129,7 +129,7 @@ public class PhysicalFileProvider(IFlowService flowService, IOutputService outpu
         }
         catch (Exception ex)
         {
-            flowService.NonFatalException(ex);
+            outputService.WriteException(ex);
             outputService.Warning($"Failed to write to file: {filePath}");
         }
     }

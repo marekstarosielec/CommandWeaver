@@ -2,7 +2,7 @@
 
 /// <inheritdoc />
 
-public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputService outputService, IFlowService flowService) : IRepository
+public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputService outputService) : IRepository
 {
     private const string _workspace = "Default";
     
@@ -18,7 +18,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
         }
         catch (Exception ex)
         {
-            flowService.NonFatalException(ex);
+            outputService.WriteException(ex);
             outputService.Warning($"Failed to list files for location {repositoryLocation}");
             return AsyncEnumerable.Empty<RepositoryElementInformation>();
         }
@@ -42,7 +42,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
         }
         catch (Exception ex)
         {
-            flowService.NonFatalException(ex);
+            outputService.WriteException(ex);
             outputService.Warning($"Failed to save repository element {repositoryElementId}");
         }
     }
@@ -120,7 +120,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
         }
         catch (Exception ex)
         {
-            flowService.NonFatalException(ex);
+            outputService.WriteException(ex);
             outputService.Warning($"Failed to process file {file}: {ex.Message}");
             return Task.FromResult<RepositoryElementInformation?>(null);
         }

@@ -121,7 +121,7 @@ public class CommandServiceTests
             operationParameterResolver.PrepareOperationParameters(operation).Returns(operation);
 
         // Act
-        await commandService.ExecuteOperations(operations, cts.Token);
+        await Assert.ThrowsAsync<OperationCanceledException>(async () => await commandService.ExecuteOperations(operations, cts.Token));
 
         // Assert
         operationParameterResolver.DidNotReceive().PrepareOperationParameters(Arg.Any<Operation>());

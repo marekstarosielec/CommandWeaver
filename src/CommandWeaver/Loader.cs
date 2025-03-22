@@ -22,7 +22,6 @@ public class Loader(
     IOutputSettings outputSettings,
     ICommandService commandService,
     IJsonSerializer serializer,
-    IFlowService flowService,
     IRepositoryElementStorage repositoryElementStorage,
     IResourceService resourceService) : ILoader
 {
@@ -183,7 +182,8 @@ public class Loader(
     private void HandleDeserializationError(RepositoryLocation repositoryLocation, RepositoryElementInformation element, Exception? exception)
     {
         repositoryElementStorage.Add(new RepositoryElement(repositoryLocation, element.Id, null));
-        flowService.NonFatalException(exception);
+        if (exception!=null)
+            outputService.WriteException(exception);
         outputService.Warning($"Failed to deserialize element '{variableService.CurrentlyLoadRepositoryElement}' in repository '{variableService.CurrentlyLoadRepository}'");
     }
 }

@@ -1,4 +1,4 @@
-﻿public class ConditionsService(IOutputService output, IFlowService flow, IVariableService variables) : IConditionsService
+﻿public class ConditionsService(IOutputService output, IVariableService variables) : IConditionsService
 {
     public bool ConditionsAreMet(Condition? condition)
     {
@@ -69,10 +69,7 @@
                     Value2 = dynamicValue.ObjectValue![property].ObjectValue?["value2"] ?? new DynamicValue()
                 };
             else
-            {
-                flow.Terminate($"Unknown condition property: {property}");
-                return null;
-            }
+                throw new CommandWeaverException($"Unknown condition property: {property}");
 
         return new Condition{ IsNull = isNull, IsNotNull = isNotNull, AreEqual = areEqual, AreNotEqual = areNotEqual};
     }

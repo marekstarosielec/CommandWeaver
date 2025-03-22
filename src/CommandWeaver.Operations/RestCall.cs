@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
-public record RestCall(IConditionsService conditionsService, IVariableService variableService, IJsonSerializer serializer, IFlowService flowService, IOutputService outputService, ICommandService commandService) : Operation
+public record RestCall(IConditionsService conditionsService, IVariableService variableService, IJsonSerializer serializer, IOutputService outputService, ICommandService commandService) : Operation
 {
     public override string Name => nameof(RestCall);
 
@@ -140,8 +140,7 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
                     }
                     catch (Exception e)
                     {
-                        flowService.FatalException(e, "Failed to load certificate from certificate resource");
-                        throw;
+                        throw new CommandWeaverException("Failed to load certificate from certificate resource", innerException: e);
                     }
                 }
             }
@@ -180,18 +179,12 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         {
             var name = header.ObjectValue?["name"]?.TextValue;
             if (string.IsNullOrEmpty(name))
-            {
-                flowService.Terminate("Missing header name");
-                return;
-            }
+                throw new CommandWeaverException("Missing header name");
 
             var value = header.ObjectValue?["value"]?.TextValue;
             if (string.IsNullOrEmpty(value))
-            {
-                flowService.Terminate("Missing header value");
-                return;
-            }
-
+                throw new CommandWeaverException("Missing header value");
+            
             var conditions = header.ObjectValue?["conditions"];
             Condition? parsedConditions = null;
             if (conditions != null && !conditions.IsNull())
@@ -202,16 +195,10 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
             if (!request.Headers.TryAddWithoutValidation(name, value))
             {
                 if (request.Content == null)
-                {
-                    flowService.Terminate($"Failed to add header {name}");
-                    return;
-                }
+                    throw new CommandWeaverException($"Failed to add header {name}");
 
                 if (!request.Content.Headers.TryAddWithoutValidation(name!, value!))
-                {
-                    flowService.Terminate($"Failed to add header {name}");
-                    return;
-                }
+                    throw new CommandWeaverException($"Failed to add header {name}");
             }
         }
     }

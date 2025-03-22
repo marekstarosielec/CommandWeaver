@@ -17,7 +17,6 @@ public class Saver(
     IRepositoryElementStorage repositoryElementStorage,
     IVariableStorage variableStorage,
     IJsonSerializer serializer,
-    IFlowService flow,
     IRepository repository,
     IOutputService output) : ISaver
 {
@@ -40,10 +39,7 @@ public class Saver(
     private async Task SaveRepository(RepositoryElement repositoryWithUpdatedVariables, CancellationToken cancellationToken)
     {
         if (repositoryWithUpdatedVariables.Content == null)
-        {
-            flow.Terminate("Failed to get changes in variables");
-            return;
-        }
+            throw new CommandWeaverException("Failed to get changes in variables");
 
         var name = GetRepositoryName(repositoryWithUpdatedVariables.Id);
 
@@ -58,10 +54,7 @@ public class Saver(
             return;
         }
         if (!serializer.TrySerialize(contentToSave, out var serializedContent, out var exception))
-        {
-            flow.FatalException(exception, "Failed to serialize variables");
-            return;
-        }
+            throw new CommandWeaverException("Failed to serialize variables", innerException: exception);
 
         await repository.SaveRepositoryElement(name, serializedContent!, cancellationToken);
         output.Debug($"Successfully saved repository: {name}");

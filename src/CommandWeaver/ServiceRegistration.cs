@@ -11,7 +11,6 @@ public static class ServiceRegistration
         services.AddTransient<IOutputWriter, SpectreConsoleOutput>();
         services.AddTransient<IInputReader, SpectreConsoleInput>();
         services.AddCommandWeaverJsonSerializer();
-        services.AddCommandWeaverFlow();
         services.AddCommandWeaverOutput();
         services.AddCommandWeaverInput();
         services.AddCommandWeaverOperations();

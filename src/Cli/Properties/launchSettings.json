@@ -42,7 +42,7 @@
     },
     "test": {
       "commandName": "Project",
-      "commandLineArgs": "test"
+      "commandLineArgs": "abc123"
     }
   }
 }

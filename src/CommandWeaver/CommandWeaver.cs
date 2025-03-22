@@ -1,7 +1,6 @@
 ﻿/// <inheritdoc />
 public class CommandWeaver(
     ICommandService commandService,
-    IFlowService flowService,
     ILoader loader,
     ISaver saver,
     IOutputService outputService,
@@ -14,32 +13,42 @@ public class CommandWeaver(
     /// <inheritdoc />
     public async Task Run(string commandName, Dictionary<string, string> arguments, CancellationToken cancellationToken)
     {
-        if (!HandleLogLevel(arguments)) return;
+        try
+        {
+            HandleLogLevel(arguments);
         
-        if (string.IsNullOrWhiteSpace(commandName))
-        {
-            flowService.Terminate($"Command not provided.");
-            return;
+            if (string.IsNullOrWhiteSpace(commandName))
+                throw new CommandWeaverException($"Command not provided.");
+
+            outputService.Trace($"Starting execution for command: {commandName}");
+
+            await loader.Execute(cancellationToken);
+            commandValidator.ValidateCommands(repositoryElementStorage.Get());
+
+            var commandToExecute = commandService.Get(commandName);
+            if (commandToExecute == null)
+                throw new CommandWeaverException($"Unknown command {commandName}");
+
+            commandParameterResolver.PrepareCommandParameters(commandToExecute!, arguments);
+            await commandService.ExecuteOperations(commandToExecute!.Operations, cancellationToken);
+            await saver.Execute(cancellationToken);
+            outputService.Trace($"Awaiting background tasks to complete");
+            await backgroundService.WaitToComplete();
+            outputService.Trace($"Execution completed for command: {commandName}");
         }
-
-        outputService.Trace($"Starting execution for command: {commandName}");
-
-        await loader.Execute(cancellationToken);
-        commandValidator.ValidateCommands(repositoryElementStorage.Get());
-
-        var commandToExecute = commandService.Get(commandName);
-        if (commandToExecute == null)
+        catch (OperationCanceledException)
         {
-            flowService.Terminate($"Unknown command {commandName}");
-            return;
+            outputService.Information("User abort...");
         }
-
-        commandParameterResolver.PrepareCommandParameters(commandToExecute!, arguments);
-        await commandService.ExecuteOperations(commandToExecute!.Operations, cancellationToken);
-        await saver.Execute(cancellationToken);
-        outputService.Trace($"Awaiting background tasks to complete");
-        await backgroundService.WaitToComplete();
-        outputService.Trace($"Execution completed for command: {commandName}");
+        catch (CommandWeaverException e)
+        {
+            outputService.Error(e.Message);
+            throw;
+        }
+        finally
+        {
+            backgroundService.Stop();
+        }
     }
 
     /// <summary>
@@ -47,20 +56,14 @@ public class CommandWeaver(
     /// </summary>
     /// <param name="arguments"></param>
     /// <returns></returns>
-    private bool HandleLogLevel(Dictionary<string, string> arguments)
+    private void HandleLogLevel(Dictionary<string, string> arguments)
     {
-        if (arguments.TryGetValue("log-level", out var logLevelArgument))
-        {
-            if (!Enum.TryParse(logLevelArgument, true, out LogLevel logLevel))
-            {
-                flowService.Terminate(
-                    $"Invalid value for argument \"log-level\". Allowed enum values: {string.Join(", ", Enum.GetNames(typeof(LogLevel)))}.");
-                return false;
-            }
+        if (!arguments.TryGetValue("log-level", out var logLevelArgument)) return;
+        if (Enum.TryParse(logLevelArgument, true, out LogLevel logLevel))
             outputSettings.CurrentLogLevel = logLevel;
-        }
-
-        return true;
+        else
+            throw new CommandWeaverException(
+                $"Invalid value for argument \"log-level\". Allowed enum values: {string.Join(", ", Enum.GetNames(typeof(LogLevel)))}.");
     }
 }
 

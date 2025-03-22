@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 
 /// <inheritdoc />
-public class OperationFactory(IServiceProvider serviceProvider, IVariableService variableService, IFlowService flowService, IOutputService outputService , IConditionsService conditionsService) : IOperationFactory
+public class OperationFactory(IServiceProvider serviceProvider, IVariableService variableService, IOutputService outputService , IConditionsService conditionsService) : IOperationFactory
 {
     private readonly Dictionary<string, Func<Operation>> _operations = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -38,8 +38,7 @@ public class OperationFactory(IServiceProvider serviceProvider, IVariableService
         if (resolvedSource.ListValue != null)
             return resolvedSource.ListValue.Select(GetOperation);
 
-        flowService.Terminate("Could not resolve operation");
-        throw new Exception($"Could not resolve operation");
+        throw new CommandWeaverException("Could not resolve operation");
     }
 
     private Operation GetOperation(DynamicValue source)
@@ -69,10 +68,8 @@ public class OperationFactory(IServiceProvider serviceProvider, IVariableService
             return resolvedSource;
         }
 
-        flowService.Terminate(
+        throw new CommandWeaverException(
             $"Failed to find operation in {source.ObjectValue?["fromVariable"].TextValue}");
-        throw new Exception($"Failed to find operation in {source.ObjectValue?["fromVariable"].TextValue}");
-
     }
     
     private Operation GetOperationInstanceFromName(DynamicValue source)
@@ -80,8 +77,7 @@ public class OperationFactory(IServiceProvider serviceProvider, IVariableService
         var operationName = source.ObjectValue?["operation"].TextValue;
         var operationInstance = GetOperation(operationName);
         if (operationInstance != null) return operationInstance;
-        flowService.Terminate($"Unknown operation '{operationName}'");
-        throw new Exception($"Unknown operation '{operationName}'");
+        throw new CommandWeaverException($"Unknown operation '{operationName}'");
     }
 
     private Operation ConfigureOperation(Operation operationInstance, DynamicValue source)
@@ -125,10 +121,7 @@ public class OperationFactory(IServiceProvider serviceProvider, IVariableService
     private void ConfigureParameter(Operation operationInstance, Dictionary<string, OperationParameter> parameters, string propertyKey, DynamicValue? propertyValue)
     {
         if (!parameters.TryGetValue(propertyKey, out var parameter))
-        {
-            flowService.Terminate($"Unexpected property '{propertyKey}' in operation '{operationInstance.Name}'");
-            return; // Will never be reached due to Terminate
-        }
+            throw new CommandWeaverException($"Unexpected property '{propertyKey}' in operation '{operationInstance.Name}'");
 
         parameters[propertyKey] = parameter with { OriginalValue = propertyValue ?? new DynamicValue() };
         outputService.Trace($"Parameter '{propertyKey}' set for operation '{operationInstance.Name}'.");
@@ -137,16 +130,10 @@ public class OperationFactory(IServiceProvider serviceProvider, IVariableService
     private void ConfigureSubOperations(Operation operationInstance, DynamicValue source)
     {
         if (operationInstance is not OperationAggregate aggregateInstance)
-        {
-            flowService.Terminate($"Cannot add operations to operation '{operationInstance.Name}'");
-            return;
-        }
+            throw new CommandWeaverException($"Cannot add operations to operation '{operationInstance.Name}'");
 
         if (source.ListValue == null)
-        {
-            flowService.Terminate($"Operations list is missing in '{operationInstance.Name}'");
-            return;
-        }
+            throw new CommandWeaverException($"Operations list is missing in '{operationInstance.Name}'");
 
         //TODO: Add maximum depth here to avoid StackOverflowException
         var subOperations = source.ListValue.Select(GetOperations);

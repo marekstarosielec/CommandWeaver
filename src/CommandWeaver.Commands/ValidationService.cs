@@ -6,7 +6,7 @@ public interface IValidationService
     void Validate(Validation? validatable, DynamicValue valueToValidate, string parameterKey);
 }
 
-public class ValidationService(IFlowService flowService) : IValidationService
+public class ValidationService : IValidationService
 {
     public void Validate(Validation? validation, DynamicValue valueToValidate, string parameterKey)
     {
@@ -14,7 +14,7 @@ public class ValidationService(IFlowService flowService) : IValidationService
             return;
         
         if (validation.Required && valueToValidate.IsNull())
-            flowService.Terminate($"Parameter '{parameterKey}' is required.");
+            throw new CommandWeaverException($"Parameter '{parameterKey}' is required.");
 
         if (validation.List != true)
             SingleValueValidation(validation, valueToValidate, parameterKey);
@@ -25,7 +25,7 @@ public class ValidationService(IFlowService flowService) : IValidationService
                 return;
             
             if (valueToValidate.ListValue == null)
-                flowService.Terminate($"Parameter '{parameterKey}' requires list of values.");
+                throw new CommandWeaverException($"Parameter '{parameterKey}' requires list of values.");
 
             foreach (var listElement in valueToValidate.ListValue!)
                 SingleValueValidation(validation, listElement, parameterKey); 
@@ -51,11 +51,9 @@ public class ValidationService(IFlowService flowService) : IValidationService
         switch (validation.AllowedType?.ToLower())
         {
             case "text" when valueToValidate.TextValue == null:
-                flowService.Terminate($"'{parameterKey}' requires text value.");
-                break;
+                throw new CommandWeaverException($"'{parameterKey}' requires text value.");
             case "number" when valueToValidate.NumericValue == null:
-                flowService.Terminate($"'{parameterKey}' requires number.");
-                break;
+                throw new CommandWeaverException($"'{parameterKey}' requires number.");
         }
     }
 
@@ -71,8 +69,7 @@ public class ValidationService(IFlowService flowService) : IValidationService
         }
         catch (Exception ex)
         {
-            flowService.Terminate(ex.Message);
-            throw;
+            throw new CommandWeaverException(ex.Message);
         }
     }
 
@@ -176,7 +173,7 @@ public class ValidationService(IFlowService flowService) : IValidationService
         if (validation.AllowedEnumValues != null && valueToValidate.TextValue != null &&
             !Enum.GetNames(validation.AllowedEnumValues).Any(name =>
                 name.Equals(valueToValidate.TextValue, StringComparison.OrdinalIgnoreCase)))
-            flowService.Terminate($"Invalid value for argument '{parameterKey}'.");
+            throw new CommandWeaverException($"Invalid value for argument '{parameterKey}'.");
     }
 
     private void AllowedTextValuesValidation(Validation validation, DynamicValue valueToValidate, string parameterKey)
@@ -184,7 +181,7 @@ public class ValidationService(IFlowService flowService) : IValidationService
         if (validation.AllowedTextValues != null && valueToValidate.TextValue != null &&
             !validation.AllowedTextValues.Any(value =>
                 string.Equals(value, valueToValidate.TextValue, StringComparison.OrdinalIgnoreCase)))
-            flowService.Terminate(
+            throw new CommandWeaverException(
                 $"Invalid value for argument '{parameterKey}'. Allowed values: {string.Join(", ", validation.AllowedTextValues)}.");
     }
 }

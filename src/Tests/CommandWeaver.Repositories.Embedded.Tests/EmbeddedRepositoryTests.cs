@@ -8,13 +8,11 @@ using NSubstitute;
 public class EmbeddedRepositoryTests
 {
     private readonly IOutputService _mockOutputService;
-    private readonly IFlowService _mockFlowService;
     private readonly Assembly _mockAssembly;
 
     public EmbeddedRepositoryTests()
     {
         _mockOutputService = Substitute.For<IOutputService>();
-        _mockFlowService = Substitute.For<IFlowService>();
         _mockAssembly = Substitute.For<Assembly>();
     }
 
@@ -36,7 +34,7 @@ public class EmbeddedRepositoryTests
                 return new MemoryStream(Encoding.UTF8.GetBytes($"Content of {resourceName}"));
             });
 
-        var repository = new EmbeddedRepository(_mockAssembly, "TestResources.", _mockOutputService, _mockFlowService);
+        var repository = new EmbeddedRepository(_mockAssembly, "TestResources.", _mockOutputService);
 
         // Act
         var results = new List<RepositoryElementInformation>();
@@ -66,7 +64,7 @@ public class EmbeddedRepositoryTests
         _mockAssembly.GetManifestResourceStream("TestResources.Resource2.json")
             .Returns(new MemoryStream(Encoding.UTF8.GetBytes("Valid JSON content")));
 
-        var repository = new EmbeddedRepository(_mockAssembly, "TestResources.", _mockOutputService, _mockFlowService);
+        var repository = new EmbeddedRepository(_mockAssembly, "TestResources.", _mockOutputService);
 
         // Act
         var results = new List<RepositoryElementInformation>();
