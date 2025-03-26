@@ -2,7 +2,7 @@
 
 /// <inheritdoc />
 
-public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputService outputService, IFlowService flowService) : IRepository
+public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputService outputService) : IRepository
 {
     private const string _workspace = "Default";
     
@@ -18,7 +18,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
         }
         catch (Exception ex)
         {
-            flowService.NonFatalException(ex);
+            outputService.WriteException(ex);
             outputService.Warning($"Failed to list files for location {repositoryLocation}");
             return AsyncEnumerable.Empty<RepositoryElementInformation>();
         }
@@ -38,11 +38,11 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
                 physicalFileProvider.CreateDirectoryIfItDoesNotExist(directoryPath);
 
             await physicalFileProvider.WriteFileAsync(repositoryElementId, content, cancellationToken);
-            outputService.Debug($"Repository element saved successfully: {repositoryElementId}");
+            outputService.Trace($"Repository element saved successfully: {repositoryElementId}");
         }
         catch (Exception ex)
         {
-            flowService.NonFatalException(ex);
+            outputService.WriteException(ex);
             outputService.Warning($"Failed to save repository element {repositoryElementId}");
         }
     }
@@ -57,7 +57,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
     private async IAsyncEnumerable<RepositoryElementInformation> GetFilesAsync(RepositoryLocation location, string? sessionName, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var rootPath = GetPath(location, sessionName);
-        outputService.Debug($"Starting file enumeration in: {rootPath}");
+        outputService.Trace($"Starting file enumeration in: {rootPath}");
 
         await foreach (var file in EnumerateFilesIterativelyAsync(rootPath, cancellationToken))
             yield return file;
@@ -75,7 +75,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                outputService.Debug("File enumeration canceled.");
+                outputService.Trace("File enumeration canceled.");
                 yield break;
             }
 
@@ -101,7 +101,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
             var fileName = physicalFileProvider.GetFileName(file);
             if (fileName.StartsWith('.'))
             {
-                outputService.Debug($"Skipping hidden/system file: {fileName}");
+                outputService.Trace($"Skipping hidden/system file: {fileName}");
                 return Task.FromResult<RepositoryElementInformation?>(null);
             }
 
@@ -120,7 +120,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
         }
         catch (Exception ex)
         {
-            flowService.NonFatalException(ex);
+            outputService.WriteException(ex);
             outputService.Warning($"Failed to process file {file}: {ex.Message}");
             return Task.FromResult<RepositoryElementInformation?>(null);
         }

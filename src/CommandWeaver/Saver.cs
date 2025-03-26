@@ -17,19 +17,18 @@ public class Saver(
     IRepositoryElementStorage repositoryElementStorage,
     IVariableStorage variableStorage,
     IJsonSerializer serializer,
-    IFlowService flow,
     IRepository repository,
     IOutputService output) : ISaver
 {
     /// <inheritdoc />
     public async Task Execute(CancellationToken cancellationToken)
     {
-        output.Debug("Starting the save process for modified repositories.");
+        output.Trace("Starting the save process for modified repositories.");
 
         foreach (var repositoryWithUpdatedVariables in GetModifications())
             await SaveRepository(repositoryWithUpdatedVariables, cancellationToken);
 
-        output.Debug("Save process completed.");
+        output.Trace("Save process completed.");
     }
 
     /// <summary>
@@ -40,14 +39,11 @@ public class Saver(
     private async Task SaveRepository(RepositoryElement repositoryWithUpdatedVariables, CancellationToken cancellationToken)
     {
         if (repositoryWithUpdatedVariables.Content == null)
-        {
-            flow.Terminate("Failed to get changes in variables");
-            return;
-        }
+            throw new CommandWeaverException("Failed to get changes in variables");
 
         var name = GetRepositoryName(repositoryWithUpdatedVariables.Id);
 
-        output.Debug($"Preparing to save repository: {name}");
+        output.Trace($"Preparing to save repository: {name}");
 
         var originalRepository = repositoryElementStorage.Get().FirstOrDefault(r => r.Id == name);
 
@@ -58,13 +54,10 @@ public class Saver(
             return;
         }
         if (!serializer.TrySerialize(contentToSave, out var serializedContent, out var exception))
-        {
-            flow.FatalException(exception, "Failed to serialize variables");
-            return;
-        }
+            throw new CommandWeaverException("Failed to serialize variables", innerException: exception);
 
         await repository.SaveRepositoryElement(name, serializedContent!, cancellationToken);
-        output.Debug($"Successfully saved repository: {name}");
+        output.Trace($"Successfully saved repository: {name}");
     }
 
     /// <summary>
@@ -116,7 +109,7 @@ public class Saver(
     /// <returns>An enumerable of <see cref="RepositoryElement"/> instances with updated variables.</returns>
     private IEnumerable<RepositoryElement> GetModifications()
     {
-        output.Debug("Grouping variables for session and application repositories.");
+        output.Trace("Grouping variables for session and application repositories.");
         foreach (var repositoryElement in GroupAndTransform(variableStorage.Session))
             yield return new RepositoryElement(RepositoryLocation.Session, repositoryElement.Key, new RepositoryElementContent { Variables = repositoryElement.Value.Select(v => (Variable?)v).ToImmutableList() });
         foreach (var repositoryElement in GroupAndTransform(variableStorage.Application))

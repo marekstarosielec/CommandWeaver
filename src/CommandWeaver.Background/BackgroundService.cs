@@ -1,7 +1,7 @@
 ﻿using System.Net;
 
 /// <inheritdoc />
-public class BackgroundService(IFlowService flowService) : IBackgroundService
+public class BackgroundService : IBackgroundService
 {
     private readonly Dictionary<int, HttpListenerInformation> _httpListeners = new();
     
@@ -10,19 +10,15 @@ public class BackgroundService(IFlowService flowService) : IBackgroundService
     {
         if (_httpListeners.Count > 0)
         {
-            flowService.Terminate($"There is already active listener on port {_httpListeners.FirstOrDefault().Key}. Only one active listener is allowed.");
+            throw new CommandWeaverException($"There is already active listener on port {_httpListeners.FirstOrDefault().Key}. Only one active listener is allowed.");
             //TODO: This is workaround to avoid concurrency problem when accessing variables.
             // Ideas how to solve this problem:
             // 1. Allow to define variable name containing incoming request, but this will not allow to use operations in variables (they will not know which variable contains request).
             // 2. Allow to define context identifier for execution (e.g. port number). Variable service would access variables from given context, or from no context, but never from another context. Seems complicated and might not solve problem.
             // 3. Instead of running operations in own thread, add it to queue of operations in main thread, so they are executed linearly. This might be tricky, but can solve lots of problems. Problem: how to send response to sender.
-            return;
         }
         if (_httpListeners.ContainsKey(port))
-        {
-            flowService.Terminate($"There is already a listener on port {port}");
-            return;
-        }
+            throw new CommandWeaverException($"There is already a listener on port {port}");
         
         var httpListener = new HttpListener();
         httpListener.Prefixes.Add($"http://127.0.0.1:{port}/");
@@ -32,7 +28,7 @@ public class BackgroundService(IFlowService flowService) : IBackgroundService
         }
         catch (HttpListenerException e) when (e.Message == "Address already in use")
         {
-            flowService.Terminate($"There is already a listener on port {port}");
+            throw new CommandWeaverException($"There is already a listener on port {port}");
         }
         
         // Register cancellation to close the listener immediately
@@ -54,8 +50,7 @@ public class BackgroundService(IFlowService flowService) : IBackgroundService
                         if (cancellationToken.IsCancellationRequested)
                             break;
 
-                        flowService.Terminate($"Listener error on port {port}: {ex.Message}");
-                        break;
+                        throw new CommandWeaverException($"Listener error on port {port}: {ex.Message}");
                     }
                     catch (ObjectDisposedException)
                     {
@@ -70,7 +65,7 @@ public class BackgroundService(IFlowService flowService) : IBackgroundService
             }
             catch (HttpListenerException ex)
             {
-                flowService.Terminate($"Unexpected error in http listener on port {port}: {ex.Message}");
+                throw new CommandWeaverException($"Unexpected error in http listener on port {port}: {ex.Message}");
             }
             catch (ObjectDisposedException)
             {

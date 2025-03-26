@@ -26,7 +26,7 @@ public class CommandValidator(IOutputService outputService) : ICommandValidator
         
         ValidateDuplicateNames(allNames);
 
-        outputService.Debug("Validation of commands completed.");
+        outputService.Trace("Validation of commands completed.");
     }
 
     /// <summary>

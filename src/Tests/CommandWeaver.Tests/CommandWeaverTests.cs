@@ -3,7 +3,6 @@ using NSubstitute;
 public class CommandWeaverTests
 {
     private readonly ICommandService _commandService;
-    private readonly IFlowService _flowService;
     private readonly ILoader _loader;
     private readonly ISaver _saver;
     private readonly IOutputService _outputService;
@@ -16,7 +15,6 @@ public class CommandWeaverTests
     public CommandWeaverTests()
     {
         _commandService = Substitute.For<ICommandService>();
-        _flowService = Substitute.For<IFlowService>();
         _loader = Substitute.For<ILoader>();
         _saver = Substitute.For<ISaver>();
         _outputService = Substitute.For<IOutputService>();
@@ -28,7 +26,6 @@ public class CommandWeaverTests
 
         _commandWeaver = new CommandWeaver(
             _commandService,
-            _flowService,
             _loader,
             _saver,
             _outputService,
@@ -44,10 +41,9 @@ public class CommandWeaverTests
     public async Task Run_ShouldTerminateWhenLogLevelIsIncorrect()
     {
         // Act
-        await _commandWeaver.Run(null!, new Dictionary<string, string>() {{"log-level", "abc"}}, CancellationToken.None);
+        await Assert.ThrowsAsync<CommandWeaverException>(async () => await _commandWeaver.Run(null!, new Dictionary<string, string>() {{"log-level", "abc"}}, CancellationToken.None));
 
         // Assert
-        _flowService.Received(1).Terminate(Arg.Is<string>(s => s.Contains("Allowed enum values")));
         await _loader.DidNotReceive().Execute(Arg.Any<CancellationToken>());
         _commandValidator.DidNotReceive().ValidateCommands(Arg.Any<IEnumerable<RepositoryElement>>());
     }
@@ -56,7 +52,7 @@ public class CommandWeaverTests
     public async Task Run_ShouldSetLogLevelWhenItIsCorrect()
     {
         // Act
-        await _commandWeaver.Run(null!, new Dictionary<string, string>() {{"log-level", "debug"}}, CancellationToken.None);
+        await Assert.ThrowsAsync<CommandWeaverException>(async () => await _commandWeaver.Run(null!, new Dictionary<string, string>() {{"log-level", "debug"}}, CancellationToken.None));
 
         // Assert
         _outputSettings.Received().CurrentLogLevel = LogLevel.Debug;
@@ -66,10 +62,9 @@ public class CommandWeaverTests
     public async Task Run_ShouldTerminateWhenCommandNameIsNull()
     {
         // Act
-        await _commandWeaver.Run(null!, new Dictionary<string, string>(), CancellationToken.None);
+        await Assert.ThrowsAsync<CommandWeaverException>(async () => await _commandWeaver.Run(null!, new Dictionary<string, string>(), CancellationToken.None));
 
         // Assert
-        _flowService.Received(1).Terminate("Command not provided.");
         await _loader.DidNotReceive().Execute(Arg.Any<CancellationToken>());
         _commandValidator.DidNotReceive().ValidateCommands(Arg.Any<IEnumerable<RepositoryElement>>());
     }
@@ -81,10 +76,9 @@ public class CommandWeaverTests
         _commandService.Get("unknown-command").Returns((Command)null!);
 
         // Act
-        await _commandWeaver.Run("unknown-command", new Dictionary<string, string>(), CancellationToken.None);
+        await Assert.ThrowsAsync<CommandWeaverException>(async () => await _commandWeaver.Run("unknown-command", new Dictionary<string, string>(), CancellationToken.None));
 
         // Assert
-        _flowService.Received(1).Terminate("Unknown command unknown-command");
         _commandParameterResolver.DidNotReceive().PrepareCommandParameters(Arg.Any<Command>(), Arg.Any<Dictionary<string, string>>());
         await _saver.DidNotReceive().Execute(Arg.Any<CancellationToken>());
     }

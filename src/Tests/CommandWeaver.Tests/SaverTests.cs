@@ -6,7 +6,6 @@ public class SaverTests
     private readonly IRepositoryElementStorage _repositoryElementStorage = Substitute.For<IRepositoryElementStorage>();
     private readonly IVariableStorage _variableStorage = Substitute.For<IVariableStorage>();
     private readonly IJsonSerializer _serializer = Substitute.For<IJsonSerializer>();
-    private readonly IFlowService _flowService = Substitute.For<IFlowService>();
     private readonly IRepository _repository = Substitute.For<IRepository>();
     private readonly IOutputService _outputService = Substitute.For<IOutputService>();
     private readonly Saver _saver;
@@ -17,7 +16,6 @@ public class SaverTests
             _repositoryElementStorage,
             _variableStorage,
             _serializer,
-            _flowService,
             _repository,
             _outputService
         );
@@ -70,8 +68,8 @@ public class SaverTests
         await _saver.Execute(CancellationToken.None);
 
         // Assert
-        _outputService.Received().Debug(Arg.Is<string>(msg => msg.Contains("Starting the save process")));
-        _outputService.Received().Debug(Arg.Is<string>(msg => msg.Contains("Save process completed")));
+        _outputService.Received().Trace(Arg.Is<string>(msg => msg.Contains("Starting the save process")));
+        _outputService.Received().Trace(Arg.Is<string>(msg => msg.Contains("Save process completed")));
     }
 
     [Fact]
@@ -129,10 +127,7 @@ public class SaverTests
             });
 
         // Act
-        await _saver.Execute(CancellationToken.None);
-
-        // Assert
-        _flowService.Received().FatalException(serializationException, Arg.Is<string>(msg => msg.Contains("Failed to serialize variables")));
+        await Assert.ThrowsAsync<CommandWeaverException>(async () => await _saver.Execute(CancellationToken.None));
     }
 
     [Fact]

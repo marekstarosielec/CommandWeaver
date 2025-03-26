@@ -7,60 +7,33 @@ public class TerminateTests
     public async Task Run_ShouldCallTerminateWithMessage_WhenMessageIsProvided()
     {
         // Arrange
-        var mockFlowService = Substitute.For<IFlowService>();
         var parameters = new Dictionary<string, OperationParameter>
         {
             { "message", new OperationParameter { Value = new DynamicValue("Goodbye!"), Description = "description" } },
             { "exitCode", new OperationParameter { Description = "test" } }
         }.ToImmutableDictionary();
 
-        var terminate = new Terminate(mockFlowService) { Parameters = parameters };
+        var terminate = new Terminate() { Parameters = parameters };
 
         // Act
-        await terminate.Run(CancellationToken.None);
-
-        // Assert
-        mockFlowService.Received(1).Terminate(Arg.Is<string?>(message => message == "Goodbye!"));
+        await Assert.ThrowsAsync<CommandWeaverException>(async () => await terminate.Run(CancellationToken.None));
     }
 
     [Fact]
-    public async Task Run_ShouldCallTerminateWithNullMessage_WhenMessageIsNotProvided()
+    public async Task Run_ShouldCallTerminateWithEmptyMessage_WhenMessageIsNotProvided()
     {
         // Arrange
-        var mockFlowService = Substitute.For<IFlowService>();
         var parameters = new Dictionary<string, OperationParameter>
         {
             { "message", new OperationParameter { Value = new DynamicValue(), Description = "description" } },
             { "exitCode", new OperationParameter { Description = "test" } }
         }.ToImmutableDictionary();
 
-        var terminate = new Terminate(mockFlowService) { Parameters = parameters };
+        var terminate = new Terminate() { Parameters = parameters };
 
         // Act
-        await terminate.Run(CancellationToken.None);
-
-        // Assert
-        mockFlowService.Received(1).Terminate(Arg.Is<string?>(message => message == null));
+        var ex = await Assert.ThrowsAsync<CommandWeaverException>(async () => await terminate.Run(CancellationToken.None));
+        
+        Assert.Empty(ex.Message);
     }
-
-    [Fact]
-    public async Task Run_ShouldCallTerminateWithNull_WhenMessageIsEmpty()
-    {
-        // Arrange
-        var mockFlowService = Substitute.For<IFlowService>();
-        var parameters = new Dictionary<string, OperationParameter>
-        {
-            { "message", new OperationParameter { Value = new DynamicValue(), Description = "description" } },
-            { "exitCode", new OperationParameter { Description = "test" } }
-        }.ToImmutableDictionary();
-
-        var terminate = new Terminate(mockFlowService) { Parameters = parameters };
-
-        // Act
-        await terminate.Run(CancellationToken.None);
-
-        // Assert
-        mockFlowService.Received(1).Terminate(Arg.Is<string?>(message => message == null));
-    }
-    
 }
