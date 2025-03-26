@@ -52,8 +52,9 @@ public record RestServer(IBackgroundService backgroundService, IOutputService ou
         var response = context.Response;
         
         var requestVariable = await GetRequestAsVariable(request, cancellationToken);
+        
         variableService.WriteVariableValue(VariableScope.Command, "rest_request", requestVariable);
-
+        //outputService.Write(requestVariable, LogLevel.Information, Styling.Json);
         for (var index = 0; index < endpoints.Count; index++)
         {
             var endpoint = endpoints[index];

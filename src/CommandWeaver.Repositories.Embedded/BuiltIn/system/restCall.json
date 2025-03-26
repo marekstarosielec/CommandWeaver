@@ -33,7 +33,17 @@
           "operations": [{
             "comment": "header",
             "operation": "output",
-            "value": "[[{{styles[trace].value}}]]{{header.key}}[[/]]: [[{{styles[debug].value}}]]{{header.value}}[[/]]"
+            "value": "[[{{styles[trace].value}}]]{{header.key}}[[/]]: [[{{styles[debug].value}}]]{{header.value}}[[/]]",
+            "conditions": {
+              "isNotNull": "{{header.key}}"
+            }
+          },{
+            "comment": "header",
+            "operation": "output",
+            "value": "[[{{styles[debug].value}}]]{{header}}[[/]]",
+            "conditions": {
+              "isNull": "{{header.key}}"
+            }
           }]
         },
         {
@@ -112,11 +122,40 @@
           "operation": "forEach",
           "list": "{{rest_response.headers}}",
           "element": "header",
-          "operations": [{
-            "comment": "header",
-            "operation": "output",
-            "value": "[[{{styles[trace].value}}]]{{header.key}}[[/]]: [[{{styles[debug].value}}]]{{header.value}}[[/]]"
-          }]
+          "operations": [
+            {
+              "operation": "setVariable",
+              "name": "elementPresent",
+              "value": "key",
+              "conditions": {
+                "IsNotNull": "{{header.key}}"
+              }
+            },
+            {
+              "operation": "setVariable",
+              "name": "elementPresent",
+              "value": "name",
+              "conditions": {
+                "IsNotNull": "{{header.name}}"
+              }
+            },
+            {
+              "comment": "header",
+              "operation": "output",
+              "value": "[[{{styles[trace].value}}]]{{header.{{elementPresent}}}}[[/]]: [[{{styles[debug].value}}]]{{header.value}}[[/]]",
+              "conditions": {
+                "isNotNull": "{{elementPresent}}"
+              }
+            },
+            {
+              "comment": "header",
+              "operation": "output",
+              "value": "[[{{styles[debug].value}}]]{{header}}[[/]]",
+              "conditions": {
+                "isNull": "{{elementPresent}}"
+              }
+            }
+          ]
         },
         {
           "comment": "empty line before body",
@@ -137,7 +176,7 @@
           "comment": "body as text",
           "operation": "output",
           "value": "{{rest_response.body}}\r\n",
-          "styling": "raw",
+          "styling": "json",
           "conditions": {
             "isNull": "{{rest_response.body_json}}",
             "isNotNull": "{{rest_response.body}}"

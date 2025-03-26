@@ -3,18 +3,19 @@ using System.ComponentModel.DataAnnotations;
 
 public interface IValidationService
 {
-    void Validate(Validation? validatable, DynamicValue valueToValidate, string parameterKey);
+    void Validate(Validation? validatable, DynamicValue valueToValidate, string parameterKey, Operation? operation = null);
 }
 
 public class ValidationService(IFlowService flowService) : IValidationService
 {
-    public void Validate(Validation? validation, DynamicValue valueToValidate, string parameterKey)
+    public void Validate(Validation? validation, DynamicValue valueToValidate, string parameterKey, Operation? operation = null)
     {
         if (validation == null)
             return;
+        var operationName = operation == null ? string.Empty : $"in operation {operation.Name} ";
         
         if (validation.Required && valueToValidate.IsNull())
-            flowService.Terminate($"Parameter '{parameterKey}' is required.");
+            flowService.Terminate($"Parameter '{parameterKey}' {operationName}is required.");
 
         if (validation.List != true)
             SingleValueValidation(validation, valueToValidate, parameterKey);
@@ -25,7 +26,7 @@ public class ValidationService(IFlowService flowService) : IValidationService
                 return;
             
             if (valueToValidate.ListValue == null)
-                flowService.Terminate($"Parameter '{parameterKey}' requires list of values.");
+                flowService.Terminate($"Parameter '{parameterKey}' {operationName}requires list of values.");
 
             foreach (var listElement in valueToValidate.ListValue!)
                 SingleValueValidation(validation, listElement, parameterKey); 
