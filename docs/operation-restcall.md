@@ -13,8 +13,7 @@ The RestCall operation allows performing HTTP requests to interact with APIs. It
 | **headers** | Metadata for the request. | No | List of key-value pairs                 |
 | **body** | Data sent with the request. | No | `text`                             |
 | **timeout** | Seconds to wait for a response before failing. | No | `number`                                 |
-| **certificate** | Path to the certificate file or a resource. | No | Certificate can be loaded from a [resource](resource.md).
-|
+| **certificate** | Path to the certificate file or a resource. | No | Certificate can be loaded from a [resource](resource.md).|
 | **certificatePassword** | Password for the certificate if required. | No | `text`                                  |
 
 ---

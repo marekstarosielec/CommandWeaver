@@ -28,8 +28,7 @@ public interface ICommandParameterResolver
 public class CommandParameterResolver(
     IOutputService outputService,
     IVariableService variableService,
-    IValidationService validationService,
-    IFlowService flowService) : ICommandParameterResolver
+    IValidationService validationService) : ICommandParameterResolver
 {
     /// <inheritdoc />
     public List<CommandParameter> GetCommandParameters(Command command)
@@ -47,11 +46,7 @@ public class CommandParameterResolver(
             .Where(k => !knownKeys.Contains(k, StringComparer.OrdinalIgnoreCase))
             .ToList();
         if (unknownArguments.Any())
-        {
-            flowService.Terminate($"Unknown arguments: {string.Join(", ", unknownArguments)}");
-            throw new InvalidOperationException(
-                $"Command '{command.Name}' received unknown arguments: {string.Join(", ", unknownArguments)}");
-        }
+            throw new CommandWeaverException($"Unknown arguments: {string.Join(", ", unknownArguments)}");
 
         // Convert command parameters (both defined by command and built-in) to variables with values from arguments.
         foreach (var parameter in allParameters)
@@ -112,10 +107,7 @@ public class CommandParameterResolver(
 
         var result = currentDynamicCommandParameter.GetAsObject<CommandParameter>();
         if (result == null)
-        {
-            flowService.Terminate("Failed to resolve parameter.");
-            throw new Exception("Failed to resolve parameter.");
-        }
+            throw new CommandWeaverException("Failed to resolve parameter.");
 
         return result;
     }
@@ -160,7 +152,7 @@ public class CommandParameterResolver(
             if (arguments.TryGetValue(name, out var otherValue))
             {
                 argumentValue = otherValue;
-                outputService.Debug($"Argument resolved using name '{name}': {argumentValue}");
+                outputService.Trace($"Argument resolved using name '{name}': {argumentValue}");
                 break;
             }
 

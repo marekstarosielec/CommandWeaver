@@ -39,6 +39,10 @@
     "Authorize": {
       "commandName": "Project",
       "commandLineArgs": "auth"
+    },
+    "test": {
+      "commandName": "Project",
+      "commandLineArgs": "abc123"
     }
   }
 }

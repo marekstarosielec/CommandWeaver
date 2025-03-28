@@ -15,7 +15,7 @@ public interface IWriter
 }
 
 /// <inheritdoc />
-public class Writer(IFlowService flowService, IVariableStorage variableStorage, IRepository repository) : IWriter
+public class Writer(IVariableStorage variableStorage, IRepository repository) : IWriter
 {
     /// <inheritdoc />
     public void WriteVariableValue(VariableScope scope, string? sessionName, string path, DynamicValue value, string? repositoryElementId)
@@ -27,10 +27,7 @@ public class Writer(IFlowService flowService, IVariableStorage variableStorage, 
         else if (ValuePath.PathIsTopLevelList(path))
             WriteVariableValueOnTopLevelList(scope, path, value, fullRepositoryElementId);
         else
-        {
-            flowService.Terminate("Writing to sub-property is not supported.");
-            throw new InvalidOperationException("Writing to sub-property is not supported.");
-        }
+            throw new CommandWeaverException("Writing to sub-property is not supported.");
     }
 
     private string? GetFullRepositoryElementId(VariableScope scope, string? sessionName, string? repositoryElementId)
@@ -53,10 +50,7 @@ public class Writer(IFlowService flowService, IVariableStorage variableStorage, 
 
         var resolvedRepositoryElementId = ResolveRepositoryElementId(repositoryElementId, path);
         if (scope != VariableScope.Command && string.IsNullOrWhiteSpace(resolvedRepositoryElementId))
-        {
-            flowService.Terminate("Repository element ID must be specified for non-command scopes.");
-            throw new InvalidOperationException("Repository element ID must be specified for non-command scopes.");
-        }
+            throw new CommandWeaverException("Repository element ID must be specified for non-command scopes.");
 
         var variableToInsert = new Variable { Key = path, Value = value, RepositoryElementId = resolvedRepositoryElementId };
         variableStorage.Add(scope, variableToInsert);
@@ -67,10 +61,7 @@ public class Writer(IFlowService flowService, IVariableStorage variableStorage, 
         var variableName = ValuePath.GetVariableName(path);
         var key = ValuePath.TopLevelListKey(path);
         if (key == null)
-        {
-            flowService.Terminate("Error while updating variable value.");
-            throw new InvalidOperationException("Error while updating variable value.");
-        }
+            throw new CommandWeaverException("Error while updating variable value.");
 
         var existingChange = variableStorage.FirstOrDefault(scope, v => v.Key == variableName);
         variableStorage.RemoveAllBelowScope(scope, v => v.Key == variableName);

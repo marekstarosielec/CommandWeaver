@@ -10,6 +10,7 @@ Every operation has its own parameters, which control how the operation behaves.
 
 CommandWeaver currently supports the following operations:
 
+- [Base64Decode](operation-base64decode.md) – Decodes a Base64-encoded string into plain text.
 - [Block](operation-block.md) – Groups multiple operations and executes them as a unit.
 - [ExtractFromNameValue](operation-extractfromnamevalue.md) – Extracts values from structured name-value pairs.
 - [ForEach](operation-foreach.md) – Iterates over a list and executes nested operations for each item.

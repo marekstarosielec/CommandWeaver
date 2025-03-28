@@ -5,15 +5,13 @@ public class FileRepositoryTests
 {
     private readonly IPhysicalFileProvider _fileProvider;
     private readonly IOutputService _outputService;
-    private readonly IFlowService _flowService;
     private readonly FileRepository _fileRepository;
 
     public FileRepositoryTests()
     {
         _fileProvider = Substitute.For<IPhysicalFileProvider>();
         _outputService = Substitute.For<IOutputService>();
-        _flowService = Substitute.For<IFlowService>();
-        _fileRepository = new FileRepository(_fileProvider, _outputService, _flowService);
+        _fileRepository = new FileRepository(_fileProvider, _outputService);
     }
 
     [Fact]
@@ -30,7 +28,7 @@ public class FileRepositoryTests
 
         // Assert
         Assert.Empty(result);
-        _flowService.Received(1).NonFatalException(Arg.Any<IOException>());
+        _outputService.Received(1).WriteException(Arg.Any<IOException>());
         _outputService.Received(1).Warning(Arg.Is<string>(msg => msg.Contains("Failed to list files")));
     }
 
@@ -67,9 +65,8 @@ public class FileRepositoryTests
 
         var physicalFileProvider = Substitute.For<IPhysicalFileProvider>();
         var outputService = Substitute.For<IOutputService>();
-        var flowService = Substitute.For<IFlowService>();
 
-        var fileRepository = new FileRepository(physicalFileProvider, outputService, flowService);
+        var fileRepository = new FileRepository(physicalFileProvider, outputService);
 
         // Act
         await fileRepository.SaveRepositoryElement(repositoryElementId, content, CancellationToken.None);
@@ -93,7 +90,7 @@ public class FileRepositoryTests
         await _fileRepository.SaveRepositoryElement(testFile, testContent, CancellationToken.None);
 
         // Assert
-        _flowService.Received(1).NonFatalException(Arg.Any<IOException>());
+        _outputService.Received(1).WriteException(Arg.Any<IOException>());
         _outputService.Received(1).Warning(Arg.Is<string>(msg => msg.Contains("Failed to save repository element")));
     }
 
@@ -130,7 +127,7 @@ public class FileRepositoryTests
 
         // Assert
         Assert.Null(result);
-        _outputService.Received(1).Debug(Arg.Is<string>(msg => msg.Contains("Skipping hidden/system file")));
+        _outputService.Received(1).Trace(Arg.Is<string>(msg => msg.Contains("Skipping hidden/system file")));
     }
 
     [Fact]

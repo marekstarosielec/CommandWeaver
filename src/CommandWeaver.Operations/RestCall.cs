@@ -3,11 +3,11 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
-public record RestCall(IConditionsService conditionsService, IVariableService variableServices, IJsonSerializer serializer, IFlowService flowService, IOutputService outputService, ICommandService commandService) : Operation
+public record RestCall(IConditionsService conditionsService, IVariableService variableService, IJsonSerializer serializer, IOutputService outputService, ICommandService commandService) : Operation
 {
     public override string Name => nameof(RestCall);
 
-    public override ImmutableDictionary<string, OperationParameter> Parameters { get; init;  } = new Dictionary<string, OperationParameter>
+    public override ImmutableDictionary<string, OperationParameter> Parameters { get; init; } = new Dictionary<string, OperationParameter>
     {
         {"url", new OperationParameter { Description = "The endpoint of the API to call", Validation = new Validation { Required = true, AllowedType = "text"}} },
         {"method", new OperationParameter { Description = "Operation to perform",  Validation = new Validation{ Required = true, AllowedTextValues = [HttpMethod.Get.ToString(), HttpMethod.Post.ToString(), HttpMethod.Put.ToString(), HttpMethod.Delete.ToString(), HttpMethod.Patch.ToString() ] } }},
@@ -23,11 +23,11 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
     {
         using var handler = GetHttpClientHandler();
         using var httpClient = new HttpClient(handler);
-        var events = Parameters["events"].Value.GetAsObject<RestCallEvents>();
-
+        var events = Parameters["events"].OriginalValue.GetAsObject<RestCallEvents>();
+       
         using var request = GetHttpRequestMessage(httpClient);
         var requestVariable = await GetRequestAsVariable(request);
-        variableServices.WriteVariableValue(VariableScope.Command, "rest_request", requestVariable);
+        variableService.WriteVariableValue(VariableScope.Command, "rest_request", requestVariable);
         
         if (events?.RequestPrepared != null)
             await commandService.ExecuteOperations(events.RequestPrepared, cancellationToken);
@@ -35,7 +35,7 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         var response = await httpClient.SendAsync(request, cancellationToken);
         
         var responseVariable = await GetResponseAsVariable(response);
-        variableServices.WriteVariableValue(VariableScope.Command, "rest_response", responseVariable);
+        variableService.WriteVariableValue(VariableScope.Command, "rest_response", responseVariable);
         
         if (events?.ResponseReceived != null)
             await commandService.ExecuteOperations(events.ResponseReceived, cancellationToken);
@@ -128,7 +128,7 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
             if (!string.IsNullOrWhiteSpace(certificateInformation?.FromResource))
             {
                 var resourceKey = $"{{{{resources[{certificateInformation.FromResource}].binary}}}}";
-                var certificateBinaryContent = variableServices.ReadVariableValue(new DynamicValue(resourceKey));
+                var certificateBinaryContent = variableService.ReadVariableValue(new DynamicValue(resourceKey));
                 if (certificateBinaryContent.LazyBinaryValue?.Value != null)
                 {
                     try
@@ -140,8 +140,7 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
                     }
                     catch (Exception e)
                     {
-                        flowService.FatalException(e, "Failed to load certificate from certificate resource");
-                        throw;
+                        throw new CommandWeaverException("Failed to load certificate from certificate resource", innerException: e);
                     }
                 }
             }
@@ -180,18 +179,12 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         {
             var name = header.ObjectValue?["name"]?.TextValue;
             if (string.IsNullOrEmpty(name))
-            {
-                flowService.Terminate("Missing header name");
-                return;
-            }
+                throw new CommandWeaverException("Missing header name");
 
             var value = header.ObjectValue?["value"]?.TextValue;
             if (string.IsNullOrEmpty(value))
-            {
-                flowService.Terminate("Missing header value");
-                return;
-            }
-
+                throw new CommandWeaverException("Missing header value");
+            
             var conditions = header.ObjectValue?["conditions"];
             Condition? parsedConditions = null;
             if (conditions != null && !conditions.IsNull())
@@ -202,16 +195,10 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
             if (!request.Headers.TryAddWithoutValidation(name, value))
             {
                 if (request.Content == null)
-                {
-                    flowService.Terminate($"Failed to add header {name}");
-                    return;
-                }
+                    throw new CommandWeaverException($"Failed to add header {name}");
 
                 if (!request.Content.Headers.TryAddWithoutValidation(name!, value!))
-                {
-                    flowService.Terminate($"Failed to add header {name}");
-                    return;
-                }
+                    throw new CommandWeaverException($"Failed to add header {name}");
             }
         }
     }

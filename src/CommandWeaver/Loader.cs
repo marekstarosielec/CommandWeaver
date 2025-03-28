@@ -22,7 +22,6 @@ public class Loader(
     IOutputSettings outputSettings,
     ICommandService commandService,
     IJsonSerializer serializer,
-    IFlowService flowService,
     IRepositoryElementStorage repositoryElementStorage,
     IResourceService resourceService) : ILoader
 {
@@ -32,13 +31,13 @@ public class Loader(
     /// <inheritdoc />
     public async Task Execute(CancellationToken cancellationToken)
     {
-        outputService.Debug("Execution started: Loading variables and commands from repositories.");
+        outputService.Trace("Execution started: Loading variables and commands from repositories.");
         await LoadBuiltInRepository(cancellationToken);
         await LoadApplicationRepository(cancellationToken);
         await LoadSessionRepository(cancellationToken);
         SetCommonVariables();
         outputSettings.Serializer = serializer;
-        outputService.Debug("Execution completed: Variables and commands successfully loaded.");
+        outputService.Trace("Execution completed: Variables and commands successfully loaded.");
     }
 
     /// <summary>
@@ -47,7 +46,7 @@ public class Loader(
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     private async Task LoadBuiltInRepository(CancellationToken cancellationToken)
     {
-        outputService.Debug($"Loading built-in repository: {BuiltInRepositoryName}");
+        outputService.Trace($"Loading built-in repository: {BuiltInRepositoryName}");
         variableService.CurrentlyLoadRepository = BuiltInRepositoryName;
         var elements = embeddedRepository.GetList(cancellationToken);
         await LoadRepositoryElements(RepositoryLocation.BuiltIn, elements, cancellationToken);
@@ -61,7 +60,7 @@ public class Loader(
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     private async Task LoadApplicationRepository(CancellationToken cancellationToken)
     {
-        outputService.Debug("Loading application repository.");
+        outputService.Trace("Loading application repository.");
         variableService.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Application);
         var elements = repository.GetList(RepositoryLocation.Application, null, cancellationToken);
         await LoadRepositoryElements(RepositoryLocation.Application, elements, cancellationToken);
@@ -75,7 +74,7 @@ public class Loader(
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     private async Task LoadSessionRepository(CancellationToken cancellationToken)
     {
-        outputService.Debug("Loading session repository.");
+        outputService.Trace("Loading session repository.");
         variableService.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Session, variableService.CurrentSessionName);
         var elements = repository.GetList(RepositoryLocation.Session, variableService.CurrentSessionName, cancellationToken);
         await LoadRepositoryElements(RepositoryLocation.Session, elements, cancellationToken);
@@ -114,7 +113,7 @@ public class Loader(
         await foreach (var repositoryElementInformation in repositoryElementsInformation.WithCancellation(cancellationToken))
         {
             variableService.CurrentlyLoadRepositoryElement = repositoryElementInformation.FriendlyName;
-            outputService.Debug($"Processing element {variableService.CurrentlyLoadRepository}\\{variableService.CurrentlyLoadRepositoryElement}");
+            outputService.Trace($"Processing element {variableService.CurrentlyLoadRepository}\\{variableService.CurrentlyLoadRepositoryElement}");
 
             resourceService.Add(repositoryElementInformation);
             if (!string.Equals(JsonHelper.Extension, repositoryElementInformation.Format, StringComparison.OrdinalIgnoreCase))
@@ -183,7 +182,8 @@ public class Loader(
     private void HandleDeserializationError(RepositoryLocation repositoryLocation, RepositoryElementInformation element, Exception? exception)
     {
         repositoryElementStorage.Add(new RepositoryElement(repositoryLocation, element.Id, null));
-        flowService.NonFatalException(exception);
+        if (exception!=null)
+            outputService.WriteException(exception);
         outputService.Warning($"Failed to deserialize element '{variableService.CurrentlyLoadRepositoryElement}' in repository '{variableService.CurrentlyLoadRepository}'");
     }
 }

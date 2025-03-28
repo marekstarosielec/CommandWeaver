@@ -3,7 +3,6 @@ using NSubstitute;
 
 public class ReaderTests
 {
-    private readonly IFlowService _flowService = Substitute.For<IFlowService>();
     private readonly IOutputService _outputService = Substitute.For<IOutputService>();
     private readonly IVariableStorage _variableStorage = Substitute.For<IVariableStorage>();
     private readonly Reader _reader;
@@ -16,7 +15,7 @@ public class ReaderTests
         _variableStorage.Session.Returns(new List<Variable>());
         _variableStorage.Command.Returns(new List<Variable>());
 
-        _reader = new Reader(_flowService, _outputService, _variableStorage);
+        _reader = new Reader(_outputService, _variableStorage);
     }
 
     [Fact]

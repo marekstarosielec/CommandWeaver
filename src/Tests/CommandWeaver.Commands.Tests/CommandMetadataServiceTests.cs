@@ -35,6 +35,6 @@ public class CommandMetadataServiceTests
                 && v.ObjectValue["key"].TextValue == "test-command"
                 && v.ObjectValue["source"].TextValue == source)
         );
-        _outputService.Received(1).Debug("Metadata for command 'test-command' stored with key 'commands[test-command]'.");
+        _outputService.Received(1).Trace("Metadata for command 'test-command' stored with key 'commands[test-command]'.");
     }
 }

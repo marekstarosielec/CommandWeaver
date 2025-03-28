@@ -9,15 +9,13 @@ public class EmbeddedRepository : IEmbeddedRepository
     private readonly Assembly _assembly;
     private readonly string _resourcePrefix;
     private readonly IOutputService _outputService;
-    private readonly IFlowService _flowService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EmbeddedRepository"/> class using the executing assembly.
     /// </summary>
     /// <param name="outputService">The service used for logging output.</param>
-    /// <param name="flowService">The service that allows influencing the execution flow</param>
-    public EmbeddedRepository(IOutputService outputService, IFlowService flowService)
-        : this(Assembly.GetExecutingAssembly(), string.Empty, outputService, flowService) { }
+    public EmbeddedRepository(IOutputService outputService)
+        : this(Assembly.GetExecutingAssembly(), string.Empty, outputService) { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EmbeddedRepository"/> class with a specified assembly and resource prefix.
@@ -25,13 +23,11 @@ public class EmbeddedRepository : IEmbeddedRepository
     /// <param name="assembly">The assembly containing the embedded resources.</param>
     /// <param name="resourcePrefix">The prefix to filter relevant embedded resources.</param>
     /// <param name="outputService">The service used for logging output.</param>
-    /// <param name="flowService">The service that allows influencing the execution flow</param>
-    internal EmbeddedRepository(Assembly assembly, string resourcePrefix, IOutputService outputService, IFlowService flowService)
+    internal EmbeddedRepository(Assembly assembly, string resourcePrefix, IOutputService outputService)
     {
         _assembly = assembly;
         _resourcePrefix = resourcePrefix;
         _outputService = outputService;
-        _flowService = flowService;
     }
 
     /// <inheritdoc />
@@ -89,8 +85,7 @@ public class EmbeddedRepository : IEmbeddedRepository
         }
         catch (Exception e)
         {
-            _flowService.FatalException(e, $"Failed to load {resourceName}");
-            throw;
+            throw new CommandWeaverException($"Failed to load {resourceName}", innerException: e);
         }
     }
 

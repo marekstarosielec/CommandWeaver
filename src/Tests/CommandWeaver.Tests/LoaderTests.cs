@@ -20,7 +20,6 @@ public class LoaderTests
         var outputSettings = Substitute.For<IOutputSettings>();
         var commandService = Substitute.For<ICommandService>();
         _serializer = Substitute.For<IJsonSerializer>();
-        var flowService = Substitute.For<IFlowService>();
         var repositoryElementStorage = Substitute.For<IRepositoryElementStorage>();
         var resourceService = Substitute.For<IResourceService>();
 
@@ -32,7 +31,6 @@ public class LoaderTests
             outputSettings,
             commandService,
             _serializer,
-            flowService,
             repositoryElementStorage,
             resourceService);
     }
@@ -48,8 +46,8 @@ public class LoaderTests
         await _loader.Execute(CancellationToken.None);
 
         // Assert
-        _outputService.Received().Debug(Arg.Is<string>(msg => msg.Contains("Execution started")));
-        _outputService.Received().Debug(Arg.Is<string>(msg => msg.Contains("Execution completed")));
+        _outputService.Received().Trace(Arg.Is<string>(msg => msg.Contains("Execution started")));
+        _outputService.Received().Trace(Arg.Is<string>(msg => msg.Contains("Execution completed")));
     }
 
     [Fact]
@@ -63,7 +61,7 @@ public class LoaderTests
         await _loader.Execute(CancellationToken.None);
 
         // Assert
-        _outputService.Received().Debug(Arg.Is<string>(msg => msg.Contains("built-in repository")));
+        _outputService.Received().Trace(Arg.Is<string>(msg => msg.Contains("built-in repository")));
     }
 
     [Fact]

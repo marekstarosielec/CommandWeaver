@@ -33,7 +33,17 @@
           "operations": [{
             "comment": "header",
             "operation": "output",
-            "value": "[[{{styles[trace].value}}]]{{header.key}}[[/]]: [[{{styles[debug].value}}]]{{header.value}}[[/]]"
+            "value": "[[{{styles[trace].value}}]]{{header.key}}[[/]]: [[{{styles[debug].value}}]]{{header.value}}[[/]]",
+            "conditions": {
+              "isNotNull": "{{header.key}}"
+            }
+          },{
+            "comment": "header",
+            "operation": "output",
+            "value": "[[{{styles[debug].value}}]]{{header}}[[/]]",
+            "conditions": {
+              "isNull": "{{header.key}}"
+            }
           }]
         },
         {
@@ -52,10 +62,10 @@
           }
         },
         {
-          "comment": "body as text",
+          "comment": "body as text (but try to output as json anyways)",
           "operation": "output",
           "value": "{{rest_request.body}}\r\n",
-          "styling": "raw",
+          "styling": "json",
           "conditions": {
             "isNull": "{{rest_request.body_json}}",
             "isNotNull": "{{rest_request.body}}"
@@ -75,7 +85,7 @@
         {
           "comment": "status when success",
           "operation": "output",
-          "value": "[[#005f87]]{{rest_response.status}}[[/]]",
+          "value": "[[#005f87]]{{rest_response.status}}[[/]]\r\n",
           "styling": "Markup",
           "conditions": {
             "areEqual": {
@@ -87,7 +97,7 @@
         {
           "comment": "status when fail",
           "operation": "output",
-          "value": "[[{{styles[error].value}}]]{{rest_response.status}}[[/]]",
+          "value": "[[{{styles[error].value}}]]{{rest_response.status}}[[/]]\r\n",
           "styling": "Markup",
           "conditions": {
             "areEqual": {
@@ -97,26 +107,57 @@
           }
         },
         {
-          "comment": "url",
+          "comment": "url. Currently disabled because there is no information about url in response and writing from request can lead to unpredictable results when multiple requests are processed at the same time.",
           "operation": "output",
           "value": " {{rest_request.url}}",
-          "styling": "Markup"
+          "styling": "Markup",
+          "enabled": false
         },
         {
           "comment": "date",
           "operation": "output",
-          "value": " [[{{styles[trace].value}}]]({{rest_response.created}})[[/]]"
+          "value": " [[{{styles[trace].value}}]]({{rest_response.created}})[[/]]",
+          "enabled": false
         },
         {
           "comment": "headers",
           "operation": "forEach",
           "list": "{{rest_response.headers}}",
           "element": "header",
-          "operations": [{
-            "comment": "header",
-            "operation": "output",
-            "value": "[[{{styles[trace].value}}]]{{header.key}}[[/]]: [[{{styles[debug].value}}]]{{header.value}}[[/]]"
-          }]
+          "operations": [
+            {
+              "operation": "setVariable",
+              "name": "elementPresent",
+              "value": "key",
+              "conditions": {
+                "IsNotNull": "{{header.key}}"
+              }
+            },
+            {
+              "operation": "setVariable",
+              "name": "elementPresent",
+              "value": "name",
+              "conditions": {
+                "IsNotNull": "{{header.name}}"
+              }
+            },
+            {
+              "comment": "header",
+              "operation": "output",
+              "value": "[[{{styles[trace].value}}]]{{header.{{elementPresent}}}}[[/]]: [[{{styles[debug].value}}]]{{header.value}}[[/]]",
+              "conditions": {
+                "isNotNull": "{{elementPresent}}"
+              }
+            },
+            {
+              "comment": "header",
+              "operation": "output",
+              "value": "[[{{styles[debug].value}}]]{{header}}[[/]]",
+              "conditions": {
+                "isNull": "{{elementPresent}}"
+              }
+            }
+          ]
         },
         {
           "comment": "empty line before body",
@@ -137,7 +178,7 @@
           "comment": "body as text",
           "operation": "output",
           "value": "{{rest_response.body}}\r\n",
-          "styling": "raw",
+          "styling": "json",
           "conditions": {
             "isNull": "{{rest_response.body_json}}",
             "isNotNull": "{{rest_response.body}}"

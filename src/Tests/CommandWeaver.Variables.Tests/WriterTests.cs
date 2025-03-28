@@ -6,14 +6,13 @@ using NSubstitute;
 
 public class WriterTests
 {
-    private readonly IFlowService _flowService = Substitute.For<IFlowService>();
     private readonly IVariableStorage _variableStorage = Substitute.For<IVariableStorage>();
     private readonly IRepository _repository = Substitute.For<IRepository>();
     private readonly Writer _writer;
 
     public WriterTests()
     {
-        _writer = new Writer(_flowService, _variableStorage, _repository);
+        _writer = new Writer(_variableStorage, _repository);
     }
 
     private void SetupRepositoryPath(string basePath)
@@ -80,10 +79,9 @@ public class WriterTests
         var value = new DynamicValue("value");
 
         // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() =>
+        var exception = Assert.Throws<CommandWeaverException>(() =>
             _writer.WriteVariableValue(scope, null, path, value, null));
         Assert.Equal("Writing to sub-property is not supported.", exception.Message);
-        _flowService.Received(1).Terminate("Writing to sub-property is not supported.");
     }
 
     [Fact]
@@ -98,10 +96,9 @@ public class WriterTests
         SetupRepositoryPath("basePath");
 
         // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() =>
+        var exception = Assert.Throws<CommandWeaverException>(() =>
             _writer.WriteVariableValue(scope, sessionName, path, value, null));
         Assert.Equal("Repository element ID must be specified for non-command scopes.", exception.Message);
-        _flowService.Received(1).Terminate("Repository element ID must be specified for non-command scopes.");
     }
 
     [Fact]
