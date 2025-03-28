@@ -85,7 +85,7 @@
         {
           "comment": "status when success",
           "operation": "output",
-          "value": "[[#005f87]]{{rest_response.status}}[[/]]",
+          "value": "[[#005f87]]{{rest_response.status}}[[/]]\r\n",
           "styling": "Markup",
           "conditions": {
             "areEqual": {
@@ -97,7 +97,7 @@
         {
           "comment": "status when fail",
           "operation": "output",
-          "value": "[[{{styles[error].value}}]]{{rest_response.status}}[[/]]",
+          "value": "[[{{styles[error].value}}]]{{rest_response.status}}[[/]]\r\n",
           "styling": "Markup",
           "conditions": {
             "areEqual": {
@@ -107,15 +107,17 @@
           }
         },
         {
-          "comment": "url",
+          "comment": "url. Currently disabled because there is no information about url in response and writing from request can lead to unpredictable results when multiple requests are processed at the same time.",
           "operation": "output",
           "value": " {{rest_request.url}}",
-          "styling": "Markup"
+          "styling": "Markup",
+          "enabled": false
         },
         {
           "comment": "date",
           "operation": "output",
-          "value": " [[{{styles[trace].value}}]]({{rest_response.created}})[[/]]"
+          "value": " [[{{styles[trace].value}}]]({{rest_response.created}})[[/]]",
+          "enabled": false
         },
         {
           "comment": "headers",
