@@ -36,6 +36,8 @@ public class Loader(
         await LoadApplicationRepository(cancellationToken);
         await LoadSessionRepository(cancellationToken);
         SetCommonVariables();
+        
+        
         outputSettings.Serializer = serializer;
         outputService.Trace("Execution completed: Variables and commands successfully loaded.");
     }
@@ -49,7 +51,10 @@ public class Loader(
         outputService.Trace($"Loading built-in repository: {BuiltInRepositoryName}");
         variableService.CurrentlyLoadRepository = BuiltInRepositoryName;
         var elements = embeddedRepository.GetList(cancellationToken);
-        await LoadRepositoryElements(RepositoryLocation.BuiltIn, elements, cancellationToken);
+        var commands  = await LoadRepositoryElementsVariables(RepositoryLocation.BuiltIn, elements, cancellationToken);
+        foreach (var command in commands)
+            AddCommands(command.Key, command.Value);
+        
         variableService.CurrentlyLoadRepository = null;
         ApplyStyles();
     }
@@ -63,7 +68,10 @@ public class Loader(
         outputService.Trace("Loading application repository.");
         variableService.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Application);
         var elements = repository.GetList(RepositoryLocation.Application, null, cancellationToken);
-        await LoadRepositoryElements(RepositoryLocation.Application, elements, cancellationToken);
+        var commands = await LoadRepositoryElementsVariables(RepositoryLocation.Application, elements, cancellationToken);
+        foreach (var command in commands)
+            AddCommands(command.Key, command.Value);
+
         variableService.CurrentlyLoadRepository = null;
         ApplyStyles();
     }
@@ -77,7 +85,10 @@ public class Loader(
         outputService.Trace("Loading session repository.");
         variableService.CurrentlyLoadRepository = repository.GetPath(RepositoryLocation.Session, variableService.CurrentSessionName);
         var elements = repository.GetList(RepositoryLocation.Session, variableService.CurrentSessionName, cancellationToken);
-        await LoadRepositoryElements(RepositoryLocation.Session, elements, cancellationToken);
+        var commands = await LoadRepositoryElementsVariables(RepositoryLocation.Session, elements, cancellationToken);
+        foreach (var command in commands)
+            AddCommands(command.Key, command.Value);
+
         variableService.CurrentlyLoadRepository = null;
         ApplyStyles();
     }
@@ -103,13 +114,14 @@ public class Loader(
     }
 
     /// <summary>
-    /// Loads commands and variables from repository elements.
+    /// Loads variables from repository elements.
     /// </summary>
     /// <param name="repositoryLocation">The location of the repository (e.g., built-in, application, session).</param>
     /// <param name="repositoryElementsInformation">The serialized repository elements to process.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    private async Task LoadRepositoryElements(RepositoryLocation repositoryLocation, IAsyncEnumerable<RepositoryElementInformation> repositoryElementsInformation, CancellationToken cancellationToken)
+    private async Task<IEnumerable<KeyValuePair<RepositoryElementInformation, ImmutableList<Command?>?>>> LoadRepositoryElementsVariables(RepositoryLocation repositoryLocation, IAsyncEnumerable<RepositoryElementInformation> repositoryElementsInformation, CancellationToken cancellationToken)
     {
+        var commands = new List<KeyValuePair<RepositoryElementInformation, ImmutableList<Command?>?>>();
         await foreach (var repositoryElementInformation in repositoryElementsInformation.WithCancellation(cancellationToken))
         {
             variableService.CurrentlyLoadRepositoryElement = repositoryElementInformation.FriendlyName;
@@ -138,10 +150,12 @@ public class Loader(
             repositoryElementStorage.Add(new RepositoryElement(repositoryLocation, repositoryElementInformation.Id, repositoryContent));
 
             AddVariables(repositoryLocation, repositoryElementInformation.Id, repositoryContent.Variables);
-            AddCommands(repositoryElementInformation, repositoryContent.Commands);
+            //Commands need to be loaded as last ones, as they might need variables from other repositories in order to resolve.
+            commands.Add(new KeyValuePair<RepositoryElementInformation, ImmutableList<Command?>?>(repositoryElementInformation, repositoryContent.Commands));
         }
 
         variableService.CurrentlyLoadRepositoryElement = null;
+        return commands;
     }
 
     /// <summary>

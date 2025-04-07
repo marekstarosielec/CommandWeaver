@@ -104,10 +104,11 @@ public class CommandParameterResolver(
             currentDynamicCommandParameter = variableService.ReadVariableValue(new DynamicValue(fromVariable), true);
             fromVariable = currentDynamicCommandParameter.ObjectValue?["fromVariable"]?.TextValue;
         }
-
+        //TODO: Add possibility to resolve into list of command parameters.
         var result = currentDynamicCommandParameter.GetAsObject<CommandParameter>();
         if (result == null)
-            throw new CommandWeaverException("Failed to resolve parameter.");
+            //TODO: better information when it fails.
+            throw new CommandWeaverException("Failed to resolve variable as command-parameter.");
 
         return result;
     }

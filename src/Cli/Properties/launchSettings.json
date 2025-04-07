@@ -32,17 +32,21 @@
       "commandName": "Project",
       "commandLineArgs": "res"
     },
-    "Help test": {
-      "commandName": "Project",
-      "commandLineArgs": "help test"
-    },
     "Authorize": {
       "commandName": "Project",
       "commandLineArgs": "auth"
     },
+    "Http-Studio": {
+      "commandName": "Project",
+      "commandLineArgs": "hs"
+    },
     "test": {
       "commandName": "Project",
-      "commandLineArgs": "abc123"
+      "commandLineArgs": "test"
+    },
+    "test help": {
+      "commandName": "Project",
+      "commandLineArgs": "help --command test"
     }
   }
 }

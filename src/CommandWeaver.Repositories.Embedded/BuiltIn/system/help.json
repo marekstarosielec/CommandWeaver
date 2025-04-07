@@ -213,7 +213,7 @@
                                 "styling": "Markup"
                               },
                               {
-                                "comment": "output optional parameter opening bracket",
+                                "comment": "output optional parameter closing bracket",
                                 "operation": "output",
                                 "value": "]",
                                 "styling": "Markup",
@@ -277,21 +277,21 @@
                                   {
                                     "comment": "parameter name",
                                     "operation": "output",
-                                    "value": "--{{everyCommandParameterName}}, ",
+                                    "value": "[[{{styles[focused].value}}]]--{{everyCommandParameterName}}[[/]], ",
                                     "styling": "Markup"
                                   }
                                 ]
                               },
                               {
-                                "comment": "remove last command parameter separator",
+                                "comment": "remove last command parameter separator, go to next line",
                                 "operation": "output",
-                                "value": "\b\b \u001b[30G",
+                                "value": "\b\b  \r\n",
                                 "styling": "Markup"
                               },
                               {
                                 "comment": "parameter optional",
                                 "operation": "output",
-                                "value": " - Optional.",
+                                "value": "Optional.",
                                 "styling": "Markup",
                                 "conditions": {
                                   "areNotEqual": {
@@ -303,7 +303,7 @@
                               {
                                 "comment": "parameter optional",
                                 "operation": "output",
-                                "value": " - Required.",
+                                "value": "Required.",
                                 "styling": "Markup",
                                 "conditions": {
                                   "areEqual": {
@@ -315,7 +315,7 @@
                               {
                                 "comment": "description",
                                 "operation": "output",
-                                "value": " {{ everyCommandParameter.description }}"
+                                "value": " {{ everyCommandParameter.description }}\r\n"
                               }
                             ]
                           }
@@ -327,7 +327,7 @@
                       {
                         "comment": "description",
                         "operation": "output",
-                        "value": "\r\n\r\n{{everyCommand.description}}"
+                        "value": "\r\n\r\n{{everyCommand.definition.description}}"
                       },
                       {
                         "comment": "Command help was printed, stop flow.",

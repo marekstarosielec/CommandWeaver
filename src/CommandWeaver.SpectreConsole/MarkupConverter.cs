@@ -15,6 +15,7 @@ internal static class MarkupConverter
         { "italic", Decoration.Italic },
         { "u", Decoration.Underline },
         { "underline", Decoration.Underline },
+        //TODO: add links
     };
 
     //TODO: Add unit tests.

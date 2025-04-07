@@ -31,11 +31,18 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         
         if (events?.RequestPrepared != null)
             await commandService.ExecuteOperations(events.RequestPrepared, cancellationToken);
+
+        try
+        {
+            var response = await httpClient.SendAsync(request, cancellationToken);
+            var responseVariable = await GetResponseAsVariable(response);
+            variableService.WriteVariableValue(VariableScope.Command, "rest_response", responseVariable);
+        }
+        catch (HttpRequestException e) when (e.Message.Contains("connection refused", StringComparison.InvariantCultureIgnoreCase))
+        {
+            throw new CommandWeaverException("Server is not responding");
+        }
         
-        var response = await httpClient.SendAsync(request, cancellationToken);
-        
-        var responseVariable = await GetResponseAsVariable(response);
-        variableService.WriteVariableValue(VariableScope.Command, "rest_response", responseVariable);
         
         if (events?.ResponseReceived != null)
             await commandService.ExecuteOperations(events.ResponseReceived, cancellationToken);
