@@ -132,24 +132,21 @@ public record RestCall(IConditionsService conditionsService, IVariableService va
         try
         {
             handler = new HttpClientHandler();
-            if (!string.IsNullOrWhiteSpace(certificateInformation?.FromResource))
+            if (string.IsNullOrWhiteSpace(certificateInformation?.FromResource)) return handler;
+            var resourceKey = $"{{{{resources[{certificateInformation.FromResource}].binary}}}}";
+            var certificateBinaryContent = variableService.ReadVariableValue(new DynamicValue(resourceKey));
+            if (certificateBinaryContent.LazyBinaryValue?.Value == null) return handler;
+            try
             {
-                var resourceKey = $"{{{{resources[{certificateInformation.FromResource}].binary}}}}";
-                var certificateBinaryContent = variableService.ReadVariableValue(new DynamicValue(resourceKey));
-                if (certificateBinaryContent.LazyBinaryValue?.Value != null)
-                {
-                    try
-                    {
-                        var certificate =
-                            new X509Certificate2(certificateBinaryContent.LazyBinaryValue.Value,
-                                Parameters["certificatePassword"].Value.TextValue);
-                        handler.ClientCertificates.Add(certificate);
-                    }
-                    catch (Exception e)
-                    {
-                        throw new CommandWeaverException("Failed to load certificate from certificate resource", innerException: e);
-                    }
-                }
+                var certificate =
+                    new X509Certificate2(certificateBinaryContent.LazyBinaryValue.Value,
+                        Parameters["certificatePassword"].Value.TextValue);
+                handler.ClientCertificates.Add(certificate);
+                handler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+            }
+            catch (Exception e)
+            {
+                throw new CommandWeaverException("Failed to load certificate from certificate resource", innerException: e);
             }
 
             return handler;

@@ -8,7 +8,7 @@ public class ResourceService(IVariableService variableService) : IResourceServic
             variableService.ReadVariableValue(new DynamicValue("{{ resources }}"))?.ListValue?.ToList() ?? [];
         var resourceObject = new Dictionary<string, DynamicValue?>
         {
-            ["key"] = new (repositoryElementInformation.Id),
+            ["key"] = new (repositoryElementInformation.FriendlyName),
             ["text"] = repositoryElementInformation.ContentAsString != null ? new DynamicValue(repositoryElementInformation.ContentAsString) : new DynamicValue(),
             ["binary"] = repositoryElementInformation.ContentAsBinary != null ? new DynamicValue(repositoryElementInformation.ContentAsBinary) : new DynamicValue()
         };

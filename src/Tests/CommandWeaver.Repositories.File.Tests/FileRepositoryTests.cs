@@ -123,7 +123,7 @@ public class FileRepositoryTests
         _fileProvider.GetFileName(hiddenFile).Returns(hiddenFile);
 
         // Act
-        var result = await _fileRepository.TryGetRepositoryElementInfoAsync(rootPath, hiddenFile, CancellationToken.None);
+        var result = await _fileRepository.TryGetRepositoryElementInfoAsync(RepositoryLocation.Application, rootPath, hiddenFile, CancellationToken.None);
 
         // Assert
         Assert.Null(result);
@@ -142,7 +142,7 @@ public class FileRepositoryTests
         _fileProvider.GetFileContentAsString(validFile).Returns(testContent);
 
         // Act
-        var result = await _fileRepository.TryGetRepositoryElementInfoAsync(rootPath, validFile, CancellationToken.None);
+        var result = await _fileRepository.TryGetRepositoryElementInfoAsync(RepositoryLocation.Application, rootPath, validFile, CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);

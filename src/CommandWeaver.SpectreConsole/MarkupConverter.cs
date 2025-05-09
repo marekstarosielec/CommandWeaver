@@ -37,7 +37,7 @@ internal static class MarkupConverter
         return result;
     }
 
-    //TODO: Add unit tests for sad paths (e.g. multiple style tags), not it throws InvalidOperationException.
+    //TODO: Add unit tests for sad paths (e.g. multiple style tags), now it throws InvalidOperationException.
     //TODO: Add unit tests.
     public static string ConvertToSpectreStyle(string input) => GetStyle(input).ToMarkup();
 

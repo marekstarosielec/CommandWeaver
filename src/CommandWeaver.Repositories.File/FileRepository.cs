@@ -59,17 +59,18 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
         var rootPath = GetPath(location, sessionName);
         outputService.Trace($"Starting file enumeration in: {rootPath}");
 
-        await foreach (var file in EnumerateFilesIterativelyAsync(rootPath, cancellationToken))
+        await foreach (var file in EnumerateFilesIterativelyAsync(location, rootPath, cancellationToken))
             yield return file;
     }
 
     /// <summary>
     /// Iteratively enumerates files within a directory without recursion and yields them as serialized repository elements.
     /// </summary>
+    /// <param name="location">The repository location type.</param>
     /// <param name="rootPath">The root directory to start the enumeration.</param>
     /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
     /// <returns>An asynchronous stream of serialized repository elements.</returns>
-    private async IAsyncEnumerable<RepositoryElementInformation> EnumerateFilesIterativelyAsync(string rootPath, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<RepositoryElementInformation> EnumerateFilesIterativelyAsync(RepositoryLocation location, string rootPath, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         foreach (var file in physicalFileProvider.GetFiles(rootPath))
         {
@@ -79,7 +80,7 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
                 yield break;
             }
 
-            var result = await TryGetRepositoryElementInfoAsync(rootPath, file, cancellationToken);
+            var result = await TryGetRepositoryElementInfoAsync(location,rootPath, file, cancellationToken);
             if (result != null)
                 yield return result;
         }
@@ -90,11 +91,12 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
     /// <summary>
     /// Attempts to retrieve repository element information from a file.
     /// </summary>
+    /// <param name="location">The repository location type.</param>
     /// <param name="rootPath">The root directory path for the repository.</param>
     /// <param name="file">The file path of the repository element.</param>
     /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
     /// <returns>A <see cref="RepositoryElementInformation"/> object if successful; otherwise, <c>null</c>.</returns>
-    internal Task<RepositoryElementInformation?> TryGetRepositoryElementInfoAsync(string rootPath, string file, CancellationToken cancellationToken)
+    internal Task<RepositoryElementInformation?> TryGetRepositoryElementInfoAsync(RepositoryLocation location, string rootPath, string file, CancellationToken cancellationToken)
     {
         try
         {
@@ -107,13 +109,15 @@ public class FileRepository(IPhysicalFileProvider physicalFileProvider, IOutputS
 
             var format = Path.GetExtension(file).TrimStart('.');
             var friendlyName = file.Length > rootPath.Length
-                ? file[(rootPath.Length + 1)..]
+                ? Path.Combine(location.ToString(), file[(rootPath.Length + 1)..])
                 : file;
 
             outputService.Trace($"File processed: {fileName}");
             return Task.FromResult<RepositoryElementInformation?>(new RepositoryElementInformation
             {
-                Id = file, Format = format, FriendlyName = friendlyName,
+                Id = file, 
+                Format = format, 
+                FriendlyName = friendlyName,
                 ContentAsString = new Lazy<string?>(() => physicalFileProvider.GetFileContentAsString(file)),
                 ContentAsBinary = new Lazy<byte[]?>(() => physicalFileProvider.GetFileContentAsBinary(file))
             });
